@@ -1,4 +1,4 @@
-package com.example.meishizukan
+package com.example.meishizukan.util
 
 import android.content.Context
 import android.graphics.Color
