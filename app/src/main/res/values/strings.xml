@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">名刺図鑑</string>
+    <string name="search_edittext_hint">人物を検索</string>
 </resources>
