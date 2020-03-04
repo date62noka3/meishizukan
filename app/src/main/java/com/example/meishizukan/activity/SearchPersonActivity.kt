@@ -7,21 +7,28 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.Gravity
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.navigation.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.navigateUp
+import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.navigation.ui.setupWithNavController
 import com.example.meishizukan.R
-import com.example.meishizukan.util.Module
+import com.example.meishizukan.util.Modules
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
+import com.google.android.material.navigation.NavigationView
 import kotlinx.android.synthetic.main.activity_search_person.*
-import java.text.SimpleDateFormat
-import java.time.LocalDate
-import java.util.*
 
 private const val KEYCODE_ENTER = 66
 
 class SearchPersonActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search_person)
@@ -32,7 +39,6 @@ class SearchPersonActivity : AppCompatActivity() {
             .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
             .build()
         adView.loadAd(adRequest)
-
         adView.adListener = object: AdListener() {
             override fun onAdLoaded() {}
             override fun onAdFailedToLoad(errorCode : Int) {}
@@ -42,12 +48,7 @@ class SearchPersonActivity : AppCompatActivity() {
             override fun onAdClosed() {}
         }
 
-        searchEditText.setOnFocusChangeListener{
-            v, hasFocus ->
-            v ?: return@setOnFocusChangeListener
-            initSearchEditTextBackground(hasFocus = hasFocus)
-        }
-
+        //入力値の有無を判定
         searchEditText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {}
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -61,6 +62,7 @@ class SearchPersonActivity : AppCompatActivity() {
         })
 
         val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        //エンターキー押下を検知
         searchEditText.setOnKeyListener{
                 v, keyCode, event ->
             Log.d("PRESSED_KEY",keyCode.toString())
@@ -79,7 +81,15 @@ class SearchPersonActivity : AppCompatActivity() {
             }
         }
 
-        var isKeyboardShown = false //キーボードが表示されたか
+        //入力欄のレイアウトを更新
+        searchEditText.setOnFocusChangeListener{
+                v, hasFocus ->
+            v ?: return@setOnFocusChangeListener
+            initSearchEditTextBackground(hasFocus = hasFocus)
+        }
+
+        var isKeyboardShown = false
+        //入力欄のレイアウトを更新
         fun onKeyboardVisibilityChanged() {
             searchEditText.isCursorVisible = isKeyboardShown
             initSearchEditTextBackground(isKeyboardShown = isKeyboardShown)
@@ -109,9 +119,32 @@ class SearchPersonActivity : AppCompatActivity() {
             }
         }
 
+        //入力値をクリア
         clearEditTextButton.setOnClickListener{
             searchEditText.setText("")
         }
+
+        //メニューを前面にし、クリックとを検知させる
+        drawerLayout.addDrawerListener(
+            object : DrawerLayout.DrawerListener{
+                override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
+                override fun onDrawerStateChanged(newState: Int) {}
+                override fun onDrawerOpened(drawerView: View) {
+                    menuRootConstraintLayout.bringToFront()
+                }
+                override fun onDrawerClosed(drawerView: View) {
+                    rootConstraintLayout.bringToFront()
+                }
+            }
+        )
+
+        //メニューを表示
+        menuButton.setOnClickListener{
+            drawerLayout.openDrawer(Gravity.LEFT)
+        }
+
+        //メニュー表示時後ろにクリックを通さないため
+        menuRootConstraintLayout.setOnClickListener{}
     }
 
     override fun onResume(){
@@ -119,8 +152,7 @@ class SearchPersonActivity : AppCompatActivity() {
         adView.resume()
 
         //現在の日付を表示
-        val currentDate = Date()
-        dateTextView.text = Module.getCurrentDate()
+        dateTextView.text = Modules.getCurrentDate()
     }
 
     override fun onDestroy(){
