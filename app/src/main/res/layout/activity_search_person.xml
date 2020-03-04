@@ -22,6 +22,7 @@
             android:background="@drawable/menu_header_background"
             android:fontFamily="@font/source_han_serif_regular"
             android:gravity="center_vertical"
+            android:includeFontPadding="false"
             android:paddingLeft="10dp"
             android:text="メニュー"
             android:textColor="#FFFFFF"
@@ -32,19 +33,11 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <View
-            android:id="@+id/lineView"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#A8A8A8"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/menuHeaderTextView" />
-
-        <View
             android:id="@+id/menuItemBackgroundView"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginTop="10dp"
+            android:layout_marginRight="30dp"
             android:background="@drawable/active_menu_background"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -66,6 +59,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:fontFamily="@font/source_han_serif_regular"
+            android:includeFontPadding="false"
             android:text="@string/search_person_view"
             android:textColor="#4D4DDB"
             android:textSize="17sp"
@@ -79,6 +73,7 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginTop="10dp"
+            android:layout_marginRight="30dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
@@ -100,6 +95,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:fontFamily="@font/source_han_serif_regular"
+            android:includeFontPadding="false"
             android:text="@string/all_photos_view"
             android:textColor="#303030"
             android:textSize="17sp"
@@ -122,11 +118,21 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <View
+        android:id="@+id/lineView"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#A8A8A8"
+        app:layout_constraintBottom_toBottomOf="@+id/headerView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <TextView
         android:id="@+id/logoTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/aoyagireisyosimo_otf_2_01"
+        android:includeFontPadding="false"
         android:text="@string/app_name"
         android:textColor="#000000"
         android:textSize="26sp"
@@ -141,9 +147,10 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:fontFamily="@font/source_han_serif_regular"
-        android:text="2/24(水)"
+        android:includeFontPadding="false"
+        android:text="2 / 24 (水)"
         android:textColor="#303030"
-        android:textSize="17sp"
+        android:textSize="15sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/headerView"
         app:layout_constraintEnd_toEndOf="@+id/headerView"
@@ -156,15 +163,17 @@
         android:layout_marginStart="10dp"
         android:layout_marginTop="10dp"
         android:background="@drawable/search_edittext_background"
-        android:fontFamily="cursive"
+        android:fontFamily="@font/source_han_serif_regular"
         android:hint="@string/search_edittext_hint"
+        android:includeFontPadding="false"
         android:inputType="text"
         android:paddingLeft="40dp"
         android:paddingRight="55dp"
         android:selectAllOnFocus="true"
         android:textColor="#303030"
-        android:textColorHint="#727272"
+        android:textColorHint="#A9A9A9"
         android:textSize="17sp"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/headerView" />
 
@@ -209,6 +218,22 @@
         app:layout_constraintEnd_toEndOf="@+id/searchEditText"
         app:layout_constraintTop_toTopOf="@+id/searchEditText" />
 
+    <ScrollView
+        android:id="@+id/personListScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="500dp"
+        android:paddingTop="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/searchEditText">
+
+        <LinearLayout
+            android:id="@+id/personListLinearLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </ScrollView>
+
     <ImageView
         android:id="@+id/addPersonButton"
         android:layout_width="57dp"
@@ -231,22 +256,42 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"></com.google.android.gms.ads.AdView>
 
-    <LinearLayout
-        android:id="@+id/personListView"
-        android:layout_width="409dp"
-        android:layout_height="500dp"
-        android:layout_marginTop="10dp"
-        android:orientation="vertical"
-        android:overScrollMode="always"
-        android:scrollbarDefaultDelayBeforeFade="400"
-        android:scrollbarFadeDuration="250"
-        android:scrollbarSize="4dp"
-        android:scrollbarStyle="insideOverlay"
-        android:scrollbars="vertical"
-        android:verticalScrollbarPosition="right"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/footerOnSelectedPerson"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginBottom="20dp"
+        android:background="#EAEAEA"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/adView"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/searchEditText"></LinearLayout>
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:id="@+id/selectedItemCountTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/source_han_serif_regular"
+            android:includeFontPadding="false"
+            android:text="2名の人物を選択中"
+            android:textColor="#303030"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/deleteButton"
+            android:layout_width="19dp"
+            android:layout_height="30dp"
+            android:layout_marginEnd="15dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/trashcan" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

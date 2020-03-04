@@ -6,7 +6,7 @@ import java.util.*
 
 object Modules {
     fun getCurrentDate():String{
-        val simpleDateFormat = SimpleDateFormat("M/d(EE)",Locale.JAPAN)
+        val simpleDateFormat = SimpleDateFormat("M / d (EE)",Locale.JAPAN)
         return simpleDateFormat.format(Date())
     }
 }
