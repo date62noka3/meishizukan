@@ -19,7 +19,6 @@ object DbContracts{
         const val COLUMN_NAME = "name"
         const val COLUMN_PHONETIC_NAME = "phonetic_name"
         const val COLUMN_SEX = "sex"
-        const val COLUMN_BIRTHDAY = "birthday"
         const val COLUMN_ORGANIZATION_ID = "organization_id"
         const val COLUMN_NOTE  = "note"
     }
@@ -48,7 +47,6 @@ private const val SQL_CREATE_PERSONS = "CREATE TABLE ${DbContracts.Persons.TABLE
         "${DbContracts.Persons.COLUMN_NAME} TEXT NOT NULL," +
         "${DbContracts.Persons.COLUMN_PHONETIC_NAME} TEXT NOT NULL," +
         "${DbContracts.Persons.COLUMN_SEX} INT NOT NULL DEFAULT 0," +
-        "${DbContracts.Persons.COLUMN_BIRTHDAY} TEXT NOT NULL DEFAULT ''," +
         "${DbContracts.Persons.COLUMN_ORGANIZATION_ID} INT NOT NULL DEFAULT 0," +
         "${DbContracts.Persons.COLUMN_NOTE} TEXT NOT NULL DEFAULT ''," +
         "FOREIGN KEY(${DbContracts.Persons.COLUMN_ORGANIZATION_ID}) " +
@@ -86,8 +84,8 @@ class DbHelper(context: Context):SQLiteOpenHelper(context, DATABASE_NAME,null, D
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        db.execSQL(SQL_CREATE_PHOTOS_LINKS)
-        db.execSQL(SQL_CREATE_PHOTOS)
+        db.execSQL(SQL_DELETE_PHOTOS_LINKS)
+        db.execSQL(SQL_DELETE_PHOTOS)
         db.execSQL(SQL_DELETE_PERSONS)
         db.execSQL(SQL_DELETE_ORGANIZATIONS)
 

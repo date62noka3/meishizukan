@@ -1,6 +1,7 @@
 package com.example.meishizukan.activity
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -13,6 +14,7 @@ import android.view.inputmethod.InputMethodManager
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.example.meishizukan.R
+import com.example.meishizukan.util.DbHelper
 import com.example.meishizukan.util.Modules
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
@@ -139,6 +141,11 @@ class SearchPersonActivity : AppCompatActivity() {
 
         //メニュー表示時後ろにクリックを通さないため
         menuRootConstraintLayout.setOnClickListener{}
+
+        addPersonButton.setOnClickListener{
+            val intent = Intent(this,InputPersonalInfoActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     override fun onResume(){
