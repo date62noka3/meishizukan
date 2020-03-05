@@ -182,7 +182,7 @@
         android:layout_width="25dp"
         android:layout_height="19dp"
         android:layout_marginStart="10dp"
-        android:src="@drawable/navigation_drawer_menu_button"
+        android:src="@drawable/menu_button"
         app:layout_constraintBottom_toBottomOf="@+id/headerMenu"
         app:layout_constraintStart_toStartOf="@+id/headerMenu"
         app:layout_constraintTop_toTopOf="@+id/headerMenu" />
