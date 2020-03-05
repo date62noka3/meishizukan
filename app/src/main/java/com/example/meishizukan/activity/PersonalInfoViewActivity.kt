@@ -1,5 +1,6 @@
 package com.example.meishizukan.activity
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.example.meishizukan.R
@@ -27,6 +28,11 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             override fun onAdClicked() {}
             override fun onAdLeftApplication() {}
             override fun onAdClosed() {}
+        }
+
+        photosViewButton.setOnClickListener{
+            val intent = Intent(this,PhotosViewActivity::class.java)
+            startActivity(intent)
         }
     }
 
