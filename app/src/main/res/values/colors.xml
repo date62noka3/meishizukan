@@ -3,4 +3,17 @@
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
+
+    <!-- 人物情報＆写真画面フッターメニュー -->
+    <color name="disabledButtonTextColor">#A9A9A9</color>
+
+    <!-- Toaster -->
+    <color name="textColor">#303030</color>
+    <color name="backgroundColor">#F0F0F0</color>
+
+    <!-- 人物情報画面 -->
+    <color name="textColorOnInputError">#FFFFFF</color>
+    <color name="backgroundColorOnInputError">#EE5365</color>
+    <color name="textColorOnSavedNewPerson">#FFFFFF</color>
+    <color name="backgroundColorOnSavedNewPerson">#4D4DDB</color>
 </resources>

@@ -68,6 +68,61 @@
         app:layout_constraintTop_toBottomOf="@+id/headerMenu" />
 
     <TextView
+        android:id="@+id/requiredLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/source_han_serif_regular"
+        android:includeFontPadding="false"
+        android:text="@string/required_label_text"
+        android:textColor="#EE5365"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/phoneticNameLabel"
+        app:layout_constraintTop_toTopOf="@+id/phoneticNameLabel" />
+
+    <EditText
+        android:id="@+id/firstPhoneticNameEditText"
+        android:layout_width="186dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="3dp"
+        android:background="@drawable/personal_info_edittext_background"
+        android:fontFamily="@font/source_han_serif_regular"
+        android:hint="@string/first_phonetic_name_edittext_hint"
+        android:imeOptions="actionNext"
+        android:includeFontPadding="false"
+        android:inputType="textPersonName"
+        android:nextFocusForward="@id/lastPhoneticNameEditText"
+        android:paddingLeft="8dp"
+        android:selectAllOnFocus="true"
+        android:textColor="#303030"
+        android:textColorHint="#A9A9A9"
+        android:textSize="17sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="@+id/phoneticNameLabel"
+        app:layout_constraintTop_toBottomOf="@+id/phoneticNameLabel" />
+
+    <EditText
+        android:id="@+id/lastPhoneticNameEditText"
+        android:layout_width="186dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="10dp"
+        android:background="@drawable/personal_info_edittext_background"
+        android:fontFamily="@font/source_han_serif_regular"
+        android:hint="@string/last_phonetic_name_edit_text_hint"
+        android:imeOptions="actionNext"
+        android:includeFontPadding="false"
+        android:inputType="textPersonName"
+        android:nextFocusForward="@id/firstNameEditText"
+        android:paddingLeft="8dp"
+        android:selectAllOnFocus="true"
+        android:textColor="#303030"
+        android:textColorHint="#A9A9A9"
+        android:textSize="17sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/firstPhoneticNameEditText"
+        app:layout_constraintTop_toTopOf="@+id/firstPhoneticNameEditText" />
+
+    <TextView
         android:id="@+id/nameLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -80,61 +135,6 @@
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="@+id/phoneticNameLabel"
         app:layout_constraintTop_toBottomOf="@+id/firstPhoneticNameEditText" />
-
-    <TextView
-        android:id="@+id/sexLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
-        android:fontFamily="@font/source_han_serif_regular"
-        android:includeFontPadding="false"
-        android:text="@string/sex_label_text"
-        android:textColor="#303030"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="@+id/phoneticNameLabel"
-        app:layout_constraintTop_toBottomOf="@+id/firstNameEditText" />
-
-    <TextView
-        android:id="@+id/organizationNameLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="13dp"
-        android:fontFamily="@font/source_han_serif_regular"
-        android:includeFontPadding="false"
-        android:text="@string/organization_label_text"
-        android:textColor="#303030"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="@+id/phoneticNameLabel"
-        app:layout_constraintTop_toBottomOf="@+id/sexSpinner" />
-
-    <TextView
-        android:id="@+id/memoLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="13dp"
-        android:fontFamily="@font/source_han_serif_regular"
-        android:includeFontPadding="false"
-        android:text="@string/memo_label_text"
-        android:textColor="#303030"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="@+id/phoneticNameLabel"
-        app:layout_constraintTop_toBottomOf="@+id/organizationNameEditText" />
-
-    <TextView
-        android:id="@+id/requiredLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/source_han_serif_regular"
-        android:includeFontPadding="false"
-        android:text="@string/required_label_text"
-        android:textColor="#EE5365"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toEndOf="@+id/phoneticNameLabel"
-        app:layout_constraintTop_toTopOf="@+id/phoneticNameLabel" />
 
     <TextView
         android:id="@+id/requiredLabel2"
@@ -150,25 +150,6 @@
         app:layout_constraintTop_toTopOf="@+id/nameLabel" />
 
     <EditText
-        android:id="@+id/firstPhoneticNameEditText"
-        android:layout_width="186dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="3dp"
-        android:background="@drawable/personal_info_edittext_background"
-        android:fontFamily="@font/source_han_serif_regular"
-        android:hint="@string/first_phonetic_name_edittext_hint"
-        android:includeFontPadding="false"
-        android:inputType="textPersonName"
-        android:paddingLeft="8dp"
-        android:selectAllOnFocus="true"
-        android:textColor="#303030"
-        android:textColorHint="#A9A9A9"
-        android:textSize="17sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="@+id/phoneticNameLabel"
-        app:layout_constraintTop_toBottomOf="@+id/phoneticNameLabel" />
-
-    <EditText
         android:id="@+id/firstNameEditText"
         android:layout_width="186dp"
         android:layout_height="40dp"
@@ -176,6 +157,7 @@
         android:background="@drawable/personal_info_edittext_background"
         android:fontFamily="@font/source_han_serif_regular"
         android:hint="@string/first_name_edittext_hint"
+        android:imeOptions="actionNext"
         android:includeFontPadding="false"
         android:inputType="textPersonName"
         android:paddingLeft="8dp"
@@ -188,42 +170,6 @@
         app:layout_constraintTop_toBottomOf="@+id/nameLabel" />
 
     <EditText
-        android:id="@+id/organizationNameEditText"
-        android:layout_width="381dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="3dp"
-        android:background="@drawable/personal_info_edittext_background"
-        android:fontFamily="@font/source_han_serif_regular"
-        android:includeFontPadding="false"
-        android:inputType="textPersonName"
-        android:paddingLeft="8dp"
-        android:selectAllOnFocus="true"
-        android:textColor="#303030"
-        android:textSize="17sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="@+id/organizationNameLabel"
-        app:layout_constraintTop_toBottomOf="@+id/organizationNameLabel" />
-
-    <EditText
-        android:id="@+id/memoEditText"
-        android:layout_width="381dp"
-        android:layout_height="99dp"
-        android:layout_marginTop="3dp"
-        android:background="@drawable/personal_info_edittext_background"
-        android:fontFamily="@font/source_han_serif_regular"
-        android:gravity="top"
-        android:includeFontPadding="false"
-        android:inputType="textMultiLine"
-        android:paddingLeft="8dp"
-        android:paddingTop="8dp"
-        android:selectAllOnFocus="true"
-        android:textColor="#303030"
-        android:textSize="17sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="@+id/memoLabel"
-        app:layout_constraintTop_toBottomOf="@+id/memoLabel" />
-
-    <EditText
         android:id="@+id/lastNameEditText"
         android:layout_width="186dp"
         android:layout_height="40dp"
@@ -231,8 +177,10 @@
         android:background="@drawable/personal_info_edittext_background"
         android:fontFamily="@font/source_han_serif_regular"
         android:hint="@string/last_name_edittext_hint"
+        android:imeOptions="actionNext"
         android:includeFontPadding="false"
         android:inputType="textPersonName"
+        android:nextFocusForward="@id/sexSpinner"
         android:paddingLeft="8dp"
         android:selectAllOnFocus="true"
         android:textColor="#303030"
@@ -242,24 +190,19 @@
         app:layout_constraintStart_toEndOf="@+id/firstNameEditText"
         app:layout_constraintTop_toTopOf="@+id/firstNameEditText" />
 
-    <EditText
-        android:id="@+id/lastPhoneticNameEditText"
-        android:layout_width="186dp"
-        android:layout_height="40dp"
-        android:layout_marginStart="10dp"
-        android:background="@drawable/personal_info_edittext_background"
+    <TextView
+        android:id="@+id/sexLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
         android:fontFamily="@font/source_han_serif_regular"
-        android:hint="@string/last_phonetic_name_edit_text_hint"
         android:includeFontPadding="false"
-        android:inputType="textPersonName"
-        android:paddingLeft="8dp"
-        android:selectAllOnFocus="true"
+        android:text="@string/sex_label_text"
         android:textColor="#303030"
-        android:textColorHint="#A9A9A9"
-        android:textSize="17sp"
+        android:textSize="16sp"
         android:textStyle="bold"
-        app:layout_constraintStart_toEndOf="@+id/firstPhoneticNameEditText"
-        app:layout_constraintTop_toTopOf="@+id/firstPhoneticNameEditText" />
+        app:layout_constraintStart_toStartOf="@+id/phoneticNameLabel"
+        app:layout_constraintTop_toBottomOf="@+id/firstNameEditText" />
 
     <Spinner
         android:id="@+id/sexSpinner"
@@ -280,6 +223,70 @@
         app:layout_constraintEnd_toEndOf="@+id/sexSpinner"
         app:layout_constraintTop_toTopOf="@+id/sexSpinner"
         app:srcCompat="@drawable/arrow_down" />
+
+    <TextView
+        android:id="@+id/organizationNameLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="13dp"
+        android:fontFamily="@font/source_han_serif_regular"
+        android:includeFontPadding="false"
+        android:text="@string/organization_label_text"
+        android:textColor="#303030"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="@+id/phoneticNameLabel"
+        app:layout_constraintTop_toBottomOf="@+id/sexSpinner" />
+
+    <EditText
+        android:id="@+id/organizationNameEditText"
+        android:layout_width="381dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="3dp"
+        android:background="@drawable/personal_info_edittext_background"
+        android:fontFamily="@font/source_han_serif_regular"
+        android:includeFontPadding="false"
+        android:inputType="textPersonName"
+        android:paddingLeft="8dp"
+        android:selectAllOnFocus="true"
+        android:textColor="#303030"
+        android:textSize="17sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="@+id/organizationNameLabel"
+        app:layout_constraintTop_toBottomOf="@+id/organizationNameLabel" />
+
+    <TextView
+        android:id="@+id/memoLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="13dp"
+        android:fontFamily="@font/source_han_serif_regular"
+        android:includeFontPadding="false"
+        android:text="@string/memo_label_text"
+        android:textColor="#303030"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="@+id/phoneticNameLabel"
+        app:layout_constraintTop_toBottomOf="@+id/organizationNameEditText" />
+
+    <EditText
+        android:id="@+id/memoEditText"
+        android:layout_width="381dp"
+        android:layout_height="99dp"
+        android:layout_marginTop="3dp"
+        android:background="@drawable/personal_info_edittext_background"
+        android:fontFamily="@font/source_han_serif_regular"
+        android:gravity="top"
+        android:includeFontPadding="false"
+        android:inputType="textMultiLine"
+        android:paddingLeft="8dp"
+        android:paddingTop="8dp"
+        android:selectAllOnFocus="true"
+        android:textColor="#303030"
+        android:textSize="17sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="@+id/memoLabel"
+        app:layout_constraintTop_toBottomOf="@+id/memoLabel" />
 
     <com.google.android.gms.ads.AdView
         android:id="@+id/adView"

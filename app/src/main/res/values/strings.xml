@@ -13,6 +13,12 @@
     <string name="back_button_text">＜戻る</string>
     <string name="save_button_text">保存</string>
 
+    <!-- 人物情報＆写真画面のAlertDialog -->
+    <string name="positive_button_text">はい</string>
+    <string name="negative_button_text">いいえ</string>
+    <string name="confirm_dialog_title">確認</string>
+    <string name="confirm_dialog_message">保存されていませんが、遷移してもよろしいでしょうか？</string>
+
     <!-- 人物情報画面 -->
     <string-array name="sex_types">
         <item>ー</item>
@@ -31,4 +37,6 @@
     <string name="last_name_edittext_hint">名</string>
     <string name="photos_label_text">写真</string>
     <string name="personal_info_label_text">人物情報</string>
+    <string name="message_on_input_error">必須項目が未入力です</string>
+    <string name="message_on_saved_new_person">登録しました</string>
 </resources>
