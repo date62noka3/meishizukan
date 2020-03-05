@@ -11,15 +11,13 @@ import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.example.meishizukan.R
-import com.example.meishizukan.util.DbHelper
 import com.example.meishizukan.util.Modules
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
-import kotlinx.android.synthetic.main.activity_search_person.*
+import kotlinx.android.synthetic.main.activity_search_person_view.*
 
 private const val KEYCODE_ENTER = 66
 
@@ -27,7 +25,7 @@ class SearchPersonActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_search_person)
+        setContentView(R.layout.activity_search_person_view)
 
         //AdMob初期化
         MobileAds.initialize(this) {}
@@ -143,7 +141,7 @@ class SearchPersonActivity : AppCompatActivity() {
         menuRootConstraintLayout.setOnClickListener{}
 
         addPersonButton.setOnClickListener{
-            val intent = Intent(this,InputPersonalInfoActivity::class.java)
+            val intent = Intent(this,PersonalInfoViewActivity::class.java)
             startActivity(intent)
         }
     }

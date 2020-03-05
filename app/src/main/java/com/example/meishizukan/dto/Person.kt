@@ -5,7 +5,6 @@ class Person(
     name:String,
     phoneticName:String,
     sex:Int,
-    birthday:String,
     organizationId:Int,
     note:String
 ) {
