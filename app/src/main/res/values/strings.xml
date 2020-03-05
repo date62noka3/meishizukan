@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">名刺図鑑</string>
+    <string name="search_edittext_hint">人物を検索</string>
+    <string name="search_person_view">人物を検索</string>
+    <string name="all_photos_view">写真一覧</string>
+    <string name="nav_header_title">名刺図鑑</string>
 </resources>

@@ -13,7 +13,6 @@ class Person(
     private val name = name
     private val phoneticName = phoneticName
     private val sex = sex
-    private val birthday = birthday
     private val organizationId = organizationId
     private val note = note
 
@@ -21,7 +20,6 @@ class Person(
     fun getName():String{ return name }
     fun getPhoneticName():String{ return phoneticName }
     fun getSex():Int{ return sex }
-    fun getBirthday():String{ return birthday }
     fun getOrganizationId():Int{ return organizationId }
     fun getNote():String{ return note }
 }
