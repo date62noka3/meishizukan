@@ -9,8 +9,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activity.PersonalInfoViewActivity"
-            android:windowSoftInputMode="adjustPan"></activity>
+        <activity android:name=".activity.PhotosViewActivity"></activity>
+        <activity
+            android:name=".activity.PersonalInfoViewActivity"
+            android:windowSoftInputMode="adjustPan" />
 
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
