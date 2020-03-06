@@ -9,17 +9,13 @@ import android.provider.BaseColumns
 * データベースのコントラクトクラス
 * */
 object DbContracts{
-    object Organizations:BaseColumns{
-        const val TABLE_NAME = "organizations"
-        const val COLUMN_NAME = "name"
-    }
 
     object Persons:BaseColumns{
         const val TABLE_NAME = "persons"
         const val COLUMN_NAME = "name"
         const val COLUMN_PHONETIC_NAME = "phonetic_name"
         const val COLUMN_SEX = "sex"
-        const val COLUMN_ORGANIZATION_ID = "organization_id"
+        const val COLUMN_ORGANIZATION_NAME = "organization_name"
         const val COLUMN_NOTE  = "note"
     }
 
@@ -37,20 +33,13 @@ object DbContracts{
     }
 }
 
-private const val SQL_CREATE_ORGANIZATIONS = "CREATE TABLE ${DbContracts.Organizations.TABLE_NAME}" +
-        "(${BaseColumns._ID} INTEGER PRIMARY KEY," +
-        "${DbContracts.Organizations.COLUMN_NAME} TEXT NOT NULL)"
-private const val SQL_DELETE_ORGANIZATIONS = "DROP TABLE IF EXISTS ${DbContracts.Organizations.TABLE_NAME}"
-
 private const val SQL_CREATE_PERSONS = "CREATE TABLE ${DbContracts.Persons.TABLE_NAME}" +
         "(${BaseColumns._ID} INTEGER PRIMARY KEY," +
         "${DbContracts.Persons.COLUMN_NAME} TEXT NOT NULL," +
         "${DbContracts.Persons.COLUMN_PHONETIC_NAME} TEXT NOT NULL," +
         "${DbContracts.Persons.COLUMN_SEX} INT NOT NULL DEFAULT 0," +
-        "${DbContracts.Persons.COLUMN_ORGANIZATION_ID} INT NOT NULL DEFAULT 0," +
-        "${DbContracts.Persons.COLUMN_NOTE} TEXT NOT NULL DEFAULT ''," +
-        "FOREIGN KEY(${DbContracts.Persons.COLUMN_ORGANIZATION_ID}) " +
-        "REFERENCES ${DbContracts.Organizations.TABLE_NAME}(${BaseColumns._ID}))"
+        "${DbContracts.Persons.COLUMN_ORGANIZATION_NAME} TEXt NOT NULL DEFAULT ''," +
+        "${DbContracts.Persons.COLUMN_NOTE} TEXT NOT NULL DEFAULT '')"
 private const val SQL_DELETE_PERSONS = "DROP TABLE IF EXISTS ${DbContracts.Persons.TABLE_NAME}"
 
 private const val SQL_CREATE_PHOTOS = "CREATE TABLE ${DbContracts.Photos.TABLE_NAME}" +
@@ -77,7 +66,6 @@ class DbHelper(context: Context):SQLiteOpenHelper(context, DATABASE_NAME,null, D
     }
 
     override fun onCreate(db: SQLiteDatabase) {
-        db.execSQL(SQL_CREATE_ORGANIZATIONS)
         db.execSQL(SQL_CREATE_PERSONS)
         db.execSQL(SQL_CREATE_PHOTOS)
         db.execSQL(SQL_CREATE_PHOTOS_LINKS)
@@ -87,7 +75,6 @@ class DbHelper(context: Context):SQLiteOpenHelper(context, DATABASE_NAME,null, D
         db.execSQL(SQL_DELETE_PHOTOS_LINKS)
         db.execSQL(SQL_DELETE_PHOTOS)
         db.execSQL(SQL_DELETE_PERSONS)
-        db.execSQL(SQL_DELETE_ORGANIZATIONS)
 
         onCreate(db)
     }

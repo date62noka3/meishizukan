@@ -1,12 +1,14 @@
 package com.example.meishizukan.util
 
+import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Color
+import androidx.core.content.ContextCompat.getColor
 import android.graphics.drawable.GradientDrawable
-import android.view.LayoutInflater
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
+import com.example.meishizukan.R
 
 object Toaster {
     /*
@@ -20,13 +22,14 @@ object Toaster {
     * @param 表示時間
     * @return トースト
     * */
+    @SuppressLint("ShowToast")
     fun createToast(
-            context: Context,
-            text:String,
-            textSize:Float = 18F,
-            textColor: Int = Color.parseColor("#000000"),
-            backgroundColor:Int = Color.parseColor("#F0F0F0"),
-            displayTime:Int = Toast.LENGTH_SHORT
+        context: Context,
+        text:String,
+        textSize:Float = 18F,
+        textColor: Int = getColor(context, R.color.textColor),
+        backgroundColor:Int = getColor(context, R.color.backgroundColor),
+        displayTime:Int = Toast.LENGTH_SHORT
         ):Toast{
         val toast = Toast.makeText(context,text,displayTime)
 
