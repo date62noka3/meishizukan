@@ -1,12 +1,18 @@
 package com.example.meishizukan.activity
 
+import android.database.sqlite.SQLiteDatabase
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.getColor
 import com.example.meishizukan.R
 import com.example.meishizukan.dto.Person
+import com.example.meishizukan.util.DbContracts
+import com.example.meishizukan.util.DbHelper
 import com.example.meishizukan.util.Toaster
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
@@ -16,11 +22,17 @@ import kotlinx.android.synthetic.main.activity_personal_info_view.*
 class PersonalInfoViewActivity : AppCompatActivity() {
 
     private val newPersonId = 0
+
     private var isSaved = false
+
+    private lateinit var readableDB:SQLiteDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_personal_info_view)
+
+        val dbHelper = DbHelper(this)
+        readableDB = dbHelper.readableDatabase
 
         //AdMob初期化
         MobileAds.initialize(this) {}
@@ -52,11 +64,42 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             //TODO Personを引っ張ってきてデータを反映
         }
 
+        //組織名入力欄に入力補完用Adapterを設定
+        val organizationNames = mutableListOf<String>()
+        val organizationNameArrayAdapter = ArrayAdapter(this,android.R.layout.simple_list_item_1,organizationNames)
+        organizationNameEditText.setAdapter(organizationNameArrayAdapter)
+
+        //組織名入力欄の入力値が変わった時、入力補完用Adapterを更新する
+        organizationNameEditText.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {}
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                organizationNames.clear()
+
+                val organizationName = organizationNameEditText.text.toString()
+                val sql = "SELECT ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}" +
+                        " FROM ${DbContracts.Persons.TABLE_NAME}" +
+                        " WHERE ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME} LIKE '%$organizationName%'"
+                val cursor = readableDB.rawQuery(sql,null)
+
+                if(cursor.count == 0){
+                    cursor.close()
+                    return
+                }
+
+                while(cursor.moveToNext()){
+                    organizationNames.add(cursor.getString(0))
+                }
+                cursor.close()
+            }
+        })
+
         saveButton.setOnClickListener{
+            //未入力チェック
             if(isRequiredFieldsBlank()){
                 Toaster.createToast(
                     context = this,
-                    text = getString(R.string.message_on_input_error),
+                    text = getString(R.string.message_on_blank_error),
                     textColor = getColor(this,R.color.textColorOnInputError),
                     backgroundColor = getColor(this,R.color.backgroundColorOnInputError),
                     displayTime = Toast.LENGTH_LONG
@@ -64,7 +107,42 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            //フリガナ正規表現チェック
+            if(!isPhoneticName()){
+                Toaster.createToast(
+                    context = this,
+                    text = getString(R.string.message_on_illegal_error),
+                    textColor = getColor(this,R.color.textColorOnInputError),
+                    backgroundColor = getColor(this,R.color.backgroundColorOnInputError),
+                    displayTime = Toast.LENGTH_LONG
+                ).show()
+                return@setOnClickListener
+            }
+
+            //入力された人物情報を取得
+            val name = firstNameEditText.text.toString()
+                .plus(" ")
+                .plus(lastNameEditText.text.toString())
+            val phoneticName = firstPhoneticNameEditText.text.toString()
+                .plus(" ")
+                .plus(lastPhoneticNameEditText.text.toString())
+            val sex = convertSexStringToSexNum(sexSpinner.selectedItem.toString())
+            val organizationName = organizationNameEditText.text.toString()
+            val note = noteEditText.text.toString()
+
             if(isNewPerson(personId)){ //新規追加
+                //人物インスタンスを生成
+                val person = Person(
+                    id = newPersonId,
+                    name = name,
+                    phoneticName = phoneticName,
+                    sex = sex,
+                    organizationName = organizationName,
+                    note = note
+                )
+
+                insertPerson(person) //人物を追加
+
                 Toaster.createToast(
                     context = this,
                     text = getString(R.string.message_on_saved_new_person),
@@ -125,6 +203,28 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     private fun isRequiredFieldsBlank():Boolean{
         return (firstPhoneticNameEditText.text.isBlank() || lastPhoneticNameEditText.text.isBlank()
             || firstNameEditText.text.isBlank() || lastNameEditText.text.isBlank())
+    }
+
+    private val phoneticNameRegex = Regex("^([\\u30A0-\\u30FF])+\$")
+    /*
+    * フリガナ項目の入力値がフリガナか否かを取得
+    *
+    * @return フリガナ項目の入力値がフリガナか否か
+    * */
+    private fun isPhoneticName():Boolean{
+        return (firstPhoneticNameEditText.text.matches(phoneticNameRegex)
+                && lastPhoneticNameEditText.text.matches(phoneticNameRegex))
+    }
+
+    /*
+    * 性別文字列を性別値に変換
+    *
+    * @param 性別文字列
+    * @return 性別値
+    * */
+    private fun convertSexStringToSexNum(sex:String):Int{
+        val sexTypes = resources.getStringArray(R.array.sex_types)
+        return sexTypes.indexOf(sex)
     }
 
     private fun insertPerson(person: Person):Int{

@@ -13,6 +13,7 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.drawerlayout.widget.DrawerLayout
 import com.example.meishizukan.R
+import com.example.meishizukan.util.DbHelper
 import com.example.meishizukan.util.Modules
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest

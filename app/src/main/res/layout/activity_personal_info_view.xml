@@ -238,25 +238,8 @@
         app:layout_constraintStart_toStartOf="@+id/phoneticNameLabel"
         app:layout_constraintTop_toBottomOf="@+id/sexSpinner" />
 
-    <EditText
-        android:id="@+id/organizationNameEditText"
-        android:layout_width="381dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="3dp"
-        android:background="@drawable/personal_info_edittext_background"
-        android:fontFamily="@font/source_han_serif_regular"
-        android:includeFontPadding="false"
-        android:inputType="textPersonName"
-        android:paddingLeft="8dp"
-        android:selectAllOnFocus="true"
-        android:textColor="#303030"
-        android:textSize="17sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="@+id/organizationNameLabel"
-        app:layout_constraintTop_toBottomOf="@+id/organizationNameLabel" />
-
     <TextView
-        android:id="@+id/memoLabel"
+        android:id="@+id/noteLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="13dp"
@@ -270,7 +253,7 @@
         app:layout_constraintTop_toBottomOf="@+id/organizationNameEditText" />
 
     <EditText
-        android:id="@+id/memoEditText"
+        android:id="@+id/noteEditText"
         android:layout_width="381dp"
         android:layout_height="99dp"
         android:layout_marginTop="3dp"
@@ -285,8 +268,8 @@
         android:textColor="#303030"
         android:textSize="17sp"
         android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="@+id/memoLabel"
-        app:layout_constraintTop_toBottomOf="@+id/memoLabel" />
+        app:layout_constraintStart_toStartOf="@+id/noteLabel"
+        app:layout_constraintTop_toBottomOf="@+id/noteLabel" />
 
     <com.google.android.gms.ads.AdView
         android:id="@+id/adView"
@@ -359,5 +342,21 @@
         app:layout_constraintEnd_toEndOf="@+id/personalInfoViewButton"
         app:layout_constraintStart_toStartOf="@+id/personalInfoViewButton"
         app:layout_constraintTop_toTopOf="@+id/personalInfoViewButton" />
+
+    <AutoCompleteTextView
+        android:id="@+id/organizationNameEditText"
+        android:layout_width="381dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="3dp"
+        android:background="@drawable/personal_info_edittext_background"
+        android:fontFamily="@font/source_han_serif_regular"
+        android:includeFontPadding="false"
+        android:inputType="textPersonName"
+        android:selectAllOnFocus="true"
+        android:textColor="#303030"
+        android:textSize="17sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="@+id/organizationNameLabel"
+        app:layout_constraintTop_toBottomOf="@+id/organizationNameLabel" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
