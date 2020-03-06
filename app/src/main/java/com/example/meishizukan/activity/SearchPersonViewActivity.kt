@@ -143,6 +143,7 @@ class SearchPersonActivity : AppCompatActivity() {
 
         addPersonButton.setOnClickListener{
             val intent = Intent(this,PersonalInfoViewActivity::class.java)
+            intent.putExtra("PERSON_ID",1)
             startActivity(intent)
         }
     }

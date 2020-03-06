@@ -7,7 +7,6 @@ import android.graphics.drawable.GradientDrawable
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import com.example.meishizukan.R
 
 object Toaster {
@@ -27,8 +26,8 @@ object Toaster {
         context: Context,
         text:String,
         textSize:Float = 18F,
-        textColor: Int = getColor(context, R.color.textColor),
-        backgroundColor:Int = getColor(context, R.color.backgroundColor),
+        textColor: Int = getColor(context, R.color.toastTextColor),
+        backgroundColor:Int = getColor(context, R.color.toastBackgroundColor),
         displayTime:Int = Toast.LENGTH_SHORT
         ):Toast{
         val toast = Toast.makeText(context,text,displayTime)
