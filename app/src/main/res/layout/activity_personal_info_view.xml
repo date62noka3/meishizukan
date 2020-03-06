@@ -230,6 +230,7 @@
                 android:fontFamily="@font/source_han_serif_regular"
                 android:includeFontPadding="false"
                 android:inputType="textPersonName"
+                android:paddingLeft="8dp"
                 android:selectAllOnFocus="true"
                 android:textColor="#303030"
                 android:textSize="17sp"

@@ -1,6 +1,7 @@
 package com.example.meishizukan.activity
 
 import android.content.ContentValues
+import android.content.Intent
 import android.database.sqlite.SQLiteDatabase
 import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
@@ -58,6 +59,14 @@ class PersonalInfoViewActivity : AppCompatActivity() {
 
         backButton.setOnClickListener{
             onBackPressed()
+        }
+
+        //写真画面に遷移
+        photosViewButton.setOnClickListener{
+            val intent = Intent(this,PhotosViewActivity::class.java)
+            intent.putExtra("PERSON_ID",personId)
+            startActivity(intent)
+            finish()
         }
 
         personId = intent.getIntExtra("PERSON_ID",newPersonId)
