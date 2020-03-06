@@ -239,8 +239,9 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if(isSaved){
+        if((isNewPerson(personId) && isAllFiledsBlank()) || isSaved){
             super.onBackPressed()
+            return
         }
 
         val title = getString(R.string.confirm_dialog_title)
@@ -310,6 +311,17 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     private fun isRequiredFieldsBlank():Boolean{
         return (firstPhoneticNameEditText.text.isBlank() || lastPhoneticNameEditText.text.isBlank()
             || firstNameEditText.text.isBlank() || lastNameEditText.text.isBlank())
+    }
+
+    /*
+    * 全ての入力欄が未入力か否かを取得
+    *
+    * @return 全ての入力欄が未入力か否か
+    * */
+    private fun isAllFiledsBlank():Boolean{
+        return (firstPhoneticNameEditText.text.isBlank() && lastPhoneticNameEditText.text.isBlank()
+                && firstNameEditText.text.isBlank() && firstPhoneticNameEditText.text.isBlank()
+                && organizationNameEditText.text.isBlank() && noteEditText.text.isBlank())
     }
 
     private val phoneticNameRegex = Regex("^([\\u30A0-\\u30FF])+\$")
