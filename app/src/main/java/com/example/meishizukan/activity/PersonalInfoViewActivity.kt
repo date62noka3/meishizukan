@@ -10,10 +10,8 @@ import android.provider.BaseColumns
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
-import android.widget.EditText
-import android.widget.Toast
+import android.view.View
+import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.getColor
 import com.example.meishizukan.R
@@ -31,7 +29,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     private val newPersonId = 0
 
     private var personId = -1
-    private var isSaved = false
+    private var valueChangedElements = mutableListOf<Int>() //値が変更された人物情報要素
 
     private val dbHelper = DbHelper(this)
     private lateinit var readableDB:SQLiteDatabase
@@ -63,10 +61,26 @@ class PersonalInfoViewActivity : AppCompatActivity() {
 
         //写真画面に遷移
         photosViewButton.setOnClickListener{
-            val intent = Intent(this,PhotosViewActivity::class.java)
-            intent.putExtra("PERSON_ID",personId)
-            startActivity(intent)
-            finish()
+            if(valueChangedElements.count() == 0){
+                val intent = Intent(this,PhotosViewActivity::class.java)
+                intent.putExtra("PERSON_ID",personId)
+                startActivity(intent)
+                finish()
+                return@setOnClickListener
+            }
+
+            AlertDialog.Builder(this)
+                .setTitle(getString(R.string.confirm_dialog_title))
+                .setMessage(getString(R.string.confirm_message_on_transit))
+                .setPositiveButton(getString(R.string.positive_button_text)) { dialog, which ->
+                    val intent = Intent(this,PhotosViewActivity::class.java)
+                    intent.putExtra("PERSON_ID",personId)
+                    startActivity(intent)
+                    finish()
+                }
+                .setNegativeButton(getString(R.string.negative_button_text)) { dialog, which -> }
+                .setCancelable(false)
+                .show()
         }
 
         personId = intent.getIntExtra("PERSON_ID",newPersonId)
@@ -75,7 +89,36 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             disablePhotosViewButton()
             disableDeleteButton()
         }else{ //編集
-            //TODO Personを引っ張ってきてデータを反映
+            loadPersonalInfo(personId)
+        }
+
+        //テキストの変更を判定するウォッチャーを設定
+        firstPhoneticNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(firstPhoneticNameEditText))
+        lastPhoneticNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(lastPhoneticNameEditText))
+        firstNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(firstNameEditText))
+        lastNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(lastNameEditText))
+        organizationNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(organizationNameEditText))
+        noteEditText.addTextChangedListener(PersonalInfoEditTextWatcher(noteEditText))
+
+        //性別の変更を判定
+        sexSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                //重複を無くすため削除
+                valueChangedElements.remove(sexSpinner.id)
+
+                if(sexSpinner.tag.toString() != position.toString()){
+                    valueChangedElements.add(sexSpinner.id)
+                    sexSpinner.setBackgroundResource(R.drawable.value_changed_personal_info_edittext_background)
+                }else{
+                    sexSpinner.setBackgroundResource(R.drawable.personal_info_edittext_background)
+                }
+            }
         }
 
         //組織名入力欄に入力補完用Adapterを設定
@@ -114,12 +157,10 @@ class PersonalInfoViewActivity : AppCompatActivity() {
         fun onKeyboardVisibilityChanged() {
             val focusView = personalInfoConstraintLayout.findFocus()
             if(focusView is EditText){
-                val editText = focusView as EditText
-                editText.isCursorVisible = isKeyboardShown
+                focusView.isCursorVisible = isKeyboardShown
             }
             else if(focusView is AutoCompleteTextView){
-                val autoCompleteTextView = focusView as AutoCompleteTextView
-                autoCompleteTextView.isCursorVisible = isKeyboardShown
+                focusView.isCursorVisible = isKeyboardShown
             }
         }
 
@@ -178,21 +219,31 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             if(isNewPerson(personId)){ //新規追加
                 personId = insertPerson(person) //人物を追加
                 Log.d("ADDED_PERSON_ID",personId.toString())
-                isSaved = true
 
                 Toaster.createToast(
                     context = this,
                     text = getString(R.string.message_on_saved_new_person),
-                    textColor = getColor(this,R.color.textColorOnSavedNewPerson),
-                    backgroundColor = getColor(this,R.color.backgroundColorOnSavedNewPerson),
+                    textColor = getColor(this,R.color.textColorOnSaved),
+                    backgroundColor = getColor(this,R.color.backgroundColorOnSaved),
                     displayTime = Toast.LENGTH_SHORT
                 ).show()
 
                 enablePhotosViewButton()
                 enableDeleteButton()
             }else{ //編集
+                updatePerson(person) //人物情報を更新
 
+                Toaster.createToast(
+                    context = this,
+                    text = getString(R.string.message_on_updated_personal_info),
+                    textColor = getColor(this,R.color.textColorOnSaved),
+                    backgroundColor = getColor(this,R.color.backgroundColorOnSaved),
+                    displayTime = Toast.LENGTH_SHORT
+                ).show()
             }
+
+            valueChangedElements.clear()
+            resetEditTextBackground()
         }
 
         deleteButton.setOnClickListener{
@@ -239,22 +290,18 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if((isNewPerson(personId) && isAllFiledsBlank()) || isSaved){
+        if((isNewPerson(personId) && isAllFiledsBlank()) || valueChangedElements.count() == 0){
             super.onBackPressed()
             return
         }
 
-        val title = getString(R.string.confirm_dialog_title)
-        val message = getString(R.string.confirm_message_on_transit)
-        val positiveButtonText = getString(R.string.positive_button_text)
-        val negativeButtonText = getString(R.string.negative_button_text)
         AlertDialog.Builder(this)
-            .setTitle(title)
-            .setMessage(message)
-            .setPositiveButton(positiveButtonText) { dialog, which ->
+            .setTitle(getString(R.string.confirm_dialog_title))
+            .setMessage(getString(R.string.confirm_message_on_transit))
+            .setPositiveButton(getString(R.string.positive_button_text)) { dialog, which ->
                 super.onBackPressed()
             }
-            .setNegativeButton(negativeButtonText,{ dialog, which -> })
+            .setNegativeButton(getString(R.string.negative_button_text),{ dialog, which -> })
             .setCancelable(false)
             .show()
     }
@@ -375,6 +422,85 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     }
 
     /*
+    * 入力欄の背景をリセット
+    * */
+    private fun resetEditTextBackground(){
+        firstPhoneticNameEditText.setBackgroundResource(R.drawable.personal_info_edittext_background)
+        lastPhoneticNameEditText.setBackgroundResource(R.drawable.personal_info_edittext_background)
+        firstNameEditText.setBackgroundResource(R.drawable.personal_info_edittext_background)
+        lastNameEditText.setBackgroundResource(R.drawable.personal_info_edittext_background)
+        sexSpinner.setBackgroundResource(R.drawable.personal_info_edittext_background)
+        organizationNameEditText.setBackgroundResource(R.drawable.personal_info_edittext_background)
+        noteEditText.setBackgroundResource(R.drawable.personal_info_edittext_background)
+    }
+
+    /*
+    * 人物情報を読み込む
+    *
+    * @param 人物ID
+    * */
+    private fun loadPersonalInfo(personId: Int){
+        val sql = "SELECT ${DbContracts.Persons.COLUMN_NAME}," +
+                "${DbContracts.Persons.COLUMN_PHONETIC_NAME}," +
+                "${DbContracts.Persons.COLUMN_SEX}," +
+                "${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}," +
+                "${DbContracts.Persons.COLUMN_NOTE}" +
+                " FROM ${DbContracts.Persons.TABLE_NAME}" +
+                " WHERE ${BaseColumns._ID} = $personId"
+
+        //人物を取得
+        val cursor = readableDB.rawQuery(sql,null)
+
+        if(cursor.count == 0){
+            cursor.close()
+            return
+        }
+
+        cursor.moveToNext()
+
+        //人物情報を入力欄にセット
+        val name = cursor.getString(0).split(' ')
+        firstNameEditText.setText(name[0])
+        lastNameEditText.setText(name[1])
+        val phoneticName = cursor.getString(1).split(' ')
+        firstPhoneticNameEditText.setText(phoneticName[0])
+        lastPhoneticNameEditText.setText(phoneticName[1])
+        val sex = cursor.getInt(2)
+        sexSpinner.setSelection(sex)
+        val organizationName = cursor.getString(3)
+        organizationNameEditText.setText(organizationName)
+        val note = cursor.getString(4)
+        noteEditText.setText(note)
+
+        //タグに保持
+        firstNameEditText.tag = name[0]
+        lastNameEditText.tag = name[1]
+        firstPhoneticNameEditText.tag = phoneticName[0]
+        lastPhoneticNameEditText.tag = phoneticName[1]
+        sexSpinner.tag = sex
+        organizationNameEditText.tag = organizationName
+        noteEditText.tag = note
+
+        cursor.close()
+    }
+
+    /*
+    * 人物情報の値セットを取得
+    *
+    * @param 人物
+    * @return 人物情報の値セット
+    * */
+    private fun getContentValues(person:Person):ContentValues{
+        return ContentValues().apply {
+            put(DbContracts.Persons.COLUMN_NAME, person.getName())
+            put(DbContracts.Persons.COLUMN_PHONETIC_NAME, person.getPhoneticName())
+            put(DbContracts.Persons.COLUMN_SEX,person.getSex())
+            put(DbContracts.Persons.COLUMN_ORGANIZATION_NAME,person.getOrganizationName())
+            put(DbContracts.Persons.COLUMN_NOTE,person.getNote())
+        }
+    }
+
+    /*
     * 人物を追加
     *
     * @param 人物
@@ -382,21 +508,26 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * */
     private fun insertPerson(person: Person):Int{
         val writableDB = dbHelper.writableDatabase
-        val values = ContentValues().apply {
-            put(DbContracts.Persons.COLUMN_NAME, person.getName())
-            put(DbContracts.Persons.COLUMN_PHONETIC_NAME, person.getPhoneticName())
-            put(DbContracts.Persons.COLUMN_SEX,person.getSex())
-            put(DbContracts.Persons.COLUMN_ORGANIZATION_NAME,person.getOrganizationName())
-            put(DbContracts.Persons.COLUMN_NOTE,person.getNote())
-        }
+        val values = getContentValues(person)
         val id = writableDB.insert(DbContracts.Persons.TABLE_NAME,null,values).toInt()
         writableDB.close()
 
         return id
     }
 
+    /*
+    * 人物情報を更新
+    *
+    * @param 人物
+    * */
     private fun updatePerson(person:Person){
-
+        val writableDB = dbHelper.writableDatabase
+        val values = getContentValues(person)
+        writableDB.update(DbContracts.Persons.TABLE_NAME,
+            values,
+            "${BaseColumns._ID} = ${person.getId()}",
+            null)
+        writableDB.close()
     }
 
     /*
@@ -407,5 +538,40 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     private fun deletePerson(personId: Int){
         val writableDB = dbHelper.writableDatabase
         writableDB.delete(DbContracts.Persons.TABLE_NAME,"${BaseColumns._ID} = $personId",null)
+        writableDB.close()
+    }
+
+    /*
+    * 人物情報入力欄ウォッチャー
+    *
+    * @param 人物情報入力欄
+    * */
+    private inner class PersonalInfoEditTextWatcher(view: View):TextWatcher{
+        private val view = view
+        override fun afterTextChanged(s: Editable?) {}
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            //重複を無くすため削除
+            valueChangedElements.remove(view.id)
+
+            //元のテキストと異なる場合カウントアップ
+            //同値の場合カウントダウン
+            if(view is EditText){
+                if(view.tag.toString() != view.text.toString()){
+                    valueChangedElements.add(view.id)
+                    view.setBackgroundResource(R.drawable.value_changed_personal_info_edittext_background)
+                }else{
+                    view.setBackgroundResource(R.drawable.personal_info_edittext_background)
+                }
+            }
+            else if(view is AutoCompleteTextView){
+                if(view.tag.toString() != view.text.toString()){
+                    valueChangedElements.add(view.id)
+                    view.setBackgroundResource(R.drawable.value_changed_personal_info_edittext_background)
+                }else{
+                    view.setBackgroundResource(R.drawable.personal_info_edittext_background)
+                }
+            }
+        }
     }
 }

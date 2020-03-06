@@ -8,13 +8,13 @@
     <color name="enabledButtonTextColor">#303030</color>
     <color name="disabledButtonTextColor">#FFFFFF</color>
 
-    <!-- Toaster -->
+    <!-- Toasterデフォルト -->
     <color name="textColor">#303030</color>
     <color name="backgroundColor">#F0F0F0</color>
 
     <!-- 人物情報画面 -->
     <color name="textColorOnInputError">#FFFFFF</color>
     <color name="backgroundColorOnInputError">#EE5365</color>
-    <color name="textColorOnSavedNewPerson">#FFFFFF</color>
-    <color name="backgroundColorOnSavedNewPerson">#4D4DDB</color>
+    <color name="textColorOnSaved">#FFFFFF</color>
+    <color name="backgroundColorOnSaved">#4D4DDB</color>
 </resources>
