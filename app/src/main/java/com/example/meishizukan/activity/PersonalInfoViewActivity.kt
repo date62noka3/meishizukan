@@ -137,7 +137,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
 
                 enabledPhotosViewButton()
             }else{ //編集
-                
+
             }
         }
     }
