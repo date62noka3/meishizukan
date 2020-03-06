@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootConstraintLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#ECECEC"
@@ -304,14 +305,14 @@
                 app:srcCompat="@drawable/arrow_down" />
 
             <ImageView
-                android:id="@+id/deletePersonButton"
+                android:id="@+id/deleteButton"
                 android:layout_width="31dp"
                 android:layout_height="50dp"
                 android:layout_marginTop="40dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/noteEditText"
-                app:srcCompat="@drawable/trashcan" />
+                app:srcCompat="@drawable/delete_button_enabled" />
 
             <TextView
                 android:id="@+id/deleteLabel"
@@ -328,7 +329,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/deletePersonButton" />
+                app:layout_constraintTop_toBottomOf="@+id/deleteButton" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>

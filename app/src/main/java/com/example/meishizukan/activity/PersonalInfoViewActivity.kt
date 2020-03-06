@@ -2,12 +2,16 @@ package com.example.meishizukan.activity
 
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
+import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.BaseColumns
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
+import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.getColor
@@ -59,7 +63,8 @@ class PersonalInfoViewActivity : AppCompatActivity() {
         personId = intent.getIntExtra("PERSON_ID",newPersonId)
 
         if(isNewPerson(personId)){ //新規
-            disabledPhotosViewButton()
+            disablePhotosViewButton()
+            disableDeleteButton()
         }else{ //編集
             //TODO Personを引っ張ってきてデータを反映
         }
@@ -95,6 +100,44 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             }
         })
 
+        var isKeyboardShown = false
+        //入力欄のカーソル表示状態を変更する
+        fun onKeyboardVisibilityChanged() {
+            val focusView = personalInfoConstraintLayout.findFocus()
+            if(focusView is EditText){
+                val editText = focusView as EditText
+                editText.isCursorVisible = isKeyboardShown
+            }
+            else if(focusView is AutoCompleteTextView){
+                val autoCompleteTextView = focusView as AutoCompleteTextView
+                autoCompleteTextView.isCursorVisible = isKeyboardShown
+            }
+        }
+
+        //キーボードの表示状態を判定
+        rootConstraintLayout.viewTreeObserver.addOnGlobalLayoutListener{
+            val r = Rect()
+            rootConstraintLayout.getWindowVisibleDisplayFrame(r)
+            val screenHeight = rootConstraintLayout.rootView.height
+
+            val keypadHeight = screenHeight - r.bottom;
+
+            if (keypadHeight > screenHeight * 0.15) {
+                if (!isKeyboardShown) {
+                    isKeyboardShown = true
+                    onKeyboardVisibilityChanged()
+                    Log.d("KEYBOARD_STATUS","OPENED")
+                }
+            }
+            else {
+                if (isKeyboardShown) {
+                    isKeyboardShown = false
+                    onKeyboardVisibilityChanged()
+                    Log.d("KEYBOARD_STATUS","CLOSED")
+                }
+            }
+        }
+
         saveButton.setOnClickListener{
             //未入力チェック
             if(isRequiredFieldsBlank()){
@@ -126,6 +169,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             if(isNewPerson(personId)){ //新規追加
                 personId = insertPerson(person) //人物を追加
                 Log.d("ADDED_PERSON_ID",personId.toString())
+                isSaved = true
 
                 Toaster.createToast(
                     context = this,
@@ -135,10 +179,43 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                     displayTime = Toast.LENGTH_SHORT
                 ).show()
 
-                enabledPhotosViewButton()
+                enablePhotosViewButton()
+                enableDeleteButton()
             }else{ //編集
 
             }
+        }
+
+        deleteButton.setOnClickListener{
+            val positiveButtonText = getString(R.string.positive_button_text)
+            val negativeButtonText = getString(R.string.negative_button_text)
+            AlertDialog.Builder(this)
+                .setTitle(getString(R.string.confirm_dialog_title))
+                .setMessage(getString(R.string.confirm_message_on_delete))
+                .setPositiveButton(positiveButtonText) { dialog, which ->
+                    deletePerson(personId)
+                    Log.d("DELETED_PERSON_ID",personId.toString())
+
+                    //トップ画面に遷移
+                    AlertDialog.Builder(this)
+                        .setTitle(getString(R.string.information_dialog_title))
+                        .setMessage(getString(R.string.information_message_on_deleted))
+                        .setPositiveButton(positiveButtonText) { dialog, which ->
+                            super.onBackPressed()
+                            finish()
+                        }
+                        .setCancelable(false)
+                        .show()
+                }
+                .setNegativeButton(negativeButtonText) { dialog, which ->
+                    Toaster.createToast(
+                        context = this,
+                        text = getString(R.string.message_on_cancel),
+                        displayTime = Toast.LENGTH_SHORT
+                    ).show()
+                }
+                .setCancelable(false)
+                .show()
         }
     }
 
@@ -158,23 +235,24 @@ class PersonalInfoViewActivity : AppCompatActivity() {
         }
 
         val title = getString(R.string.confirm_dialog_title)
-        val message = getString(R.string.confirm_dialog_message)
+        val message = getString(R.string.confirm_message_on_transit)
         val positiveButtonText = getString(R.string.positive_button_text)
         val negativeButtonText = getString(R.string.negative_button_text)
-        val alertDialog = AlertDialog.Builder(this)
+        AlertDialog.Builder(this)
             .setTitle(title)
             .setMessage(message)
             .setPositiveButton(positiveButtonText) { dialog, which ->
                 super.onBackPressed()
             }
             .setNegativeButton(negativeButtonText,{ dialog, which -> })
-        alertDialog.show()
+            .setCancelable(false)
+            .show()
     }
 
     /*
     * 写真画面ボタンを有効化
     * */
-    private fun enabledPhotosViewButton(){
+    private fun enablePhotosViewButton(){
         val color = getColor(this,R.color.enabledButtonTextColor)
         photosLabel.setTextColor(color)
         photosViewButton.isClickable = true
@@ -183,10 +261,26 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     /*
     * 写真画面ボタンを無効化
     * */
-    private fun disabledPhotosViewButton(){
+    private fun disablePhotosViewButton(){
         val color = getColor(this,R.color.disabledButtonTextColor)
         photosLabel.setTextColor(color)
         photosViewButton.isClickable = false
+    }
+
+    /*
+    * 削除ボタンを有効化
+    * */
+    private fun enableDeleteButton(){
+        deleteButton.setImageResource(R.drawable.delete_button_enabled)
+        deleteButton.isClickable = true
+    }
+
+    /*
+    * 削除ボタンを無効化
+    * */
+    private fun disableDeleteButton(){
+        deleteButton.setImageResource(R.drawable.delete_button_disabled)
+        deleteButton.isClickable = false
     }
 
     /*
@@ -274,10 +368,23 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             put(DbContracts.Persons.COLUMN_ORGANIZATION_NAME,person.getOrganizationName())
             put(DbContracts.Persons.COLUMN_NOTE,person.getNote())
         }
-        return writableDB.insert(DbContracts.Persons.TABLE_NAME,null,values).toInt()
+        val id = writableDB.insert(DbContracts.Persons.TABLE_NAME,null,values).toInt()
+        writableDB.close()
+
+        return id
     }
 
     private fun updatePerson(person:Person){
 
+    }
+
+    /*
+    * 人物を削除
+    *
+    * @param 削除する人物のID
+    * */
+    private fun deletePerson(personId: Int){
+        val writableDB = dbHelper.writableDatabase
+        writableDB.delete(DbContracts.Persons.TABLE_NAME,"${BaseColumns._ID} = $personId",null)
     }
 }
