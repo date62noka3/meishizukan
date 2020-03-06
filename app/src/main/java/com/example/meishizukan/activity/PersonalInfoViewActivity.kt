@@ -1,10 +1,12 @@
 package com.example.meishizukan.activity
 
+import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -23,15 +25,16 @@ class PersonalInfoViewActivity : AppCompatActivity() {
 
     private val newPersonId = 0
 
+    private var personId = -1
     private var isSaved = false
 
+    private val dbHelper = DbHelper(this)
     private lateinit var readableDB:SQLiteDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_personal_info_view)
 
-        val dbHelper = DbHelper(this)
         readableDB = dbHelper.readableDatabase
 
         //AdMob初期化
@@ -53,13 +56,10 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             onBackPressed()
         }
 
-        val personId = intent.getIntExtra("PERSON_ID",newPersonId)
+        personId = intent.getIntExtra("PERSON_ID",newPersonId)
 
         if(isNewPerson(personId)){ //新規
-            //フッターの写真画面ボタンを無効化
-            val color = getColor(this,R.color.disabledButtonTextColor)
-            photosLabel.setTextColor(color)
-            photosViewButton.isClickable = false
+            disabledPhotosViewButton()
         }else{ //編集
             //TODO Personを引っ張ってきてデータを反映
         }
@@ -74,7 +74,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             override fun afterTextChanged(s: Editable?) {}
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                organizationNames.clear()
+                organizationNameArrayAdapter.clear()
 
                 val organizationName = organizationNameEditText.text.toString()
                 val sql = "SELECT ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}" +
@@ -88,7 +88,8 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                 }
 
                 while(cursor.moveToNext()){
-                    organizationNames.add(cursor.getString(0))
+                    organizationNameArrayAdapter.add(cursor.getString(0))
+                    Log.d("HIT_ORGANIZATION_NAME",cursor.getString(0))
                 }
                 cursor.close()
             }
@@ -119,39 +120,24 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            //入力された人物情報を取得
-            val name = firstNameEditText.text.toString()
-                .plus(" ")
-                .plus(lastNameEditText.text.toString())
-            val phoneticName = firstPhoneticNameEditText.text.toString()
-                .plus(" ")
-                .plus(lastPhoneticNameEditText.text.toString())
-            val sex = convertSexStringToSexNum(sexSpinner.selectedItem.toString())
-            val organizationName = organizationNameEditText.text.toString()
-            val note = noteEditText.text.toString()
+            //人物インスタンス生成
+            val person = createPersonFromInputData()
 
             if(isNewPerson(personId)){ //新規追加
-                //人物インスタンスを生成
-                val person = Person(
-                    id = newPersonId,
-                    name = name,
-                    phoneticName = phoneticName,
-                    sex = sex,
-                    organizationName = organizationName,
-                    note = note
-                )
-
-                insertPerson(person) //人物を追加
+                personId = insertPerson(person) //人物を追加
+                Log.d("ADDED_PERSON_ID",personId.toString())
 
                 Toaster.createToast(
                     context = this,
                     text = getString(R.string.message_on_saved_new_person),
                     textColor = getColor(this,R.color.textColorOnSavedNewPerson),
                     backgroundColor = getColor(this,R.color.backgroundColorOnSavedNewPerson),
-                    displayTime = Toast.LENGTH_LONG
+                    displayTime = Toast.LENGTH_SHORT
                 ).show()
-            }else{ //編集
 
+                enabledPhotosViewButton()
+            }else{ //編集
+                
             }
         }
     }
@@ -183,6 +169,24 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             }
             .setNegativeButton(negativeButtonText,{ dialog, which -> })
         alertDialog.show()
+    }
+
+    /*
+    * 写真画面ボタンを有効化
+    * */
+    private fun enabledPhotosViewButton(){
+        val color = getColor(this,R.color.enabledButtonTextColor)
+        photosLabel.setTextColor(color)
+        photosViewButton.isClickable = true
+    }
+
+    /*
+    * 写真画面ボタンを無効化
+    * */
+    private fun disabledPhotosViewButton(){
+        val color = getColor(this,R.color.disabledButtonTextColor)
+        photosLabel.setTextColor(color)
+        photosViewButton.isClickable = false
     }
 
     /*
@@ -227,9 +231,50 @@ class PersonalInfoViewActivity : AppCompatActivity() {
         return sexTypes.indexOf(sex)
     }
 
+    /*
+    * 入力値から人物インスタンスを生成
+    *
+    * @return 人物インスタンス
+    * */
+    private fun createPersonFromInputData():Person{
+        //入力された人物情報を取得
+        val name = firstNameEditText.text.toString()
+            .plus(" ")
+            .plus(lastNameEditText.text.toString())
+        val phoneticName = firstPhoneticNameEditText.text.toString()
+            .plus(" ")
+            .plus(lastPhoneticNameEditText.text.toString())
+        val sex = convertSexStringToSexNum(sexSpinner.selectedItem.toString())
+        val organizationName = organizationNameEditText.text.toString()
+        val note = noteEditText.text.toString()
+
+        //人物インスタンスを生成
+        return Person(
+            id = personId,
+            name = name,
+            phoneticName = phoneticName,
+            sex = sex,
+            organizationName = organizationName,
+            note = note
+        )
+    }
+
+    /*
+    * 人物を追加
+    *
+    * @param 人物
+    * @return 追加した人物のID
+    * */
     private fun insertPerson(person: Person):Int{
-        val personId = 1
-        return personId
+        val writableDB = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put(DbContracts.Persons.COLUMN_NAME, person.getName())
+            put(DbContracts.Persons.COLUMN_PHONETIC_NAME, person.getPhoneticName())
+            put(DbContracts.Persons.COLUMN_SEX,person.getSex())
+            put(DbContracts.Persons.COLUMN_ORGANIZATION_NAME,person.getOrganizationName())
+            put(DbContracts.Persons.COLUMN_NOTE,person.getNote())
+        }
+        return writableDB.insert(DbContracts.Persons.TABLE_NAME,null,values).toInt()
     }
 
     private fun updatePerson(person:Person){

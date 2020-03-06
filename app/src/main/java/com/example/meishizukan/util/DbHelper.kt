@@ -33,8 +33,6 @@ object DbContracts{
     }
 }
 
-private const val SQL_DELETE_ORGANIZATIONS = "DROP TABLE IF EXISTS organizations"
-
 private const val SQL_CREATE_PERSONS = "CREATE TABLE ${DbContracts.Persons.TABLE_NAME}" +
         "(${BaseColumns._ID} INTEGER PRIMARY KEY," +
         "${DbContracts.Persons.COLUMN_NAME} TEXT NOT NULL," +
@@ -68,11 +66,6 @@ class DbHelper(context: Context):SQLiteOpenHelper(context, DATABASE_NAME,null, D
     }
 
     override fun onCreate(db: SQLiteDatabase) {
-        db.execSQL(SQL_DELETE_PHOTOS_LINKS)
-        db.execSQL(SQL_DELETE_PHOTOS)
-        db.execSQL(SQL_DELETE_PERSONS)
-        db.execSQL(SQL_DELETE_ORGANIZATIONS)
-
         db.execSQL(SQL_CREATE_PERSONS)
         db.execSQL(SQL_CREATE_PHOTOS)
         db.execSQL(SQL_CREATE_PHOTOS_LINKS)

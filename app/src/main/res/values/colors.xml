@@ -5,7 +5,8 @@
     <color name="colorAccent">#D81B60</color>
 
     <!-- 人物情報＆写真画面フッターメニュー -->
-    <color name="disabledButtonTextColor">#A9A9A9</color>
+    <color name="enabledButtonTextColor">#303030</color>
+    <color name="disabledButtonTextColor">#FFFFFF</color>
 
     <!-- Toaster -->
     <color name="textColor">#303030</color>
