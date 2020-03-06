@@ -4,13 +4,20 @@
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
 
+    <!-- 全画面共通のデフォルト文字色 -->
+    <color name="textColor">#303030</color>
+    <color name="hintTextColor">#A9A9A9</color>
+
+    <!-- 人物情報＆写真画面ヘッダーメニュー -->
+    <color name="backButtonTextColor">#005CFF</color>
+
     <!-- 人物情報＆写真画面フッターメニュー -->
     <color name="enabledButtonTextColor">#303030</color>
     <color name="disabledButtonTextColor">#FFFFFF</color>
 
     <!-- Toasterデフォルト -->
-    <color name="textColor">#303030</color>
-    <color name="backgroundColor">#F0F0F0</color>
+    <color name="toastTextColor">#303030</color>
+    <color name="toastBackgroundColor">#F0F0F0</color>
 
     <!-- 人物情報画面 -->
     <color name="textColorOnInputError">#FFFFFF</color>

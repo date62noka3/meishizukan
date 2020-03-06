@@ -240,7 +240,7 @@
         android:layout_height="57dp"
         android:layout_marginEnd="15dp"
         android:layout_marginBottom="20dp"
-        android:src="@drawable/add_person_button"
+        android:src="@drawable/add_button"
         app:layout_constraintBottom_toTopOf="@+id/adView"
         app:layout_constraintEnd_toEndOf="parent" />
 
