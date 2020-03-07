@@ -91,33 +91,33 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             disableDeleteButton()
         }else{ //編集
             loadPersonalInfo(personId)
-        }
 
-        //テキストの変更を判定するウォッチャーを設定
-        firstPhoneticNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(firstPhoneticNameEditText))
-        lastPhoneticNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(lastPhoneticNameEditText))
-        firstNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(firstNameEditText))
-        lastNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(lastNameEditText))
-        organizationNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(organizationNameEditText))
-        noteEditText.addTextChangedListener(PersonalInfoEditTextWatcher(noteEditText))
+            //テキストの変更を判定するウォッチャーを設定
+            firstPhoneticNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(firstPhoneticNameEditText))
+            lastPhoneticNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(lastPhoneticNameEditText))
+            firstNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(firstNameEditText))
+            lastNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(lastNameEditText))
+            organizationNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(organizationNameEditText))
+            noteEditText.addTextChangedListener(PersonalInfoEditTextWatcher(noteEditText))
 
-        //性別の変更を判定
-        sexSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                //重複を無くすため削除
-                valueChangedElements.remove(sexSpinner.id)
+            //性別の変更を判定
+            sexSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    //重複を無くすため削除
+                    valueChangedElements.remove(sexSpinner.id)
 
-                if(sexSpinner.tag.toString() != position.toString()){
-                    valueChangedElements.add(sexSpinner.id)
-                    sexSpinner.setBackgroundResource(R.drawable.value_changed_personal_info_edittext_background)
-                }else{
-                    sexSpinner.setBackgroundResource(R.drawable.personal_info_edittext_background)
+                    if(sexSpinner.tag.toString() != position.toString()){
+                        valueChangedElements.add(sexSpinner.id)
+                        sexSpinner.setBackgroundResource(R.drawable.value_changed_personal_info_edittext_background)
+                    }else{
+                        sexSpinner.setBackgroundResource(R.drawable.personal_info_edittext_background)
+                    }
                 }
             }
         }

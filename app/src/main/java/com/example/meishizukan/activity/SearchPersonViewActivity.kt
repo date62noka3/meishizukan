@@ -28,7 +28,7 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import kotlinx.android.synthetic.main.activity_search_person_view.*
 
-object Sex{
+private object Sex{
     const val NOT_KNOWN = 0
     const val MALE = 1
     const val FEMALE = 2
@@ -172,7 +172,6 @@ class SearchPersonActivity : AppCompatActivity() {
 
         addPersonButton.setOnClickListener{
             val intent = Intent(this,PersonalInfoViewActivity::class.java)
-            intent.putExtra("PERSON_ID",1)
             startActivity(intent)
         }
     }
@@ -207,7 +206,8 @@ class SearchPersonActivity : AppCompatActivity() {
             "${DbContracts.Persons.COLUMN_SEX}," +
             "${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}," +
             DbContracts.Persons.COLUMN_NOTE +
-            " FROM ${DbContracts.Persons.TABLE_NAME}"
+            " FROM ${DbContracts.Persons.TABLE_NAME}" +
+            " ORDER BY ${DbContracts.Persons.COLUMN_PHONETIC_NAME}"
     /*
     * 人物リストを取得
     *
@@ -266,7 +266,8 @@ class SearchPersonActivity : AppCompatActivity() {
                         DbContracts.Persons.COLUMN_NAME
                     } +
                     " LIKE '%$keyword%'" +
-                    " OR ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME} LIKE '%$keyword%'"
+                    " OR ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME} LIKE '%$keyword%'" +
+                    " ORDER BY ${DbContracts.Persons.COLUMN_PHONETIC_NAME}"
 
             persons.addAll(readPersons(sql))
         }
