@@ -8,6 +8,15 @@
     <color name="textColor">#303030</color>
     <color name="hintTextColor">#A9A9A9</color>
 
+    <!-- 性別 -->
+    <color name="sexTextColor">#FFFFFF</color>
+    <color name="notKnownBackgroundColor">#B5B5B5</color>
+    <color name="maleBackgroundColor">#46A4F2</color>
+    <color name="femaleBackgroundColor">#EF50DC</color>
+
+    <!-- 人物リストビュー -->
+    <color name="personListViewSeparatorBackground">#C8E4FC</color>
+
     <!-- 人物情報＆写真画面ヘッダーメニュー -->
     <color name="backButtonTextColor">#005CFF</color>
 

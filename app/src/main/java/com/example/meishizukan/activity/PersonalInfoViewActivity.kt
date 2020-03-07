@@ -18,6 +18,7 @@ import com.example.meishizukan.R
 import com.example.meishizukan.dto.Person
 import com.example.meishizukan.util.DbContracts
 import com.example.meishizukan.util.DbHelper
+import com.example.meishizukan.util.Modules
 import com.example.meishizukan.util.Toaster
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
@@ -290,7 +291,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if((isNewPerson(personId) && isAllFiledsBlank()) || valueChangedElements.count() == 0){
+        if((isNewPerson(personId) && isAllFieldsBlank()) || valueChangedElements.count() == 0){
             super.onBackPressed()
             return
         }
@@ -365,21 +366,20 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     *
     * @return 全ての入力欄が未入力か否か
     * */
-    private fun isAllFiledsBlank():Boolean{
+    private fun isAllFieldsBlank():Boolean{
         return (firstPhoneticNameEditText.text.isBlank() && lastPhoneticNameEditText.text.isBlank()
                 && firstNameEditText.text.isBlank() && firstPhoneticNameEditText.text.isBlank()
                 && organizationNameEditText.text.isBlank() && noteEditText.text.isBlank())
     }
 
-    private val phoneticNameRegex = Regex("^([\\u30A0-\\u30FF])+\$")
     /*
     * フリガナ項目の入力値がフリガナか否かを取得
     *
     * @return フリガナ項目の入力値がフリガナか否か
     * */
     private fun isPhoneticName():Boolean{
-        return (firstPhoneticNameEditText.text.matches(phoneticNameRegex)
-                && lastPhoneticNameEditText.text.matches(phoneticNameRegex))
+        return (firstPhoneticNameEditText.text.matches(Modules.phoneticNameRegex)
+                && lastPhoneticNameEditText.text.matches(Modules.phoneticNameRegex))
     }
 
     /*
@@ -444,7 +444,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                 "${DbContracts.Persons.COLUMN_PHONETIC_NAME}," +
                 "${DbContracts.Persons.COLUMN_SEX}," +
                 "${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}," +
-                "${DbContracts.Persons.COLUMN_NOTE}" +
+                DbContracts.Persons.COLUMN_NOTE +
                 " FROM ${DbContracts.Persons.TABLE_NAME}" +
                 " WHERE ${BaseColumns._ID} = $personId"
 
@@ -546,8 +546,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     *
     * @param 人物情報入力欄
     * */
-    private inner class PersonalInfoEditTextWatcher(view: View):TextWatcher{
-        private val view = view
+    private inner class PersonalInfoEditTextWatcher(private val view: View):TextWatcher{
         override fun afterTextChanged(s: Editable?) {}
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
