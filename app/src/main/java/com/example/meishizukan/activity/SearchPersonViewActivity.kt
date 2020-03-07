@@ -1,22 +1,20 @@
 package com.example.meishizukan.activity
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.database.sqlite.SQLiteDatabase
 import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.provider.BaseColumns
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.Gravity
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.view.children
 import androidx.drawerlayout.widget.DrawerLayout
 import com.example.meishizukan.R
 import com.example.meishizukan.dto.Person
@@ -34,6 +32,8 @@ private object Sex{
     const val FEMALE = 2
 }
 
+private const val NO_MEANS_REQUEST_CODE = 0
+
 private const val KEYCODE_ENTER = 66
 
 class SearchPersonActivity : AppCompatActivity() {
@@ -42,7 +42,6 @@ class SearchPersonActivity : AppCompatActivity() {
     private lateinit var readableDB:SQLiteDatabase
 
     private lateinit var sexTypes:Array<String>
-    private lateinit var firstRowOfJapaneseSyllabary:Array<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,7 +50,6 @@ class SearchPersonActivity : AppCompatActivity() {
         readableDB = dbHelper.readableDatabase
 
         sexTypes = resources.getStringArray(R.array.sex_types)
-        firstRowOfJapaneseSyllabary =  resources.getStringArray(R.array.first_row_of_japanese_syllabary)
 
         //AdMob初期化
         MobileAds.initialize(this) {}
@@ -172,8 +170,22 @@ class SearchPersonActivity : AppCompatActivity() {
 
         addPersonButton.setOnClickListener{
             val intent = Intent(this,PersonalInfoViewActivity::class.java)
-            startActivity(intent)
+            startActivityForResult(intent,NO_MEANS_REQUEST_CODE)
         }
+
+        val addPersonsOnScrollDelay = 500L //スクロール発火で人物を追加する際の周期
+        val addPersonsOnScrollHandler = Handler()
+        //一番下までスクロールされたらリストビューを更新する
+        personListScrollView.viewTreeObserver.addOnScrollChangedListener {
+            addPersonsOnScrollHandler.postDelayed({
+                if (personListScrollView.getChildAt(0).bottom
+                    <= (personListScrollView.height + personListScrollView.scrollY)) {
+                        addPersonsToListView()
+                }
+            },addPersonsOnScrollDelay) //負荷を軽減するため次のスクロールでの処理まで時間を置く
+        }
+
+        loadingDialogView.bringToFront()
     }
 
     override fun onResume(){
@@ -187,6 +199,39 @@ class SearchPersonActivity : AppCompatActivity() {
     override fun onDestroy(){
         adView.destroy()
         super.onDestroy()
+    }
+
+    private val researchDelay = 1000L //再検索の遅延時間
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        //1度検索していて、遷移先から戻った際には再検索をかける
+        //データが変わっている、または削除されている可能性があるため
+        if(isSearchedBeforeTransition && requestCode == NO_MEANS_REQUEST_CODE) {
+            showLoadingDialog()
+
+            searchPersonHandler.postDelayed({
+                searchPerson()
+
+                hideLoadingDialog()
+            },researchDelay)
+
+            isSearchedBeforeTransition = false
+        }
+    }
+
+    /*
+    * ローディング画面を表示
+    * */
+    private fun showLoadingDialog(){
+        loadingDialogView.visibility = View.VISIBLE
+    }
+
+    /*
+    * ローディング画面を非表示
+    * */
+    private fun hideLoadingDialog(){
+        loadingDialogView.visibility = View.INVISIBLE
     }
 
     /*
@@ -239,80 +284,167 @@ class SearchPersonActivity : AppCompatActivity() {
         return persons
     }
 
+    private var isSearchedBeforeTransition = false //別アクティビティに遷移する前に検索したか否か
+    private val searchPersonHandler = Handler()
+    private val waitingToDisplay = mutableListOf<Person>() //表示待ちの人物リスト
     /*
     * 人物を検索
     * */
     private fun searchPerson(){
+        waitingToDisplay.clear() //待機人物リストをクリア
+
         val keyword = searchEditText.text.toString()
 
         val persons = mutableListOf<Person>()
 
-        //人物を検索
-        if(keyword.isBlank()){ //空白の場合全てを表示
-            persons.addAll(readPersons(getAllPersonsSQL))
-        }else{ //曖昧検索
-            //キーワードがカタカナであれば名前においてフリガナで検索する
-            val sql = "SELECT ${BaseColumns._ID}," +
-                    "${DbContracts.Persons.COLUMN_NAME}," +
-                    "${DbContracts.Persons.COLUMN_PHONETIC_NAME}," +
-                    "${DbContracts.Persons.COLUMN_SEX}," +
-                    "${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}," +
-                    DbContracts.Persons.COLUMN_NOTE +
-                    " FROM ${DbContracts.Persons.TABLE_NAME}" +
-                    " WHERE " +
-                    if(keyword.matches(Modules.phoneticNameRegex)){
-                        DbContracts.Persons.COLUMN_PHONETIC_NAME
-                    }else{
-                        DbContracts.Persons.COLUMN_NAME
-                    } +
-                    " LIKE '%$keyword%'" +
-                    " OR ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME} LIKE '%$keyword%'" +
-                    " ORDER BY ${DbContracts.Persons.COLUMN_PHONETIC_NAME}"
+        //検索を非同期実行
+        searchPersonHandler.post {
+            //人物を検索
+            if(keyword.isBlank()){ //空白の場合全てを表示
+                persons.addAll(readPersons(getAllPersonsSQL))
+            }else{ //曖昧検索
+                //キーワードがカタカナであれば名前においてフリガナで検索する
+                val sql = "SELECT ${BaseColumns._ID}," +
+                        "${DbContracts.Persons.COLUMN_NAME}," +
+                        "${DbContracts.Persons.COLUMN_PHONETIC_NAME}," +
+                        "${DbContracts.Persons.COLUMN_SEX}," +
+                        "${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}," +
+                        DbContracts.Persons.COLUMN_NOTE +
+                        " FROM ${DbContracts.Persons.TABLE_NAME}" +
+                        " WHERE " +
+                        if(keyword.matches(Modules.phoneticNameRegex)){
+                            DbContracts.Persons.COLUMN_PHONETIC_NAME
+                        }else{
+                            DbContracts.Persons.COLUMN_NAME
+                        } +
+                        " LIKE '%$keyword%'" +
+                        " OR ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME} LIKE '%$keyword%'" +
+                        " ORDER BY ${DbContracts.Persons.COLUMN_PHONETIC_NAME}"
 
-            persons.addAll(readPersons(sql))
+                persons.addAll(readPersons(sql))
+            }
+
+            waitingToDisplay.addAll(persons)
+
+            personListLinearLayout.removeAllViews() //人物アイテムを全てクリア
+
+            addPersonsToListView()
+
+            scrollToTop()
         }
 
-        //リストビューを更新
-        updateListView(persons)
+        isSearchedBeforeTransition = true
     }
 
     /*
-    * リストビューを更新
+    * 一番上までスクロール
     * */
-    private fun updateListView(persons:MutableList<Person>){
-        //アイテムをクリア
-        personListLinearLayout.removeAllViews()
+    private fun scrollToTop(){
+        personListScrollView.scrollY = 0
+    }
 
-        var prevPhoneticNameFirstChar = ' ' //ふりがな先頭1文字
+    /*
+    * リストビューに人物を追加
+    * */
+    private fun addPersonToListView(person: Person){
+        this.layoutInflater.inflate(R.layout.person_listview_item,personListLinearLayout)
+        val item = personListLinearLayout.getChildAt(personListLinearLayout.childCount - 1) as ConstraintLayout
 
-        persons.forEach{
-            val phoneticNameFirstChar = it.getPhoneticName()[0]
-            if(prevPhoneticNameFirstChar != phoneticNameFirstChar){
-                //50音セパレーターを追加
-                this.layoutInflater.inflate(R.layout.person_listview_separator,personListLinearLayout)
-                val separator = personListLinearLayout.getChildAt(personListLinearLayout.childCount - 1) as ConstraintLayout
-                val separatorTextView = separator.findViewById<TextView>(R.id.separatorTextView)
-                separatorTextView?.text = phoneticNameFirstChar.toString()
+        val phoneticNameTextView = item.findViewById<TextView>(R.id.phoneticNameTextView)
+        phoneticNameTextView?.text = person.getPhoneticName()
+        val nameTextView = item.findViewById<TextView>(R.id.nameTextView)
+        nameTextView?.text = person.getName()
+        val organizationNameTextView = item.findViewById<TextView>(R.id.organizationNameTextView)
+        organizationNameTextView?.text = person.getOrganizationName()
+        val sexTextView = item.findViewById<TextView>(R.id.sexTextView)
+        sexTextView?.text = sexTypes[person.getSex()]
+        when(person.getSex()){
+            Sex.NOT_KNOWN -> { sexTextView?.setBackgroundResource(R.color.notKnownBackgroundColor) }
+            Sex.MALE -> { sexTextView?.setBackgroundResource(R.color.maleBackgroundColor) }
+            Sex.FEMALE -> { sexTextView?.setBackgroundResource(R.color.femaleBackgroundColor) }
+        }
+    }
 
-                prevPhoneticNameFirstChar = phoneticNameFirstChar
+    /*
+    * リストビューにセパレーターを追加
+    *
+    * @param セパレーターテキスト
+    * */
+    private fun addSeparatorToListView(separatorText:String){
+        this.layoutInflater.inflate(
+            R.layout.person_listview_separator,
+            personListLinearLayout
+        )
+        val separator =
+            personListLinearLayout.getChildAt(personListLinearLayout.childCount - 1) as ConstraintLayout
+
+        val separatorTextView =
+            separator.findViewById<TextView>(R.id.separatorTextView)
+        separatorTextView?.text = separatorText
+    }
+
+    private val additionalLimit = 15 //1回の更新で追加表示するアイテム数の上限
+    private var currentJapaneseSyllabaryRegex = "" //現在のア段正規表現
+    private var prevPhoneticNameFirstChar = "" //前回のふりがな先頭1文字
+    /*
+    * リストビューに人物リストをまとめて追加
+    *
+    * @return 追加件数
+    * */
+    private fun addPersonsToListView():Int{
+        if(waitingToDisplay.count() == 0){
+            return 0
+        }
+
+        //追加する前に余白として追加していたViewを削除
+        if(0 < personListLinearLayout.childCount) {
+            personListLinearLayout.removeViewAt(personListLinearLayout.childCount - 1)
+        }
+
+        val japaneseSyllabaryRegex = resources.getStringArray(R.array.japanese_syllabary_regex) //50音のア段正規表現　どの列に属するかを判定するため
+        val japaneseSyllabaryText = resources.getStringArray(R.array.japanese_syllabary_text) //セパレーターに表示するア段文字列
+        var lastIndexOfDisplayedItem = 0 //最後に表示したアイテムのインデックス
+
+        waitingToDisplay.forEachIndexed {
+            i,person ->
+
+            if(additionalLimit <= i)
+                return@forEachIndexed
+
+            val phoneticNameFirstChar = person.getPhoneticName()[0].toString()
+
+            if(prevPhoneticNameFirstChar != phoneticNameFirstChar) {
+                japaneseSyllabaryRegex.forEachIndexed { j, regex ->
+
+                    if (phoneticNameFirstChar.matches(Regex(regex))
+                        && currentJapaneseSyllabaryRegex != regex) {
+                        addSeparatorToListView(japaneseSyllabaryText[j]) //50音セパレーターを追加
+
+                        currentJapaneseSyllabaryRegex = regex
+                    }
+                }
             }
 
             //人物アイテムを追加
-            this.layoutInflater.inflate(R.layout.person_listview_item,personListLinearLayout)
-            val item = personListLinearLayout.getChildAt(personListLinearLayout.childCount - 1) as ConstraintLayout
-            val phoneticNameTextView = item.findViewById<TextView>(R.id.phoneticNameTextView)
-            phoneticNameTextView?.text = it.getPhoneticName()
-            val nameTextView = item.findViewById<TextView>(R.id.nameTextView)
-            nameTextView?.text = it.getName()
-            val organizationNameTextView = item.findViewById<TextView>(R.id.organizationNameTextView)
-            organizationNameTextView?.text = it.getOrganizationName()
-            val sexTextView = item.findViewById<TextView>(R.id.sexTextView)
-            sexTextView?.text = sexTypes[it.getSex()]
-            when(it.getSex()){
-                Sex.NOT_KNOWN -> { sexTextView?.setBackgroundResource(R.color.notKnownBackgroundColor) }
-                Sex.MALE -> { sexTextView?.setBackgroundResource(R.color.maleBackgroundColor) }
-                Sex.FEMALE -> { sexTextView?.setBackgroundResource(R.color.femaleBackgroundColor) }
-            }
+            addPersonToListView(person)
+
+            prevPhoneticNameFirstChar = phoneticNameFirstChar
+            lastIndexOfDisplayedItem = i
         }
+
+        //表示した人物を待機リストから削除
+        for(i in lastIndexOfDisplayedItem downTo 0){
+            waitingToDisplay.removeAt(i)
+        }
+
+        if(waitingToDisplay.isEmpty()){
+            //一番下に余白を作るため空のViewを追加する
+            this.layoutInflater.inflate(R.layout.person_listview_empty_item, personListLinearLayout)
+        }else{
+            //次に一番下までスクロールした際に見せるローディング画面(view)
+            this.layoutInflater.inflate(R.layout.person_listview_loading_item, personListLinearLayout)
+        }
+
+        return lastIndexOfDisplayedItem + 1
     }
 }

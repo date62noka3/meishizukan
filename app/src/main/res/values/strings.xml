@@ -4,6 +4,9 @@
     <!-- 人物検索画面 -->
     <string name="search_edittext_hint">人物を検索</string>
 
+    <!-- ローディング画面 -->
+    <string name="loading_dialog_text">Loading...</string>
+
     <!-- NavigationDrawerメニュー -->
     <string name="search_person_view">人物を検索</string>
     <string name="all_photos_view">写真一覧</string>
@@ -46,8 +49,20 @@
     <string name="message_on_updated_personal_info">人物情報を保存しました</string>
     <string name="message_on_cancel">キャンセルしました</string>
 
-    <!-- 50音のあ段 -->
-    <string-array name="first_row_of_japanese_syllabary">
+    <!-- 50音のア段 -->
+    <string-array name="japanese_syllabary_regex">
+        <item>[\u30A1-\u30AA]</item> <!-- ァ-オ -->
+        <item>[\u30AB-\u30B4]</item> <!-- カ-ゴ -->
+        <item>[\u30B5-\u30BE]</item> <!-- サ-ゾ -->
+        <item>[\u30BF-\u30C9]</item> <!-- タ-ド -->
+        <item>[\u30CA-\u30CE]</item> <!-- ナ-ノ -->
+        <item>[\u30CF-\u30DD]</item> <!-- ハ-ポ -->
+        <item>[\u30DE-\u30E2]</item> <!-- マ-モ -->
+        <item>[\u30E3-\u30E8]</item> <!-- ャ-ヨ -->
+        <item>[\u30E9-\u30ED]</item> <!-- ラ-ロ -->
+        <item>[\u30EE-\u30F3]</item> <!-- ヮ-ン -->
+    </string-array>
+    <string-array name="japanese_syllabary_text">
         <item>ア</item>
         <item>カ</item>
         <item>サ</item>

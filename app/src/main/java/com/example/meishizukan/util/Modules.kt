@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object Modules {
-    val phoneticNameRegex = Regex("^([\\u30A1-\\u30FA])+\$")
+    val phoneticNameRegex = Regex("^([\\u30A1-\\u30F3])+\$") //ァ-ン
 
     fun getCurrentDate():String{
         val simpleDateFormat = SimpleDateFormat("M / d (EE)",Locale.JAPAN)

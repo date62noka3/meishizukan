@@ -8,6 +8,10 @@
     <color name="textColor">#303030</color>
     <color name="hintTextColor">#A9A9A9</color>
 
+    <!-- ローディング画面 -->
+    <color name="loadingDialogTextColor">#4D4DDB</color>
+    <color name="loadingDialogBackgroundColor">#FFFFFF</color>
+
     <!-- 性別 -->
     <color name="sexTextColor">#FFFFFF</color>
     <color name="notKnownBackgroundColor">#B5B5B5</color>

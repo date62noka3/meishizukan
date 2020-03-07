@@ -297,4 +297,11 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <include
+        android:id="@+id/loadingDialogView"
+        layout="@layout/loading_dialog_fill_parent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="invisible"/>
+
 </androidx.drawerlayout.widget.DrawerLayout>
