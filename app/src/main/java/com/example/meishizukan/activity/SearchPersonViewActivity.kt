@@ -12,7 +12,9 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
+import android.view.ViewTreeObserver
 import android.view.inputmethod.InputMethodManager
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.drawerlayout.widget.DrawerLayout
@@ -25,6 +27,7 @@ import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import kotlinx.android.synthetic.main.activity_search_person_view.*
+import java.util.concurrent.Delayed
 
 private object Sex{
     const val NOT_KNOWN = 0
@@ -89,7 +92,7 @@ class SearchPersonActivity : AppCompatActivity() {
             if(keyCode == KEYCODE_ENTER){
                 inputMethodManager.hideSoftInputFromWindow(v.windowToken,0) //キーボードを非表示
 
-                searchPerson()
+                search()
 
                 true
             }else {
@@ -138,7 +141,7 @@ class SearchPersonActivity : AppCompatActivity() {
         searchButton.setOnClickListener{
             inputMethodManager.hideSoftInputFromWindow(it.windowToken,0) //キーボードを非表示
 
-            searchPerson()
+            search()
         }
 
         //入力値をクリア
@@ -173,19 +176,37 @@ class SearchPersonActivity : AppCompatActivity() {
             startActivityForResult(intent,NO_MEANS_REQUEST_CODE)
         }
 
-        val addPersonsOnScrollDelay = 500L //スクロール発火で人物を追加する際の周期
-        val addPersonsOnScrollHandler = Handler()
-        //一番下までスクロールされたらリストビューを更新する
-        personListScrollView.viewTreeObserver.addOnScrollChangedListener {
-            addPersonsOnScrollHandler.postDelayed({
-                if (personListScrollView.getChildAt(0).bottom
-                    <= (personListScrollView.height + personListScrollView.scrollY)) {
-                        addPersonsToListView()
-                }
-            },addPersonsOnScrollDelay) //負荷を軽減するため次のスクロールでの処理まで時間を置く
+        headerMenu.setOnClickListener{
+            scrollToTop()
         }
 
-        loadingDialogView.bringToFront()
+        personListScrollView.viewTreeObserver.addOnScrollChangedListener{
+            val loadingItem = personListLinearLayout.findViewById<LinearLayout>(R.id.rootLinearLayout)
+            loadingItem?:return@addOnScrollChangedListener
+
+            //ローディング画面(view)までスクロールされたら一番下までスクロールし、ロック
+            if(personListLinearLayout.bottom - loadingItem.height
+                <= personListScrollView.height + personListScrollView.scrollY){
+                personListScrollView.smoothScrollBy(0,loadingItem.height)
+                lockScrollView()
+            }
+
+            personListScrollView.postDelayed({
+                //前回の追加検索が0件だった場合追加検索を行わない
+                if(prevAddedPersonsCount == 0){
+                    return@postDelayed
+                }
+
+                //一番下までスクロールされたら追加検索し、ロックを解除
+                if(personListLinearLayout.bottom
+                    <= personListScrollView.height + personListScrollView.scrollY){
+
+                    additionalSearch()
+
+                    unlockScrollView()
+                }
+            },500)
+        }
     }
 
     override fun onResume(){
@@ -210,14 +231,35 @@ class SearchPersonActivity : AppCompatActivity() {
         if(isSearchedBeforeTransition && requestCode == NO_MEANS_REQUEST_CODE) {
             showLoadingDialog()
 
-            searchPersonHandler.postDelayed({
-                searchPerson()
+            searchHandler.postDelayed({
+                search()
 
                 hideLoadingDialog()
             },researchDelay)
 
             isSearchedBeforeTransition = false
         }
+    }
+
+    /*
+    * 一番上までスクロール
+    * */
+    private fun scrollToTop(){
+        personListScrollView.smoothScrollTo(0,0)
+    }
+
+    /*
+    * スクロールビューをロック(スクロールさせない)
+    * */
+    private fun lockScrollView(){
+        personListScrollView.setOnTouchListener{ _, _ -> true }
+    }
+
+    /*
+    * スクロールビューのロックを解除(スクロール受け付ける)
+    * */
+    private fun unlockScrollView(){
+        personListScrollView.setOnTouchListener(null)
     }
 
     /*
@@ -245,14 +287,6 @@ class SearchPersonActivity : AppCompatActivity() {
         }
     }
 
-    private val getAllPersonsSQL = "SELECT ${BaseColumns._ID}," +
-            "${DbContracts.Persons.COLUMN_NAME}," +
-            "${DbContracts.Persons.COLUMN_PHONETIC_NAME}," +
-            "${DbContracts.Persons.COLUMN_SEX}," +
-            "${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}," +
-            DbContracts.Persons.COLUMN_NOTE +
-            " FROM ${DbContracts.Persons.TABLE_NAME}" +
-            " ORDER BY ${DbContracts.Persons.COLUMN_PHONETIC_NAME}"
     /*
     * 人物リストを取得
     *
@@ -285,62 +319,82 @@ class SearchPersonActivity : AppCompatActivity() {
     }
 
     private var isSearchedBeforeTransition = false //別アクティビティに遷移する前に検索したか否か
-    private val searchPersonHandler = Handler()
-    private val waitingToDisplay = mutableListOf<Person>() //表示待ちの人物リスト
+    private val searchHandler = Handler()
+    private val limit = 5 //1回の更新で追加表示するアイテム数の上限
+    private var offset = 0 //検索位置
+    private var prevSQL = ""
     /*
     * 人物を検索
     * */
-    private fun searchPerson(){
-        waitingToDisplay.clear() //待機人物リストをクリア
+    private fun search(){
+        unlockScrollView()
+
+        currentJapaneseSyllabaryRegex = "" //現在のア段正規表現をクリア
+        prevPhoneticNameFirstChar = "" //前回のふりがな1文字目をクリア
+        prevAddedPersonsCount = -1 //前回の追加検索件数をクリア
+        offset = 0 //オフセットをクリア
 
         val keyword = searchEditText.text.toString()
 
-        val persons = mutableListOf<Person>()
-
-        //検索を非同期実行
-        searchPersonHandler.post {
-            //人物を検索
-            if(keyword.isBlank()){ //空白の場合全てを表示
-                persons.addAll(readPersons(getAllPersonsSQL))
-            }else{ //曖昧検索
-                //キーワードがカタカナであれば名前においてフリガナで検索する
-                val sql = "SELECT ${BaseColumns._ID}," +
+        val sql = if(keyword.isBlank()){ //全てを取得
+                "SELECT ${BaseColumns._ID}," +
                         "${DbContracts.Persons.COLUMN_NAME}," +
                         "${DbContracts.Persons.COLUMN_PHONETIC_NAME}," +
                         "${DbContracts.Persons.COLUMN_SEX}," +
                         "${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}," +
                         DbContracts.Persons.COLUMN_NOTE +
                         " FROM ${DbContracts.Persons.TABLE_NAME}" +
-                        " WHERE " +
-                        if(keyword.matches(Modules.phoneticNameRegex)){
-                            DbContracts.Persons.COLUMN_PHONETIC_NAME
-                        }else{
-                            DbContracts.Persons.COLUMN_NAME
-                        } +
-                        " LIKE '%$keyword%'" +
-                        " OR ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME} LIKE '%$keyword%'" +
-                        " ORDER BY ${DbContracts.Persons.COLUMN_PHONETIC_NAME}"
+                        " ORDER BY ${DbContracts.Persons.COLUMN_PHONETIC_NAME}" +
+                        " LIMIT $limit OFFSET $offset"
+            }else { //曖昧検索
+            //キーワードがカタカナであれば名前においてフリガナで検索する
+            "SELECT ${BaseColumns._ID}," +
+                    "${DbContracts.Persons.COLUMN_NAME}," +
+                    "${DbContracts.Persons.COLUMN_PHONETIC_NAME}," +
+                    "${DbContracts.Persons.COLUMN_SEX}," +
+                    "${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}," +
+                    DbContracts.Persons.COLUMN_NOTE +
+                    " FROM ${DbContracts.Persons.TABLE_NAME}" +
+                    " WHERE " +
+                    if (keyword.matches(Modules.phoneticNameRegex)) {
+                        DbContracts.Persons.COLUMN_PHONETIC_NAME
+                    } else {
+                        DbContracts.Persons.COLUMN_NAME
+                    } +
+                    " LIKE '%$keyword%'" +
+                    " OR ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME} LIKE '%$keyword%'" +
+                    " ORDER BY ${DbContracts.Persons.COLUMN_PHONETIC_NAME}" +
+                    " LIMIT $limit OFFSET $offset"
+        }
 
-                persons.addAll(readPersons(sql))
-            }
-
-            waitingToDisplay.addAll(persons)
-
+        searchHandler.post {
             personListLinearLayout.removeAllViews() //人物アイテムを全てクリア
 
-            addPersonsToListView()
+            addPersonsToListView(readPersons(sql))
 
             scrollToTop()
         }
 
+        prevSQL = sql
+
         isSearchedBeforeTransition = true
     }
 
+    private var prevAddedPersonsCount:Int = -1 //前回の追加検索件数
     /*
-    * 一番上までスクロール
+    * 人物を追加検索する
     * */
-    private fun scrollToTop(){
-        personListScrollView.scrollY = 0
+    private fun additionalSearch(){
+        offset += limit //検索位置を移動
+
+        //前回のオフセットを削除し、次のオフセットを付与
+        val removeStartIndex = prevSQL.indexOf("OFFSET")
+        prevSQL = prevSQL.removeRange(removeStartIndex,prevSQL.length)
+        prevSQL = prevSQL.plus("OFFSET $offset")
+
+        Log.d("ADDITIONAL_SEARCH_SQL",prevSQL)
+
+        prevAddedPersonsCount = addPersonsToListView(readPersons(prevSQL))
     }
 
     /*
@@ -383,32 +437,39 @@ class SearchPersonActivity : AppCompatActivity() {
         separatorTextView?.text = separatorText
     }
 
-    private val additionalLimit = 15 //1回の更新で追加表示するアイテム数の上限
     private var currentJapaneseSyllabaryRegex = "" //現在のア段正規表現
     private var prevPhoneticNameFirstChar = "" //前回のふりがな先頭1文字
     /*
     * リストビューに人物リストをまとめて追加
     *
+    * @param 人物リスト
     * @return 追加件数
     * */
-    private fun addPersonsToListView():Int{
-        if(waitingToDisplay.count() == 0){
+    private fun addPersonsToListView(persons:MutableList<Person>):Int{
+        if(persons.count() == 0){
+            //ローディング画面(view)を削除
+            if(0 < personListLinearLayout.childCount) {
+                personListLinearLayout.removeViewAt(personListLinearLayout.childCount - 1)
+            }
+
+            //一番下に余白を作るため空のViewを追加する
+            this.layoutInflater.inflate(R.layout.person_listview_empty_item, personListLinearLayout)
+
             return 0
         }
 
-        //追加する前に余白として追加していたViewを削除
+        //追加する前に前回追加したローディング画面(view)を一旦削除
         if(0 < personListLinearLayout.childCount) {
             personListLinearLayout.removeViewAt(personListLinearLayout.childCount - 1)
         }
 
         val japaneseSyllabaryRegex = resources.getStringArray(R.array.japanese_syllabary_regex) //50音のア段正規表現　どの列に属するかを判定するため
         val japaneseSyllabaryText = resources.getStringArray(R.array.japanese_syllabary_text) //セパレーターに表示するア段文字列
-        var lastIndexOfDisplayedItem = 0 //最後に表示したアイテムのインデックス
 
-        waitingToDisplay.forEachIndexed {
+        persons.forEachIndexed {
             i,person ->
 
-            if(additionalLimit <= i)
+            if(limit <= i)
                 return@forEachIndexed
 
             val phoneticNameFirstChar = person.getPhoneticName()[0].toString()
@@ -429,22 +490,10 @@ class SearchPersonActivity : AppCompatActivity() {
             addPersonToListView(person)
 
             prevPhoneticNameFirstChar = phoneticNameFirstChar
-            lastIndexOfDisplayedItem = i
         }
 
-        //表示した人物を待機リストから削除
-        for(i in lastIndexOfDisplayedItem downTo 0){
-            waitingToDisplay.removeAt(i)
-        }
+        this.layoutInflater.inflate(R.layout.person_listview_loading_item, personListLinearLayout)
 
-        if(waitingToDisplay.isEmpty()){
-            //一番下に余白を作るため空のViewを追加する
-            this.layoutInflater.inflate(R.layout.person_listview_empty_item, personListLinearLayout)
-        }else{
-            //次に一番下までスクロールした際に見せるローディング画面(view)
-            this.layoutInflater.inflate(R.layout.person_listview_loading_item, personListLinearLayout)
-        }
-
-        return lastIndexOfDisplayedItem + 1
+        return persons.count()
     }
 }

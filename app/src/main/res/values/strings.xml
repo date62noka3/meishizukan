@@ -5,7 +5,7 @@
     <string name="search_edittext_hint">人物を検索</string>
 
     <!-- ローディング画面 -->
-    <string name="loading_dialog_text">Loading...</string>
+    <string name="loading_dialog_text">Loading</string>
 
     <!-- NavigationDrawerメニュー -->
     <string name="search_person_view">人物を検索</string>
