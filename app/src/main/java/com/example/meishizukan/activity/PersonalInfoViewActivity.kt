@@ -154,14 +154,10 @@ class PersonalInfoViewActivity : AppCompatActivity() {
         })
 
         var isKeyboardShown = false
-        //入力欄のカーソル表示状態を変更する
         fun onKeyboardVisibilityChanged() {
-            val focusView = personalInfoConstraintLayout.findFocus()
-            if(focusView is EditText){
-                focusView.isCursorVisible = isKeyboardShown
-            }
-            else if(focusView is AutoCompleteTextView){
-                focusView.isCursorVisible = isKeyboardShown
+            if(!isKeyboardShown) {
+                val focusView = personalInfoConstraintLayout.findFocus()
+                focusView.clearFocus() //selectAllOnFocusを走らせるため
             }
         }
 

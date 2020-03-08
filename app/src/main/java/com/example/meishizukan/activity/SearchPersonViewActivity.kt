@@ -11,6 +11,7 @@ import android.provider.BaseColumns
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
 import android.view.ViewTreeObserver
 import android.view.inputmethod.InputMethodManager
@@ -89,7 +90,7 @@ class SearchPersonActivity : AppCompatActivity() {
             Log.d("PRESSED_KEY",keyCode.toString())
 
             //エンターキー押下で検索を実行
-            if(keyCode == KEYCODE_ENTER){
+            if(keyCode == KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP){
                 inputMethodManager.hideSoftInputFromWindow(v.windowToken,0) //キーボードを非表示
 
                 search()
@@ -104,13 +105,16 @@ class SearchPersonActivity : AppCompatActivity() {
         searchEditText.setOnFocusChangeListener{
                 v, hasFocus ->
             v ?: return@setOnFocusChangeListener
+            Log.d("FOCUS",hasFocus.toString())
             initSearchEditTextBackground(hasFocus = hasFocus)
         }
 
         var isKeyboardShown = false
         //入力欄のレイアウトを更新
         fun onKeyboardVisibilityChanged() {
-            searchEditText.isCursorVisible = isKeyboardShown
+            if(!isKeyboardShown) {
+                searchEditText.clearFocus() //selectAllOnFocusを走らせるため
+            }
             initSearchEditTextBackground(isKeyboardShown = isKeyboardShown)
         }
 
@@ -177,7 +181,8 @@ class SearchPersonActivity : AppCompatActivity() {
         }
 
         headerMenu.setOnClickListener{
-            scrollToTop()
+            //直前に強いスクロールがあった場合、スムーズでないとひっくり返せない
+            scrollToTop(true)
         }
 
         personListScrollView.viewTreeObserver.addOnScrollChangedListener{
@@ -243,9 +248,15 @@ class SearchPersonActivity : AppCompatActivity() {
 
     /*
     * 一番上までスクロール
+    *
+    * @param スムーズなスクロールをするか
     * */
-    private fun scrollToTop(){
-        personListScrollView.smoothScrollTo(0,0)
+    private fun scrollToTop(smooth:Boolean){
+        if(smooth) {
+            personListScrollView.smoothScrollTo(0, 0)
+        }else{
+            personListScrollView.scrollTo(0, 0)
+        }
     }
 
     /*
@@ -320,19 +331,22 @@ class SearchPersonActivity : AppCompatActivity() {
 
     private var isSearchedBeforeTransition = false //別アクティビティに遷移する前に検索したか否か
     private val searchHandler = Handler()
-    private val limit = 5 //1回の更新で追加表示するアイテム数の上限
+    private val limit = 15 //1回の更新で追加表示するアイテム数の上限
     private var offset = 0 //検索位置
     private var prevSQL = ""
     /*
     * 人物を検索
     * */
     private fun search(){
-        unlockScrollView()
-
         currentJapaneseSyllabaryRegex = "" //現在のア段正規表現をクリア
         prevPhoneticNameFirstChar = "" //前回のふりがな1文字目をクリア
         prevAddedPersonsCount = -1 //前回の追加検索件数をクリア
         offset = 0 //オフセットをクリア
+
+        personListLinearLayout.removeAllViews() //人物アイテムを全てクリア
+
+        //スクロールに時間がかかり、人物追加が走ってしまうためfalse
+        scrollToTop(false)
 
         val keyword = searchEditText.text.toString()
 
@@ -367,13 +381,7 @@ class SearchPersonActivity : AppCompatActivity() {
                     " LIMIT $limit OFFSET $offset"
         }
 
-        searchHandler.post {
-            personListLinearLayout.removeAllViews() //人物アイテムを全てクリア
-
-            addPersonsToListView(readPersons(sql))
-
-            scrollToTop()
-        }
+        addPersonsToListView(readPersons(sql))
 
         prevSQL = sql
 
@@ -447,13 +455,13 @@ class SearchPersonActivity : AppCompatActivity() {
     * */
     private fun addPersonsToListView(persons:MutableList<Person>):Int{
         if(persons.count() == 0){
-            //ローディング画面(view)を削除
-            if(0 < personListLinearLayout.childCount) {
-                personListLinearLayout.removeViewAt(personListLinearLayout.childCount - 1)
+            if(0 < prevAddedPersonsCount) {
+                //一番下に余白を作る
+                this.layoutInflater.inflate(
+                    R.layout.person_listview_empty_item,
+                    personListLinearLayout
+                )
             }
-
-            //一番下に余白を作るため空のViewを追加する
-            this.layoutInflater.inflate(R.layout.person_listview_empty_item, personListLinearLayout)
 
             return 0
         }
@@ -492,7 +500,16 @@ class SearchPersonActivity : AppCompatActivity() {
             prevPhoneticNameFirstChar = phoneticNameFirstChar
         }
 
-        this.layoutInflater.inflate(R.layout.person_listview_loading_item, personListLinearLayout)
+        //まだ、追加検索する必要がある場合はローディング画面を下に配置
+        if(persons.count() == limit) {
+            this.layoutInflater.inflate(
+                R.layout.person_listview_loading_item,
+                personListLinearLayout
+            )
+        }else{
+            //一番下に余白を作る
+            this.layoutInflater.inflate(R.layout.person_listview_empty_item, personListLinearLayout)
+        }
 
         return persons.count()
     }
