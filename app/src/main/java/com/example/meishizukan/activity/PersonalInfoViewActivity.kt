@@ -71,13 +71,13 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             AlertDialog.Builder(this)
                 .setTitle(getString(R.string.confirm_dialog_title))
                 .setMessage(getString(R.string.confirm_message_on_transit))
-                .setPositiveButton(getString(R.string.positive_button_text)) { dialog, which ->
+                .setPositiveButton(getString(R.string.positive_button_text)) { _, _ ->
                     val intent = Intent(this,PhotosViewActivity::class.java)
                     intent.putExtra("PERSON_ID",personId)
                     startActivity(intent)
                     finish()
                 }
-                .setNegativeButton(getString(R.string.negative_button_text)) { dialog, which -> }
+                .setNegativeButton(getString(R.string.negative_button_text)) { _, _ -> }
                 .setCancelable(false)
                 .show()
         }
@@ -266,13 +266,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                         .setCancelable(false)
                         .show()
                 }
-                .setNegativeButton(negativeButtonText) { _, _ ->
-                    Toaster.createToast(
-                        context = this,
-                        text = getString(R.string.message_on_cancel),
-                        displayTime = Toast.LENGTH_SHORT
-                    ).show()
-                }
+                .setNegativeButton(negativeButtonText) { _, _ -> }
                 .setCancelable(false)
                 .show()
         }
@@ -442,6 +436,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
         return sexTypes.indexOf(sex)
     }
 
+    private val nameSplit = ','
     /*
     * 入力値から人物インスタンスを生成
     *
@@ -450,10 +445,10 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     private fun createPersonFromInputValues():Person{
         //入力された人物情報を取得
         val name = firstNameEditText.text.toString()
-            .plus(" ")
+            .plus(nameSplit)
             .plus(lastNameEditText.text.toString())
         var phoneticName = firstPhoneticNameEditText.text.toString()
-            .plus(" ")
+            .plus(nameSplit)
             .plus(lastPhoneticNameEditText.text.toString())
         phoneticName = Modules.hiraganaToKatakana(phoneticName)
         val sex = convertSexStringToSexNum(sexSpinner.selectedItem.toString())
@@ -491,12 +486,18 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * */
     private fun setPersonalInfoToInputFields(person:Person){
         //名前、フリガナは半角スペースで区切って姓、名を取得する
-        val phoneticName = person.getPhoneticName().split(' ')
+        val phoneticName = person.getPhoneticName().split(nameSplit)
         firstPhoneticNameEditText.setText(phoneticName[0])
         lastPhoneticNameEditText.setText(phoneticName[1])
-        val name = person.getName().split(' ')
-        firstNameEditText.setText(name[0])
-        lastNameEditText.setText(name[1])
+
+        //名前 ( 漢字 )はない可能性がある
+        val name = person.getName().split(nameSplit)
+        if(0 < name.count()) {
+            firstNameEditText.setText(name[0])
+        }
+        if(1 < name.count()) {
+            lastNameEditText.setText(name[1])
+        }
 
         sexSpinner.setSelection(person.getSex())
         organizationNameEditText.setText(person.getOrganizationName())

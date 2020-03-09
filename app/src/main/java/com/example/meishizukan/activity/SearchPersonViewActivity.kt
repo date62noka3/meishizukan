@@ -13,10 +13,12 @@ import android.text.TextWatcher
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
-import android.view.ViewTreeObserver
 import android.view.inputmethod.InputMethodManager
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.drawerlayout.widget.DrawerLayout
 import com.example.meishizukan.R
@@ -28,7 +30,8 @@ import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import kotlinx.android.synthetic.main.activity_search_person_view.*
-import java.util.concurrent.Delayed
+import androidx.core.content.ContextCompat.getColor
+import com.example.meishizukan.util.Toaster
 
 private object Sex{
     const val NOT_KNOWN = 0
@@ -40,12 +43,14 @@ private const val NO_MEANS_REQUEST_CODE = 0
 
 private const val KEYCODE_ENTER = 66
 
-class SearchPersonActivity : AppCompatActivity() {
+class SearchPersonViewActivity : AppCompatActivity() {
 
     private val dbHelper = DbHelper(this)
     private lateinit var readableDB:SQLiteDatabase
 
     private lateinit var sexTypes:Array<String>
+
+    private val removePersons = mutableListOf<Int>() //削除対象人物リスト<人物ID>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -105,7 +110,6 @@ class SearchPersonActivity : AppCompatActivity() {
         searchEditText.setOnFocusChangeListener{
                 v, hasFocus ->
             v ?: return@setOnFocusChangeListener
-            Log.d("FOCUS",hasFocus.toString())
             initSearchEditTextBackground(hasFocus = hasFocus)
         }
 
@@ -212,6 +216,31 @@ class SearchPersonActivity : AppCompatActivity() {
                 }
             },500)
         }
+
+        deleteButton.setOnClickListener{
+            AlertDialog.Builder(this)
+                .setTitle(getString(R.string.confirm_dialog_title))
+                .setMessage(getString(R.string.confirm_message_on_delete))
+                .setPositiveButton(getString(R.string.positive_button_text)) { _, _ ->
+                    deletePersons()
+
+                    optionBar.visibility = View.INVISIBLE
+                    addPersonButton.visibility = View.VISIBLE
+
+                    search()
+
+                    Toaster.createToast(
+                        context = this,
+                        text = getString(R.string.message_on_deleted_persons),
+                        textColor = getColor(this,R.color.textColorOnSaved),
+                        backgroundColor = getColor(this,R.color.backgroundColorOnSaved),
+                        displayTime = Toast.LENGTH_SHORT
+                    ).show()
+                }
+                .setNegativeButton(getString(R.string.negative_button_text)) { _, _ -> }
+                .setCancelable(false)
+                .show()
+        }
     }
 
     override fun onResume(){
@@ -244,6 +273,20 @@ class SearchPersonActivity : AppCompatActivity() {
 
             isSearchedBeforeTransition = false
         }
+    }
+
+    /*
+    * 人物を削除
+    * */
+    private fun deletePersons(){
+        val writableDB = dbHelper.writableDatabase
+
+        for(personId in removePersons){
+            writableDB.delete(DbContracts.Persons.TABLE_NAME,"${BaseColumns._ID} = $personId",null)
+            Log.d("DELETED_PERSON_ID",personId.toString())
+        }
+
+        removePersons.clear()
     }
 
     /*
@@ -408,6 +451,12 @@ class SearchPersonActivity : AppCompatActivity() {
 
         val addPersonsCount = addPersonsToListView(readPersons(sql))
 
+        if(keyword.isBlank()){ //全検索且つDBのpersonsレコードが0件の場合
+            noResultsTextView.text = getString(R.string.no_persons_text)
+        }else{
+            noResultsTextView.text = getString(R.string.no_results_textview_text)
+        }
+
         if(addPersonsCount == 0){
             showNoResultsTextView()
         }else{
@@ -437,24 +486,128 @@ class SearchPersonActivity : AppCompatActivity() {
     }
 
     /*
+    * 名前が空か否かを取得
+    *
+    * @param 名前
+    * @return 名前が空か否か
+    * */
+    private fun nameIsEmpty(name:String):Boolean{
+        return name == nameSplit.toString()
+    }
+
+    private val nameSplit = ','
+    /*
     * リストビューに人物を追加
     * */
     private fun addPersonToListView(person: Person){
         this.layoutInflater.inflate(R.layout.person_listview_item,personListLinearLayout)
         val item = personListLinearLayout.getChildAt(personListLinearLayout.childCount - 1) as ConstraintLayout
+        item.tag = person.getId().toString()
+        item.setOnClickListener(PersonItemOnClickListener())
+        item.setOnLongClickListener(PersonItemOnLongClickListener())
 
-        val phoneticNameTextView = item.findViewById<TextView>(R.id.phoneticNameTextView)
-        phoneticNameTextView?.text = person.getPhoneticName()
         val nameTextView = item.findViewById<TextView>(R.id.nameTextView)
-        nameTextView?.text = person.getName()
+        val phoneticNameTextView = item.findViewById<TextView>(R.id.phoneticNameTextView)
+        var name = person.getName()
+        //名前 ( 漢字 )があれば通常通り表示し、なければemptyを表示
+        if(!nameIsEmpty(name)){
+            //名前 ( 漢字 )において、姓のみ、名のみの可能性を考慮している
+            name = name.replace(nameSplit,' ')
+            nameTextView?.text = if(name[0] == ' '){
+                name.replace(" ","")
+            }else{
+                name
+            }
+
+            phoneticNameTextView?.text = person.getPhoneticName().replace(nameSplit,' ')
+            phoneticNameTextView?.setTextColor(getColor(this,R.color.textColor))
+        }else{
+            nameTextView?.text = person.getPhoneticName().replace(nameSplit,' ')
+            phoneticNameTextView?.text = getString(R.string.empty)
+            phoneticNameTextView?.setTextColor(getColor(this,R.color.emptyTextColor))
+        }
+
+        //組織名があれば通常通り表示し、なければemptyを表示
         val organizationNameTextView = item.findViewById<TextView>(R.id.organizationNameTextView)
-        organizationNameTextView?.text = person.getOrganizationName()
+        if(person.getOrganizationName().isNotEmpty()){
+            organizationNameTextView?.text = person.getOrganizationName()
+            organizationNameTextView?.setTextColor(getColor(this,R.color.textColor))
+        }else{
+            organizationNameTextView?.text = getString(R.string.empty)
+            organizationNameTextView?.setTextColor(getColor(this,R.color.emptyTextColor))
+        }
+
         val sexTextView = item.findViewById<TextView>(R.id.sexTextView)
         sexTextView?.text = sexTypes[person.getSex()]
         when(person.getSex()){
             Sex.NOT_KNOWN -> { sexTextView?.setBackgroundResource(R.color.notKnownBackgroundColor) }
             Sex.MALE -> { sexTextView?.setBackgroundResource(R.color.maleBackgroundColor) }
             Sex.FEMALE -> { sexTextView?.setBackgroundResource(R.color.femaleBackgroundColor) }
+        }
+    }
+
+    /*
+    * 人物アイテムのクリックリスナ
+    *
+    * 写真一覧画面に遷移する
+    * */
+    private inner class PersonItemOnClickListener:View.OnClickListener{
+        override fun onClick(v: View?) {
+            v?:return
+            val view = v as ConstraintLayout
+
+            //人物を選択中は遷移しない
+            if(removePersons.isNotEmpty()){
+                view.performLongClick()
+            }else {
+                val personId = view.tag.toString().toInt()
+                val intent =
+                    Intent(this@SearchPersonViewActivity, PhotosViewActivity::class.java)
+                intent.putExtra("PERSON_ID", personId)
+                startActivityForResult(intent, NO_MEANS_REQUEST_CODE)
+            }
+        }
+    }
+
+    /*
+    * 選択項目数を表示
+    * */
+    private fun displaySelectedItemCount(){
+        selectedItemCountTextView.text = removePersons.count().toString()
+            .plus(getString(R.string.selected_item_count_text))
+    }
+    /*
+    * 人物アイテムのロングクリックリスナ
+    *
+    * 削除対象人物リストに追加・削除する
+    * */
+    private inner class PersonItemOnLongClickListener:View.OnLongClickListener{
+        override fun onLongClick(v: View?): Boolean {
+            v?:return false
+
+            val view = v as ConstraintLayout
+            val personId = view.tag.toString().toInt()
+            val checkedImageView = view.findViewById<ImageView>(R.id.checkedImageView)
+
+            if(checkedImageView.visibility == View.GONE){
+                checkedImageView.visibility = View.VISIBLE
+                removePersons.add(personId)
+            }else if(checkedImageView.visibility == View.VISIBLE){
+                checkedImageView.visibility = View.GONE
+                removePersons.remove(personId)
+            }
+
+            displaySelectedItemCount()
+
+            if(removePersons.isNotEmpty()){
+                optionBar.visibility = View.VISIBLE
+                addPersonButton.visibility = View.INVISIBLE
+            }else{
+                optionBar.visibility = View.INVISIBLE
+                addPersonButton.visibility = View.VISIBLE
+            }
+
+            return true
         }
     }
 
