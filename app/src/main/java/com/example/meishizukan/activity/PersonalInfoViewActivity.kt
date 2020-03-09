@@ -418,8 +418,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * @return 必須項目が未入力か否か
     * */
     private fun isRequiredFieldsBlank():Boolean{
-        return (firstPhoneticNameEditText.text.isBlank() || lastPhoneticNameEditText.text.isBlank()
-            || firstNameEditText.text.isBlank() || lastNameEditText.text.isBlank())
+        return (firstPhoneticNameEditText.text.isBlank() || lastPhoneticNameEditText.text.isBlank())
     }
 
     /*
