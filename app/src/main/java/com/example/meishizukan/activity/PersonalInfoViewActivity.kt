@@ -71,13 +71,13 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             AlertDialog.Builder(this)
                 .setTitle(getString(R.string.confirm_dialog_title))
                 .setMessage(getString(R.string.confirm_message_on_transit))
-                .setPositiveButton(getString(R.string.positive_button_text)) { dialog, which ->
+                .setPositiveButton(getString(R.string.positive_button_text)) { _, _ ->
                     val intent = Intent(this,PhotosViewActivity::class.java)
                     intent.putExtra("PERSON_ID",personId)
                     startActivity(intent)
                     finish()
                 }
-                .setNegativeButton(getString(R.string.negative_button_text)) { dialog, which -> }
+                .setNegativeButton(getString(R.string.negative_button_text)) { _, _ -> }
                 .setCancelable(false)
                 .show()
         }
@@ -266,13 +266,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                         .setCancelable(false)
                         .show()
                 }
-                .setNegativeButton(negativeButtonText) { _, _ ->
-                    Toaster.createToast(
-                        context = this,
-                        text = getString(R.string.message_on_cancel),
-                        displayTime = Toast.LENGTH_SHORT
-                    ).show()
-                }
+                .setNegativeButton(negativeButtonText) { _, _ -> }
                 .setCancelable(false)
                 .show()
         }

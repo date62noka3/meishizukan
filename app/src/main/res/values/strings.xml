@@ -6,6 +6,8 @@
     <string name="search_edittext_hint">人物を検索</string>
     <string name="no_persons_text">人物が登録されていません。</string>
     <string name="no_results_textview_text">該当する人物はいませんでした。</string>
+    <string name="selected_item_count_text">名の人物を選択中</string>
+    <string name="message_on_deleted_persons">削除しました</string>
 
     <!-- ローディング画面 -->
     <string name="loading_dialog_text">Loading</string>
@@ -50,7 +52,6 @@
     <string name="message_on_illegal_error">フリガナは全角で入力してください</string>
     <string name="message_on_saved_new_person">人物を追加しました</string>
     <string name="message_on_updated_personal_info">人物情報を保存しました</string>
-    <string name="message_on_cancel">キャンセルしました</string>
 
     <!-- 50音のア段 -->
     <string-array name="japanese_syllabary_regex">
