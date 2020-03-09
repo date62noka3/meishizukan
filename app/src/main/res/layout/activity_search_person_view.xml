@@ -234,8 +234,26 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:overScrollMode="ifContentScrolls" />
+                android:overScrollMode="ifContentScrolls">
+
+            </LinearLayout>
         </ScrollView>
+
+        <TextView
+            android:id="@+id/noResultsTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/source_han_serif_regular"
+            android:gravity="center"
+            android:text="@string/no_results_textview_text"
+            android:textColor="#808080"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/personListScrollView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/personListScrollView" />
 
         <ImageView
             android:id="@+id/addPersonButton"

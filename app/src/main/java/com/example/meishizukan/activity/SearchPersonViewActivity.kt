@@ -288,6 +288,20 @@ class SearchPersonActivity : AppCompatActivity() {
     }
 
     /*
+    * 検索結果無し画面(view)を表示
+    * */
+    private fun showNoResultsTextView(){
+        noResultsTextView.visibility = View.VISIBLE
+    }
+
+    /*
+    * 検索結果無し画面(view)を非表示
+    * */
+    private fun hideNoResultsTextView(){
+        noResultsTextView.visibility = View.GONE
+    }
+
+    /*
     * searchEditTextの背景を初期化
     * */
     private fun initSearchEditTextBackground(hasFocus:Boolean=false, isKeyboardShown:Boolean=false){
@@ -329,38 +343,24 @@ class SearchPersonActivity : AppCompatActivity() {
         return persons
     }
 
-    private var isSearchedBeforeTransition = false //別アクティビティに遷移する前に検索したか否か
-    private val searchHandler = Handler()
-    private val limit = 15 //1回の更新で追加表示するアイテム数の上限
-    private var offset = 0 //検索位置
-    private var prevSQL = ""
     /*
-    * 人物を検索
+    * 検索SQLを作成
+    *
+    * @param 検索キーワード
+    * @return 検索SQL
     * */
-    private fun search(){
-        currentJapaneseSyllabaryRegex = "" //現在のア段正規表現をクリア
-        prevPhoneticNameFirstChar = "" //前回のふりがな1文字目をクリア
-        prevAddedPersonsCount = -1 //前回の追加検索件数をクリア
-        offset = 0 //オフセットをクリア
-
-        personListLinearLayout.removeAllViews() //人物アイテムを全てクリア
-
-        //スクロールに時間がかかり、人物追加が走ってしまうためfalse
-        scrollToTop(false)
-
-        val keyword = searchEditText.text.toString()
-
-        val sql = if(keyword.isBlank()){ //全てを取得
-                "SELECT ${BaseColumns._ID}," +
-                        "${DbContracts.Persons.COLUMN_NAME}," +
-                        "${DbContracts.Persons.COLUMN_PHONETIC_NAME}," +
-                        "${DbContracts.Persons.COLUMN_SEX}," +
-                        "${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}," +
-                        DbContracts.Persons.COLUMN_NOTE +
-                        " FROM ${DbContracts.Persons.TABLE_NAME}" +
-                        " ORDER BY ${DbContracts.Persons.COLUMN_PHONETIC_NAME}" +
-                        " LIMIT $limit OFFSET $offset"
-            }else { //曖昧検索
+    private fun createSearchSQL(keyword:String):String{
+        return if(keyword.isBlank()){ //全てを取得
+            "SELECT ${BaseColumns._ID}," +
+                    "${DbContracts.Persons.COLUMN_NAME}," +
+                    "${DbContracts.Persons.COLUMN_PHONETIC_NAME}," +
+                    "${DbContracts.Persons.COLUMN_SEX}," +
+                    "${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}," +
+                    DbContracts.Persons.COLUMN_NOTE +
+                    " FROM ${DbContracts.Persons.TABLE_NAME}" +
+                    " ORDER BY ${DbContracts.Persons.COLUMN_PHONETIC_NAME}" +
+                    " LIMIT $limit OFFSET $offset"
+        }else { //曖昧検索
             //キーワードがカタカナであれば名前においてフリガナで検索する
             "SELECT ${BaseColumns._ID}," +
                     "${DbContracts.Persons.COLUMN_NAME}," +
@@ -380,8 +380,39 @@ class SearchPersonActivity : AppCompatActivity() {
                     " ORDER BY ${DbContracts.Persons.COLUMN_PHONETIC_NAME}" +
                     " LIMIT $limit OFFSET $offset"
         }
+    }
 
-        addPersonsToListView(readPersons(sql))
+    private var isSearchedBeforeTransition = false //別アクティビティに遷移する前に検索したか否か
+    private val searchHandler = Handler()
+    private val limit = 15 //1回の更新で追加表示するアイテム数の上限
+    private var offset = 0 //検索位置
+    private var prevSQL = ""
+    /*
+    * 人物を検索
+    * */
+    private fun search(){
+        currentJapaneseSyllabaryRegex = "" //現在のア段正規表現をクリア
+        prevPhoneticNameFirstChar = "" //前回のふりがな1文字目をクリア
+        prevAddedPersonsCount = -1 //前回の追加検索件数をクリア
+        offset = 0 //オフセットをクリア
+
+        personListLinearLayout.removeAllViews() //人物アイテムを全てクリア
+
+        //スクロールに時間がかかり、人物追加が走ってしまうためfalse
+        scrollToTop(false)
+
+        var keyword = searchEditText.text.toString()
+        keyword = Modules.hiraganaToKatakana(keyword)
+
+        val sql = createSearchSQL(keyword)
+
+        val addPersonsCount = addPersonsToListView(readPersons(sql))
+
+        if(addPersonsCount == 0){
+            showNoResultsTextView()
+        }else{
+            hideNoResultsTextView()
+        }
 
         prevSQL = sql
 
