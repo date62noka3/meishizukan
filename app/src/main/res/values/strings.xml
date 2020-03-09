@@ -3,6 +3,7 @@
 
     <!-- 人物検索画面 -->
     <string name="search_edittext_hint">人物を検索</string>
+    <string name="no_results_textview_text">該当する人物はいませんでした。</string>
 
     <!-- ローディング画面 -->
     <string name="loading_dialog_text">Loading</string>
