@@ -562,7 +562,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
             }else {
                 val personId = view.tag.toString().toInt()
                 val intent =
-                    Intent(this@SearchPersonViewActivity, PersonalInfoViewActivity::class.java)
+                    Intent(this@SearchPersonViewActivity, PhotosViewActivity::class.java)
                 intent.putExtra("PERSON_ID", personId)
                 startActivityForResult(intent, NO_MEANS_REQUEST_CODE)
             }
