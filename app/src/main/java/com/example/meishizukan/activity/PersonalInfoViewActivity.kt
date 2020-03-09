@@ -224,6 +224,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
 
                 enablePhotosViewButton()
                 enableDeleteButton()
+                scrollToBottom()
             }else{ //編集
                 updatePerson(person) //人物情報を更新
 
@@ -324,6 +325,13 @@ class PersonalInfoViewActivity : AppCompatActivity() {
         }else{
             saveButton.setBackgroundResource(R.drawable.disabled_save_button_background)
         }
+    }
+
+    /*
+    * 一番下にスクロール
+    * */
+    private fun scrollToBottom(){
+        personalInfoScrollView.smoothScrollTo(0,personalInfoConstraintLayout.bottom)
     }
 
     private val limit = 5 //負荷が大きいため候補を制限する
