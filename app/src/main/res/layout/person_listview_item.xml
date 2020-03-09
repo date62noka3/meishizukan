@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootConstraintLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -14,7 +15,7 @@
         android:fontFamily="@font/source_han_serif_regular"
         android:includeFontPadding="false"
         android:text="サガワ アヤカ"
-        android:textColor="#303030"
+        android:textColor="@color/textColor"
         android:textSize="12sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
@@ -29,7 +30,7 @@
         android:fontFamily="@font/source_han_serif_regular"
         android:includeFontPadding="false"
         android:text="佐川 綾香"
-        android:textColor="#303030"
+        android:textColor="@color/textColor"
         android:textSize="26sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/organizationNameTextView"
@@ -45,7 +46,7 @@
         android:fontFamily="@font/source_han_serif_regular"
         android:includeFontPadding="false"
         android:text="高橋カーテン工業"
-        android:textColor="#303030"
+        android:textColor="@color/textColor"
         android:textSize="13sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -67,31 +68,16 @@
         android:layout_width="46dp"
         android:layout_height="23dp"
         android:layout_marginEnd="15dp"
-        android:background="#EF50DC"
+        android:background="@color/femaleBackgroundColor"
         android:fontFamily="@font/source_han_serif_regular"
         android:gravity="center"
         android:includeFontPadding="false"
         android:text="女性"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/sexTextColor"
         android:textSize="13sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/checkedImageView"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/ageTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="10dp"
-        android:fontFamily="@font/source_han_serif_regular"
-        android:includeFontPadding="false"
-        android:text="21歳"
-        android:textColor="#303030"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/sexTextView"
         app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
