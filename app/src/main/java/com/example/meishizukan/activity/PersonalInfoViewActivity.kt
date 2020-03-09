@@ -11,7 +11,6 @@ import android.provider.BaseColumns
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.KeyEvent
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
@@ -95,7 +94,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             }
         }
 
-        setInputDataToTag()
+        setInputValueToTag()
 
         //テキストの変更を判定するウォッチャーを設定
         firstPhoneticNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(firstPhoneticNameEditText))
@@ -123,6 +122,8 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                 }else{
                     sexSpinner.setBackgroundResource(R.drawable.input_field_background)
                 }
+
+                onInputValueChanged()
             }
         }
 
@@ -207,7 +208,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             }
 
             //人物インスタンス生成
-            val person = createPersonFromInputData()
+            val person = createPersonFromInputValues()
 
             if(isNewPerson(personId)){ //新規追加
                 personId = insertPerson(person) //人物を追加
@@ -236,7 +237,11 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             }
 
             valueChangedElements.clear()
+            saveButton.isClickable = false
+            setSaveButtonBackground()
             resetEditTextBackground()
+
+            setInputValueToTag()
         }
 
         deleteButton.setOnClickListener{
@@ -300,6 +305,27 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             .show()
     }
 
+    /*
+    * 入力値変更時イベント
+    * */
+    private fun onInputValueChanged(){
+        //入力値の変更があればボタンを有効、なければ無効
+        saveButton.isClickable = (valueChangedElements.isNotEmpty())
+
+        setSaveButtonBackground()
+    }
+
+    /*
+    * 保存ボタンの背景を設定
+    * */
+    private fun setSaveButtonBackground(){
+        if(saveButton.isClickable){
+            saveButton.setBackgroundResource(R.drawable.save_button_background)
+        }else{
+            saveButton.setBackgroundResource(R.drawable.disabled_save_button_background)
+        }
+    }
+
     private val limit = 5 //負荷が大きいため候補を制限する
     /*
     * 組織を検索
@@ -356,7 +382,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * 削除ボタンを有効化
     * */
     private fun enableDeleteButton(){
-        deleteButton.setImageResource(R.drawable.delete_button_enabled)
+        deleteButton.setImageResource(R.drawable.delete_button)
         deleteButton.isClickable = true
     }
 
@@ -364,7 +390,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * 削除ボタンを無効化
     * */
     private fun disableDeleteButton(){
-        deleteButton.setImageResource(R.drawable.delete_button_disabled)
+        deleteButton.setImageResource(R.drawable.disabled_delete_button)
         deleteButton.isClickable = false
     }
 
@@ -414,7 +440,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     *
     * @return 人物インスタンス
     * */
-    private fun createPersonFromInputData():Person{
+    private fun createPersonFromInputValues():Person{
         //入力された人物情報を取得
         val name = firstNameEditText.text.toString()
             .plus(" ")
@@ -472,7 +498,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     /*
     * 入力値をタグに設定
     * */
-    private fun setInputDataToTag(){
+    private fun setInputValueToTag(){
         firstNameEditText.tag = firstPhoneticNameEditText.text.toString()
         lastNameEditText.tag = lastPhoneticNameEditText.text.toString()
         firstPhoneticNameEditText.tag = firstNameEditText.text.toString()
@@ -608,6 +634,8 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                     view.setBackgroundResource(R.drawable.input_field_background)
                 }
             }
+
+            onInputValueChanged()
         }
     }
 }
