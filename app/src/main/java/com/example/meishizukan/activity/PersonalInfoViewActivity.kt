@@ -1,5 +1,6 @@
 package com.example.meishizukan.activity
 
+import NoFilterArrayAdapter
 import android.content.ContentValues
 import android.content.Intent
 import android.database.sqlite.SQLiteDatabase
@@ -10,16 +11,14 @@ import android.provider.BaseColumns
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.getColor
 import com.example.meishizukan.R
 import com.example.meishizukan.dto.Person
-import com.example.meishizukan.util.DbContracts
-import com.example.meishizukan.util.DbHelper
-import com.example.meishizukan.util.Modules
-import com.example.meishizukan.util.Toaster
+import com.example.meishizukan.util.*
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
@@ -90,41 +89,46 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             disablePhotosViewButton()
             disableDeleteButton()
         }else{ //編集
-            loadPersonalInfo(personId)
+            val person = loadPersonalInfo(personId)
+            if(person != null) {
+                setPersonalInfoToInputFields(person)
+            }
+        }
 
-            //テキストの変更を判定するウォッチャーを設定
-            firstPhoneticNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(firstPhoneticNameEditText))
-            lastPhoneticNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(lastPhoneticNameEditText))
-            firstNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(firstNameEditText))
-            lastNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(lastNameEditText))
-            organizationNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(organizationNameEditText))
-            noteEditText.addTextChangedListener(PersonalInfoEditTextWatcher(noteEditText))
+        setInputDataToTag()
 
-            //性別の変更を判定
-            sexSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
-                override fun onNothingSelected(parent: AdapterView<*>?) {}
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    //重複を無くすため削除
-                    valueChangedElements.remove(sexSpinner.id)
+        //テキストの変更を判定するウォッチャーを設定
+        firstPhoneticNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(firstPhoneticNameEditText))
+        lastPhoneticNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(lastPhoneticNameEditText))
+        firstNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(firstNameEditText))
+        lastNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(lastNameEditText))
+        organizationNameEditText.addTextChangedListener(PersonalInfoEditTextWatcher(organizationNameEditText))
+        noteEditText.addTextChangedListener(PersonalInfoEditTextWatcher(noteEditText))
 
-                    if(sexSpinner.tag.toString() != position.toString()){
-                        valueChangedElements.add(sexSpinner.id)
-                        sexSpinner.setBackgroundResource(R.drawable.value_changed_personal_info_edittext_background)
-                    }else{
-                        sexSpinner.setBackgroundResource(R.drawable.personal_info_edittext_background)
-                    }
+        //性別の変更を判定
+        sexSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                //重複を無くすため削除
+                valueChangedElements.remove(sexSpinner.id)
+
+                if(sexSpinner.tag.toString() != position.toString()){
+                    valueChangedElements.add(sexSpinner.id)
+                    sexSpinner.setBackgroundResource(R.drawable.value_changed_input_field_background)
+                }else{
+                    sexSpinner.setBackgroundResource(R.drawable.input_field_background)
                 }
             }
         }
 
         //組織名入力欄に入力補完用Adapterを設定
-        val organizationNames = mutableListOf<String>()
-        val organizationNameArrayAdapter = ArrayAdapter(this,android.R.layout.simple_list_item_1,organizationNames)
+        val organizations = mutableListOf<String>()
+        val organizationNameArrayAdapter = NoFilterArrayAdapter(this,android.R.layout.simple_list_item_1,organizations)
         organizationNameEditText.setAdapter(organizationNameArrayAdapter)
 
         //組織名入力欄の入力値が変わった時、入力補完用Adapterを更新する
@@ -132,25 +136,16 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             override fun afterTextChanged(s: Editable?) {}
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                organizationNameArrayAdapter.clear()
-
                 val organizationName = organizationNameEditText.text.toString()
-                val sql = "SELECT DISTINCT ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}" +
-                        " FROM ${DbContracts.Persons.TABLE_NAME}" +
-                        " WHERE ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME} LIKE '%$organizationName%'" +
-                        " ORDER BY ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}"
-                val cursor = readableDB.rawQuery(sql,null)
 
-                if(cursor.count == 0){
-                    cursor.close()
+                if(organizationName.isBlank()){
                     return
                 }
 
-                while(cursor.moveToNext()){
-                    organizationNameArrayAdapter.add(cursor.getString(0))
-                    Log.d("HIT_ORGANIZATION_NAME",cursor.getString(0))
-                }
-                cursor.close()
+                organizationNameArrayAdapter.clear()
+
+                //組織を検索
+                organizationNameArrayAdapter.addAll(searchOrganization(organizationName))
             }
         })
 
@@ -250,7 +245,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             AlertDialog.Builder(this)
                 .setTitle(getString(R.string.confirm_dialog_title))
                 .setMessage(getString(R.string.confirm_message_on_delete))
-                .setPositiveButton(positiveButtonText) { dialog, which ->
+                .setPositiveButton(positiveButtonText) { _, _ ->
                     deletePerson(personId)
                     Log.d("DELETED_PERSON_ID",personId.toString())
 
@@ -258,14 +253,14 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                     AlertDialog.Builder(this)
                         .setTitle(getString(R.string.information_dialog_title))
                         .setMessage(getString(R.string.information_message_on_deleted))
-                        .setPositiveButton(positiveButtonText) { dialog, which ->
+                        .setPositiveButton(positiveButtonText) { _, _ ->
                             super.onBackPressed()
                             finish()
                         }
                         .setCancelable(false)
                         .show()
                 }
-                .setNegativeButton(negativeButtonText) { dialog, which ->
+                .setNegativeButton(negativeButtonText) { _, _ ->
                     Toaster.createToast(
                         context = this,
                         text = getString(R.string.message_on_cancel),
@@ -284,11 +279,12 @@ class PersonalInfoViewActivity : AppCompatActivity() {
 
     override fun onDestroy(){
         adView.destroy()
+        readableDB.close()
         super.onDestroy()
     }
 
     override fun onBackPressed() {
-        if((isNewPerson(personId) && isAllFieldsBlank()) || valueChangedElements.count() == 0){
+        if(valueChangedElements.count() == 0){
             super.onBackPressed()
             return
         }
@@ -302,6 +298,40 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             .setNegativeButton(getString(R.string.negative_button_text),{ dialog, which -> })
             .setCancelable(false)
             .show()
+    }
+
+    private val limit = 5 //負荷が大きいため候補を制限する
+    /*
+    * 組織を検索
+    *
+    * @param 組織名
+    * @return 組織リスト
+    * */
+    private fun searchOrganization(organizationName:String):List<String>{
+        //OrderBy句の説明
+        //検索組織名の文字数 / ヒットした組織名の文字数　で一致率を算出し降順に並び替えている
+        val sql = "SELECT DISTINCT ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}" +
+                " FROM ${DbContracts.Persons.TABLE_NAME}" +
+                " WHERE ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME} LIKE '%$organizationName%'" +
+                " ORDER BY CAST(LENGTH('$organizationName') as REAL) / CAST(LENGTH(${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}) as REAL) DESC" +
+                " LIMIT $limit"
+
+        val cursor = readableDB.rawQuery(sql,null)
+
+        val organizations = mutableListOf<String>()
+
+        if(cursor.count == 0){
+            cursor.close()
+            return organizations
+        }
+
+        while(cursor.moveToNext()){
+            organizations.add(cursor.getString(0))
+            Log.d("HIT_ORGANIZATION_NAME",cursor.getString(0))
+        }
+        cursor.close()
+
+        return organizations.toList()
     }
 
     /*
@@ -359,17 +389,6 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     }
 
     /*
-    * 全ての入力欄が未入力か否かを取得
-    *
-    * @return 全ての入力欄が未入力か否か
-    * */
-    private fun isAllFieldsBlank():Boolean{
-        return (firstPhoneticNameEditText.text.isBlank() && lastPhoneticNameEditText.text.isBlank()
-                && firstNameEditText.text.isBlank() && firstPhoneticNameEditText.text.isBlank()
-                && organizationNameEditText.text.isBlank() && noteEditText.text.isBlank())
-    }
-
-    /*
     * フリガナ項目の入力値がフリガナか否かを取得
     *
     * @return フリガナ項目の入力値がフリガナか否か
@@ -422,13 +441,45 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * 入力欄の背景をリセット
     * */
     private fun resetEditTextBackground(){
-        firstPhoneticNameEditText.setBackgroundResource(R.drawable.personal_info_edittext_background)
-        lastPhoneticNameEditText.setBackgroundResource(R.drawable.personal_info_edittext_background)
-        firstNameEditText.setBackgroundResource(R.drawable.personal_info_edittext_background)
-        lastNameEditText.setBackgroundResource(R.drawable.personal_info_edittext_background)
-        sexSpinner.setBackgroundResource(R.drawable.personal_info_edittext_background)
-        organizationNameEditText.setBackgroundResource(R.drawable.personal_info_edittext_background)
-        noteEditText.setBackgroundResource(R.drawable.personal_info_edittext_background)
+        firstPhoneticNameEditText.setBackgroundResource(R.drawable.input_field_background)
+        lastPhoneticNameEditText.setBackgroundResource(R.drawable.input_field_background)
+        firstNameEditText.setBackgroundResource(R.drawable.input_field_background)
+        lastNameEditText.setBackgroundResource(R.drawable.input_field_background)
+        sexSpinner.setBackgroundResource(R.drawable.input_field_background)
+        organizationNameEditText.setBackgroundResource(R.drawable.input_field_background)
+        noteEditText.setBackgroundResource(R.drawable.input_field_background)
+    }
+
+    /*
+    * 人物情報を入力欄にセット
+    *
+    * @param 人物
+    * */
+    private fun setPersonalInfoToInputFields(person:Person){
+        //名前、フリガナは半角スペースで区切って姓、名を取得する
+        val phoneticName = person.getPhoneticName().split(' ')
+        firstPhoneticNameEditText.setText(phoneticName[0])
+        lastPhoneticNameEditText.setText(phoneticName[1])
+        val name = person.getName().split(' ')
+        firstNameEditText.setText(name[0])
+        lastNameEditText.setText(name[1])
+
+        sexSpinner.setSelection(person.getSex())
+        organizationNameEditText.setText(person.getOrganizationName())
+        noteEditText.setText(person.getNote())
+    }
+
+    /*
+    * 入力値をタグに設定
+    * */
+    private fun setInputDataToTag(){
+        firstNameEditText.tag = firstPhoneticNameEditText.text.toString()
+        lastNameEditText.tag = lastPhoneticNameEditText.text.toString()
+        firstPhoneticNameEditText.tag = firstNameEditText.text.toString()
+        lastPhoneticNameEditText.tag = lastNameEditText.text.toString()
+        sexSpinner.tag = sexSpinner.selectedItemPosition.toString()
+        organizationNameEditText.tag = organizationNameEditText.text.toString()
+        noteEditText.tag = noteEditText.text.toString()
     }
 
     /*
@@ -436,7 +487,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     *
     * @param 人物ID
     * */
-    private fun loadPersonalInfo(personId: Int){
+    private fun loadPersonalInfo(personId: Int):Person?{
         val sql = "SELECT ${DbContracts.Persons.COLUMN_NAME}," +
                 "${DbContracts.Persons.COLUMN_PHONETIC_NAME}," +
                 "${DbContracts.Persons.COLUMN_SEX}," +
@@ -450,35 +501,24 @@ class PersonalInfoViewActivity : AppCompatActivity() {
 
         if(cursor.count == 0){
             cursor.close()
-            return
+            readableDB.close()
+            return null
         }
 
         cursor.moveToNext()
 
-        //人物情報を入力欄にセット
-        val name = cursor.getString(0).split(' ')
-        firstNameEditText.setText(name[0])
-        lastNameEditText.setText(name[1])
-        val phoneticName = cursor.getString(1).split(' ')
-        firstPhoneticNameEditText.setText(phoneticName[0])
-        lastPhoneticNameEditText.setText(phoneticName[1])
-        val sex = cursor.getInt(2)
-        sexSpinner.setSelection(sex)
-        val organizationName = cursor.getString(3)
-        organizationNameEditText.setText(organizationName)
-        val note = cursor.getString(4)
-        noteEditText.setText(note)
-
-        //タグに保持
-        firstNameEditText.tag = name[0]
-        lastNameEditText.tag = name[1]
-        firstPhoneticNameEditText.tag = phoneticName[0]
-        lastPhoneticNameEditText.tag = phoneticName[1]
-        sexSpinner.tag = sex
-        organizationNameEditText.tag = organizationName
-        noteEditText.tag = note
+        val person = Person(
+            id = personId,
+            name = cursor.getString(0),
+            phoneticName = cursor.getString(1),
+            sex = cursor.getInt(2),
+            organizationName = cursor.getString(3),
+            note = cursor.getString(4)
+        )
 
         cursor.close()
+
+        return person
     }
 
     /*
@@ -555,17 +595,17 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             if(view is EditText){
                 if(view.tag.toString() != view.text.toString()){
                     valueChangedElements.add(view.id)
-                    view.setBackgroundResource(R.drawable.value_changed_personal_info_edittext_background)
+                    view.setBackgroundResource(R.drawable.value_changed_input_field_background)
                 }else{
-                    view.setBackgroundResource(R.drawable.personal_info_edittext_background)
+                    view.setBackgroundResource(R.drawable.input_field_background)
                 }
             }
             else if(view is AutoCompleteTextView){
                 if(view.tag.toString() != view.text.toString()){
                     valueChangedElements.add(view.id)
-                    view.setBackgroundResource(R.drawable.value_changed_personal_info_edittext_background)
+                    view.setBackgroundResource(R.drawable.value_changed_input_field_background)
                 }else{
-                    view.setBackgroundResource(R.drawable.personal_info_edittext_background)
+                    view.setBackgroundResource(R.drawable.input_field_background)
                 }
             }
         }
