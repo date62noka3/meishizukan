@@ -6,7 +6,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object Modules {
-    val phoneticNameRegex = Regex("^([\\u30A1-\\u30F3])+\$") //ァ-ン
+    val phoneticNameRegex = Regex("^([ァ-ン]|[ぁ-ん])+\$")
 
     private val deltaBetweenHiraganaAndKatakana = 'ア' - 'あ'
     /*

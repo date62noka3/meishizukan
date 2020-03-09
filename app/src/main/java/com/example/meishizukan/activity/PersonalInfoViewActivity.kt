@@ -418,8 +418,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * @return 必須項目が未入力か否か
     * */
     private fun isRequiredFieldsBlank():Boolean{
-        return (firstPhoneticNameEditText.text.isBlank() || lastPhoneticNameEditText.text.isBlank()
-            || firstNameEditText.text.isBlank() || lastNameEditText.text.isBlank())
+        return (firstPhoneticNameEditText.text.isBlank() || lastPhoneticNameEditText.text.isBlank())
     }
 
     /*
@@ -453,9 +452,10 @@ class PersonalInfoViewActivity : AppCompatActivity() {
         val name = firstNameEditText.text.toString()
             .plus(" ")
             .plus(lastNameEditText.text.toString())
-        val phoneticName = firstPhoneticNameEditText.text.toString()
+        var phoneticName = firstPhoneticNameEditText.text.toString()
             .plus(" ")
             .plus(lastPhoneticNameEditText.text.toString())
+        phoneticName = Modules.hiraganaToKatakana(phoneticName)
         val sex = convertSexStringToSexNum(sexSpinner.selectedItem.toString())
         val organizationName = organizationNameEditText.text.toString()
         val note = noteEditText.text.toString()

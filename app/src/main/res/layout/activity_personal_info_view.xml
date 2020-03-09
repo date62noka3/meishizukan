@@ -154,19 +154,6 @@
                 app:layout_constraintStart_toStartOf="@+id/phoneticNameLabel"
                 app:layout_constraintTop_toBottomOf="@+id/firstPhoneticNameEditText" />
 
-            <TextView
-                android:id="@+id/requiredLabel2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/source_han_serif_regular"
-                android:includeFontPadding="false"
-                android:text="@string/required_label_text"
-                android:textColor="#EE5365"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toEndOf="@+id/nameLabel"
-                app:layout_constraintTop_toTopOf="@+id/nameLabel" />
-
             <EditText
                 android:id="@+id/firstNameEditText"
                 android:layout_width="186dp"
