@@ -135,9 +135,10 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                 organizationNameArrayAdapter.clear()
 
                 val organizationName = organizationNameEditText.text.toString()
-                val sql = "SELECT ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}" +
+                val sql = "SELECT DISTINCT ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}" +
                         " FROM ${DbContracts.Persons.TABLE_NAME}" +
-                        " WHERE ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME} LIKE '%$organizationName%'"
+                        " WHERE ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME} LIKE '%$organizationName%'" +
+                        " ORDER BY ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}"
                 val cursor = readableDB.rawQuery(sql,null)
 
                 if(cursor.count == 0){
