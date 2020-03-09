@@ -13,7 +13,6 @@ import android.text.TextWatcher
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
-import android.view.ViewTreeObserver
 import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -28,7 +27,7 @@ import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import kotlinx.android.synthetic.main.activity_search_person_view.*
-import java.util.concurrent.Delayed
+import androidx.core.content.ContextCompat.getColor
 
 private object Sex{
     const val NOT_KNOWN = 0
@@ -105,7 +104,6 @@ class SearchPersonActivity : AppCompatActivity() {
         searchEditText.setOnFocusChangeListener{
                 v, hasFocus ->
             v ?: return@setOnFocusChangeListener
-            Log.d("FOCUS",hasFocus.toString())
             initSearchEditTextBackground(hasFocus = hasFocus)
         }
 
@@ -408,6 +406,12 @@ class SearchPersonActivity : AppCompatActivity() {
 
         val addPersonsCount = addPersonsToListView(readPersons(sql))
 
+        if(keyword.isBlank()){ //全検索且つDBのpersonsレコードが0件の場合
+            noResultsTextView.text = getString(R.string.no_persons_text)
+        }else{
+            noResultsTextView.text = getString(R.string.no_results_textview_text)
+        }
+
         if(addPersonsCount == 0){
             showNoResultsTextView()
         }else{
@@ -436,6 +440,7 @@ class SearchPersonActivity : AppCompatActivity() {
         prevAddedPersonsCount = addPersonsToListView(readPersons(prevSQL))
     }
 
+    private val nameSplit = ','
     /*
     * リストビューに人物を追加
     * */
@@ -443,12 +448,29 @@ class SearchPersonActivity : AppCompatActivity() {
         this.layoutInflater.inflate(R.layout.person_listview_item,personListLinearLayout)
         val item = personListLinearLayout.getChildAt(personListLinearLayout.childCount - 1) as ConstraintLayout
 
-        val phoneticNameTextView = item.findViewById<TextView>(R.id.phoneticNameTextView)
-        phoneticNameTextView?.text = person.getPhoneticName()
         val nameTextView = item.findViewById<TextView>(R.id.nameTextView)
-        nameTextView?.text = person.getName()
+        val phoneticNameTextView = item.findViewById<TextView>(R.id.phoneticNameTextView)
+        //名前 ( 漢字 )があれば通常通り表示し、なければemptyを表示
+        if(person.getName() != ","){
+            nameTextView?.text = person.getName().replace(nameSplit,' ')
+            phoneticNameTextView?.text = person.getPhoneticName().replace(nameSplit,' ')
+            phoneticNameTextView?.setTextColor(getColor(this,R.color.textColor))
+        }else{
+            nameTextView?.text = person.getPhoneticName().replace(nameSplit,' ')
+            phoneticNameTextView?.text = getString(R.string.empty)
+            phoneticNameTextView?.setTextColor(getColor(this,R.color.emptyTextColor))
+        }
+
+        //組織名があれば通常通り表示し、なければemptyを表示
         val organizationNameTextView = item.findViewById<TextView>(R.id.organizationNameTextView)
-        organizationNameTextView?.text = person.getOrganizationName()
+        if(person.getOrganizationName().isNotEmpty()){
+            organizationNameTextView?.text = person.getOrganizationName()
+            organizationNameTextView?.setTextColor(getColor(this,R.color.textColor))
+        }else{
+            organizationNameTextView?.text = getString(R.string.empty)
+            organizationNameTextView?.setTextColor(getColor(this,R.color.emptyTextColor))
+        }
+
         val sexTextView = item.findViewById<TextView>(R.id.sexTextView)
         sexTextView?.text = sexTypes[person.getSex()]
         when(person.getSex()){

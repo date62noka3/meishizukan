@@ -1,8 +1,10 @@
 <resources>
     <string name="app_name">名刺図鑑</string>
+    <string name="empty">--  --  --  --</string>
 
     <!-- 人物検索画面 -->
     <string name="search_edittext_hint">人物を検索</string>
+    <string name="no_persons_text">人物が登録されていません。</string>
     <string name="no_results_textview_text">該当する人物はいませんでした。</string>
 
     <!-- ローディング画面 -->

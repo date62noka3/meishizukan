@@ -442,6 +442,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
         return sexTypes.indexOf(sex)
     }
 
+    private val nameSplit = ','
     /*
     * 入力値から人物インスタンスを生成
     *
@@ -450,10 +451,10 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     private fun createPersonFromInputValues():Person{
         //入力された人物情報を取得
         val name = firstNameEditText.text.toString()
-            .plus(" ")
+            .plus(nameSplit)
             .plus(lastNameEditText.text.toString())
         var phoneticName = firstPhoneticNameEditText.text.toString()
-            .plus(" ")
+            .plus(nameSplit)
             .plus(lastPhoneticNameEditText.text.toString())
         phoneticName = Modules.hiraganaToKatakana(phoneticName)
         val sex = convertSexStringToSexNum(sexSpinner.selectedItem.toString())
@@ -491,12 +492,18 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * */
     private fun setPersonalInfoToInputFields(person:Person){
         //名前、フリガナは半角スペースで区切って姓、名を取得する
-        val phoneticName = person.getPhoneticName().split(' ')
+        val phoneticName = person.getPhoneticName().split(nameSplit)
         firstPhoneticNameEditText.setText(phoneticName[0])
         lastPhoneticNameEditText.setText(phoneticName[1])
-        val name = person.getName().split(' ')
-        firstNameEditText.setText(name[0])
-        lastNameEditText.setText(name[1])
+
+        //名前 ( 漢字 )はない可能性がある
+        val name = person.getName().split(nameSplit)
+        if(0 < name.count()) {
+            firstNameEditText.setText(name[0])
+        }
+        if(1 < name.count()) {
+            lastNameEditText.setText(name[1])
+        }
 
         sexSpinner.setSelection(person.getSex())
         organizationNameEditText.setText(person.getOrganizationName())

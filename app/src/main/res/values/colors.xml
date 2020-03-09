@@ -7,6 +7,7 @@
     <!-- 全画面共通のデフォルト文字色 -->
     <color name="textColor">#303030</color>
     <color name="hintTextColor">#A9A9A9</color>
+    <color name="emptyTextColor">#757575</color>
 
     <!-- ローディング画面 -->
     <color name="loadingDialogTextColor">#4D4DDB</color>
