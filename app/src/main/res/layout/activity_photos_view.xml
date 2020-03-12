@@ -131,7 +131,7 @@
     </ScrollView>
 
     <ImageView
-        android:id="@+id/addPersonButton"
+        android:id="@+id/addPhotoButton"
         android:layout_width="57dp"
         android:layout_height="57dp"
         android:layout_marginEnd="15dp"
