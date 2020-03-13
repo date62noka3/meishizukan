@@ -292,10 +292,10 @@ class PersonalInfoViewActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle(getString(R.string.confirm_dialog_title))
             .setMessage(getString(R.string.confirm_message_on_transit))
-            .setPositiveButton(getString(R.string.positive_button_text)) { dialog, which ->
+            .setPositiveButton(getString(R.string.positive_button_text)) { _, _ ->
                 super.onBackPressed()
             }
-            .setNegativeButton(getString(R.string.negative_button_text),{ dialog, which -> })
+            .setNegativeButton(getString(R.string.negative_button_text),{ _, _ -> })
             .setCancelable(false)
             .show()
     }

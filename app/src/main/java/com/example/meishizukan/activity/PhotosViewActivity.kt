@@ -1,10 +1,20 @@
 package com.example.meishizukan.activity
 
+import android.app.Activity
 import android.content.Intent
 import android.database.sqlite.SQLiteDatabase
+import android.graphics.Bitmap
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.ParcelFileDescriptor
 import android.provider.BaseColumns
+import android.provider.MediaStore
+import android.util.Log
+import android.view.View
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import com.example.meishizukan.R
 import com.example.meishizukan.dto.Person
 import com.example.meishizukan.util.DbContracts
@@ -14,6 +24,9 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import kotlinx.android.synthetic.main.activity_photos_view.*
 import androidx.core.content.ContextCompat.getColor
+import com.example.meishizukan.util.BitmapUtils
+
+private const val OPEN_CAMERA_REQUEST_CODE  = 0
 
 class PhotosViewActivity : AppCompatActivity() {
 
@@ -47,8 +60,31 @@ class PhotosViewActivity : AppCompatActivity() {
             super.onBackPressed()
         }
 
+        backgroundOnOpenedSelection.setOnClickListener{
+            hideAddPhotoButtons()
+        }
+
         addPhotoButton.setOnClickListener{
-            
+            if(addPhotoButtonsLinearLayout.visibility == View.INVISIBLE) {
+                showAddPhotoButtons()
+            }else{
+                hideAddPhotoButtons()
+            }
+        }
+
+        cameraButton.setOnClickListener{
+            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            if(intent.resolveActivity(packageManager) != null){
+                startActivityForResult(intent,OPEN_CAMERA_REQUEST_CODE)
+            }
+        }
+
+        galleryButton.setOnClickListener{
+
+        }
+
+        addedPhotosButton.setOnClickListener{
+
         }
 
         personId = intent.getIntExtra("PERSON_ID",0)
@@ -75,6 +111,17 @@ class PhotosViewActivity : AppCompatActivity() {
         adView.destroy()
         readableDB.close()
         super.onDestroy()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if(requestCode == OPEN_CAMERA_REQUEST_CODE && resultCode == Activity.RESULT_OK && data != null){
+            data.extras?:return
+            val data = data.extras.get("data")
+            data?:return
+            val bitmap = data as Bitmap
+        }
     }
 
     /*
@@ -151,5 +198,49 @@ class PhotosViewActivity : AppCompatActivity() {
             phoneticNameTextView.text = getString(R.string.empty)
             phoneticNameTextView.setTextColor(getColor(this,R.color.emptyTextColor))
         }
+    }
+
+    /*
+    * 写真追加ボタンを表示
+    * */
+    private fun showAddPhotoButtons(){
+        addPhotoButton.clearAnimation()
+        addPhotoButtonsLinearLayout.clearAnimation()
+
+        backgroundOnOpenedSelection.visibility = View.VISIBLE
+        addPhotoButtonsLinearLayout.visibility = View.VISIBLE
+
+        val rotateCloseButtonAnimation = AnimationUtils.loadAnimation(this,R.anim.rotate_close_button)
+        rotateCloseButtonAnimation.setAnimationListener(object:Animation.AnimationListener{
+            override fun onAnimationStart(animation: Animation?) {}
+            override fun onAnimationRepeat(animation: Animation?) {}
+            override fun onAnimationEnd(animation: Animation?) {
+                addPhotoButton.setImageResource(R.drawable.add_photo_cancel_button)
+            }
+        })
+        addPhotoButton.startAnimation(rotateCloseButtonAnimation)
+        addPhotoButtonsLinearLayout.startAnimation(AnimationUtils.loadAnimation(this,R.anim.show_add_photo_buttons))
+    }
+
+    /*
+    * 写真追加ボタンを非表示
+    * */
+    private fun hideAddPhotoButtons(){
+        addPhotoButton.clearAnimation()
+        addPhotoButtonsLinearLayout.clearAnimation()
+
+        val rotateCloseButtonAnimation = AnimationUtils.loadAnimation(this,R.anim.rotate_close_button)
+        rotateCloseButtonAnimation.setAnimationListener(object:Animation.AnimationListener{
+            override fun onAnimationStart(animation: Animation?) {}
+            override fun onAnimationRepeat(animation: Animation?) {}
+            override fun onAnimationEnd(animation: Animation?) {
+                addPhotoButton.setImageResource(R.drawable.add_button)
+            }
+        })
+        addPhotoButton.startAnimation(rotateCloseButtonAnimation)
+        addPhotoButtonsLinearLayout.startAnimation(AnimationUtils.loadAnimation(this,R.anim.hide_add_photo_buttons))
+
+        backgroundOnOpenedSelection.visibility = View.INVISIBLE
+        addPhotoButtonsLinearLayout.visibility = View.INVISIBLE
     }
 }
