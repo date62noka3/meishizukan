@@ -210,7 +210,7 @@ class PhotosViewActivity : AppCompatActivity() {
             override fun onAnimationStart(animation: Animation?) {}
             override fun onAnimationRepeat(animation: Animation?) {}
             override fun onAnimationEnd(animation: Animation?) {
-                addPhotoButton.setImageResource(R.drawable.add_photo_cancel_button)
+                addPhotoButton.setBackgroundResource(R.drawable.add_photo_cancel_button_background)
             }
         })
         addPhotoButton.startAnimation(rotateCloseButtonAnimation)
@@ -229,7 +229,7 @@ class PhotosViewActivity : AppCompatActivity() {
             override fun onAnimationStart(animation: Animation?) {}
             override fun onAnimationRepeat(animation: Animation?) {}
             override fun onAnimationEnd(animation: Animation?) {
-                addPhotoButton.setImageResource(R.drawable.add_button)
+                addPhotoButton.setBackgroundResource(R.drawable.add_button_background)
             }
         })
         addPhotoButton.startAnimation(rotateCloseButtonAnimation)
