@@ -5,7 +5,7 @@ import java.lang.StringBuilder
 import java.text.SimpleDateFormat
 import java.util.*
 
-object Modules {
+object PhoneticName {
     val phoneticNameRegex = Regex("^([ァ-ン]|[ぁ-ん])+\$")
 
     private val deltaBetweenHiraganaAndKatakana = 'ア' - 'あ'
@@ -27,10 +27,5 @@ object Modules {
         }
 
         return sb.toString()
-    }
-
-    fun getCurrentDate():String{
-        val simpleDateFormat = SimpleDateFormat("M / d (EE)",Locale.JAPAN)
-        return simpleDateFormat.format(Date())
     }
 }

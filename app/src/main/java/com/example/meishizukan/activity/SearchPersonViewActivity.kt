@@ -23,15 +23,12 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.drawerlayout.widget.DrawerLayout
 import com.example.meishizukan.R
 import com.example.meishizukan.dto.Person
-import com.example.meishizukan.util.DbContracts
-import com.example.meishizukan.util.DbHelper
-import com.example.meishizukan.util.Modules
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import kotlinx.android.synthetic.main.activity_search_person_view.*
 import androidx.core.content.ContextCompat.getColor
-import com.example.meishizukan.util.Toaster
+import com.example.meishizukan.util.*
 
 private object Sex{
     const val NOT_KNOWN = 0
@@ -248,7 +245,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
         adView.resume()
 
         //現在の日付を表示
-        dateTextView.text = Modules.getCurrentDate()
+        dateTextView.text = DateUtils.getCurrentDate()
     }
 
     override fun onDestroy(){
@@ -413,7 +410,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
                     DbContracts.Persons.COLUMN_NOTE +
                     " FROM ${DbContracts.Persons.TABLE_NAME}" +
                     " WHERE " +
-                    if (keyword.matches(Modules.phoneticNameRegex)) {
+                    if (keyword.matches(PhoneticName.phoneticNameRegex)) {
                         DbContracts.Persons.COLUMN_PHONETIC_NAME
                     } else {
                         DbContracts.Persons.COLUMN_NAME
@@ -445,7 +442,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
         scrollToTop(false)
 
         var keyword = searchEditText.text.toString()
-        keyword = Modules.hiraganaToKatakana(keyword)
+        keyword = PhoneticName.hiraganaToKatakana(keyword)
 
         val sql = createSearchSQL(keyword)
 

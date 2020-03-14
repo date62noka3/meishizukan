@@ -421,8 +421,8 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * @return フリガナ項目の入力値がフリガナか否か
     * */
     private fun isPhoneticName():Boolean{
-        return (firstPhoneticNameEditText.text.matches(Modules.phoneticNameRegex)
-                && lastPhoneticNameEditText.text.matches(Modules.phoneticNameRegex))
+        return (firstPhoneticNameEditText.text.matches(PhoneticName.phoneticNameRegex)
+                && lastPhoneticNameEditText.text.matches(PhoneticName.phoneticNameRegex))
     }
 
     /*
@@ -450,7 +450,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
         var phoneticName = firstPhoneticNameEditText.text.toString()
             .plus(nameSplit)
             .plus(lastPhoneticNameEditText.text.toString())
-        phoneticName = Modules.hiraganaToKatakana(phoneticName)
+        phoneticName = PhoneticName.hiraganaToKatakana(phoneticName)
         val sex = convertSexStringToSexNum(sexSpinner.selectedItem.toString())
         val organizationName = organizationNameEditText.text.toString()
         val note = noteEditText.text.toString()
