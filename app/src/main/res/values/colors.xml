@@ -8,6 +8,7 @@
     <color name="textColor">#303030</color>
     <color name="hintTextColor">#A9A9A9</color>
     <color name="emptyTextColor">#757575</color>
+    <color name="lineViewBackgroundColor">#A8A8A8</color>
 
     <!-- ローディング画面 -->
     <color name="loadingDialogTextColor">#4D4DDB</color>
@@ -38,4 +39,7 @@
     <color name="backgroundColorOnInputError">#EE5365</color>
     <color name="textColorOnSaved">#FFFFFF</color>
     <color name="backgroundColorOnSaved">#4D4DDB</color>
+
+    <!-- 写真一覧画面 -->
+    <color name="selectButtonTextColor">#FFFFFF</color>
 </resources>

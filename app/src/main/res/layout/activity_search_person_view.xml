@@ -40,6 +40,7 @@
             android:layout_marginTop="10dp"
             android:layout_marginRight="30dp"
             android:background="@drawable/active_menu_background"
+            android:foreground="?attr/selectableItemBackground"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/menuHeaderTextView" />
@@ -75,6 +76,7 @@
             android:layout_height="50dp"
             android:layout_marginTop="10dp"
             android:layout_marginRight="30dp"
+            android:foreground="?attr/selectableItemBackground"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
@@ -124,7 +126,7 @@
             android:id="@+id/lineView"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#A8A8A8"
+            android:background="@color/lineViewBackgroundColor"
             app:layout_constraintBottom_toBottomOf="@+id/headerMenu"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
@@ -233,8 +235,7 @@
                 android:id="@+id/personListLinearLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:overScrollMode="ifContentScrolls">
+                android:orientation="vertical">
 
             </LinearLayout>
         </ScrollView>

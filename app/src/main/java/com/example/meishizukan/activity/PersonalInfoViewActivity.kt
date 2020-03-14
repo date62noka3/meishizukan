@@ -58,11 +58,13 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             onBackPressed()
         }
 
+        personId = intent.getIntExtra("PERSON_ID",newPersonId)
+
         //写真画面に遷移
-        photosViewButton.setOnClickListener{
-            if(valueChangedElements.count() == 0){
-                val intent = Intent(this,PhotosViewActivity::class.java)
-                intent.putExtra("PERSON_ID",personId)
+        photosViewButton.setOnClickListener {
+            if (valueChangedElements.count() == 0) {
+                val intent = Intent(this, PhotosViewActivity::class.java)
+                intent.putExtra("PERSON_ID", personId)
                 startActivity(intent)
                 finish()
                 return@setOnClickListener
@@ -72,8 +74,8 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                 .setTitle(getString(R.string.confirm_dialog_title))
                 .setMessage(getString(R.string.confirm_message_on_transit))
                 .setPositiveButton(getString(R.string.positive_button_text)) { _, _ ->
-                    val intent = Intent(this,PhotosViewActivity::class.java)
-                    intent.putExtra("PERSON_ID",personId)
+                    val intent = Intent(this, PhotosViewActivity::class.java)
+                    intent.putExtra("PERSON_ID", personId)
                     startActivity(intent)
                     finish()
                 }
@@ -81,8 +83,6 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                 .setCancelable(false)
                 .show()
         }
-
-        personId = intent.getIntExtra("PERSON_ID",newPersonId)
 
         if(isNewPerson(personId)){ //新規
             disablePhotosViewButton()
@@ -292,10 +292,10 @@ class PersonalInfoViewActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle(getString(R.string.confirm_dialog_title))
             .setMessage(getString(R.string.confirm_message_on_transit))
-            .setPositiveButton(getString(R.string.positive_button_text)) { dialog, which ->
+            .setPositiveButton(getString(R.string.positive_button_text)) { _, _ ->
                 super.onBackPressed()
             }
-            .setNegativeButton(getString(R.string.negative_button_text),{ dialog, which -> })
+            .setNegativeButton(getString(R.string.negative_button_text),{ _, _ -> })
             .setCancelable(false)
             .show()
     }

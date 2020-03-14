@@ -17,11 +17,11 @@
     <string name="all_photos_view">写真一覧</string>
     <string name="nav_header_title">メニュー</string>
 
-    <!-- 人物情報＆写真画面のヘッダーメニュー -->
+    <!-- 人物情報＆写真一覧画面のヘッダーメニュー -->
     <string name="back_button_text">＜戻る</string>
     <string name="save_button_text">保存</string>
 
-    <!-- 人物情報＆写真画面のAlertDialog -->
+    <!-- 人物情報＆写真一覧画面のAlertDialog -->
     <string name="positive_button_text">はい</string>
     <string name="negative_button_text">いいえ</string>
     <string name="confirm_dialog_title">確認</string>
@@ -78,4 +78,8 @@
         <item>ラ</item>
         <item>ワ</item>
     </string-array>
+
+    <!-- 写真一覧画面 -->
+    <string name="select_button_text">選択</string>
+    <string name="select_button_cancel_text">キャンセル</string>
 </resources>
