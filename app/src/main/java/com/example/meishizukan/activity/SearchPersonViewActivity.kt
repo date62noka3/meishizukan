@@ -160,6 +160,9 @@ class SearchPersonViewActivity : AppCompatActivity() {
                 override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
                 override fun onDrawerStateChanged(newState: Int) {}
                 override fun onDrawerOpened(drawerView: View) {
+                    if(isKeyboardShown){
+                        inputMethodManager.hideSoftInputFromWindow(drawerView.windowToken,0) //キーボードを非表示
+                    }
                     menuRootConstraintLayout.bringToFront()
                 }
                 override fun onDrawerClosed(drawerView: View) {
