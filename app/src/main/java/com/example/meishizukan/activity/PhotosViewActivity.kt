@@ -4,14 +4,10 @@ import android.app.Activity
 import android.content.Intent
 import android.database.sqlite.SQLiteDatabase
 import android.graphics.Bitmap
-import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Handler
-import android.os.ParcelFileDescriptor
 import android.provider.BaseColumns
 import android.provider.MediaStore
-import android.util.Log
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
@@ -24,7 +20,6 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import kotlinx.android.synthetic.main.activity_photos_view.*
 import androidx.core.content.ContextCompat.getColor
-import com.example.meishizukan.util.BitmapUtils
 
 private const val OPEN_CAMERA_REQUEST_CODE  = 0
 
@@ -215,7 +210,7 @@ class PhotosViewActivity : AppCompatActivity() {
             override fun onAnimationStart(animation: Animation?) {}
             override fun onAnimationRepeat(animation: Animation?) {}
             override fun onAnimationEnd(animation: Animation?) {
-                addPhotoButton.setImageResource(R.drawable.add_photo_cancel_button)
+                addPhotoButton.setBackgroundResource(R.drawable.add_photo_cancel_button_background)
             }
         })
         addPhotoButton.startAnimation(rotateCloseButtonAnimation)
@@ -234,7 +229,7 @@ class PhotosViewActivity : AppCompatActivity() {
             override fun onAnimationStart(animation: Animation?) {}
             override fun onAnimationRepeat(animation: Animation?) {}
             override fun onAnimationEnd(animation: Animation?) {
-                addPhotoButton.setImageResource(R.drawable.add_button)
+                addPhotoButton.setBackgroundResource(R.drawable.add_button_background)
             }
         })
         addPhotoButton.startAnimation(rotateCloseButtonAnimation)

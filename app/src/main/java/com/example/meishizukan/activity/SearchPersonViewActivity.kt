@@ -173,8 +173,17 @@ class SearchPersonViewActivity : AppCompatActivity() {
             drawerLayout.openDrawer(menuRootConstraintLayout,true)
         }
 
-        //メニュー表示時後ろにクリックを通さないため
+        //メニュー表示時、後ろにクリックを通さないため
         menuRootConstraintLayout.setOnClickListener{}
+
+        //メニューを閉じる
+        searchPersonViewButton.setOnClickListener{
+            drawerLayout.closeDrawer(menuRootConstraintLayout,true)
+        }
+
+        allPhotosViewButton.setOnClickListener{
+            Log.d("TEST","ALL_PHOTOS_VIEW_BUTTON_CLICKED")
+        }
 
         addPersonButton.setOnClickListener{
             val intent = Intent(this,PersonalInfoViewActivity::class.java)
@@ -317,6 +326,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
     * ローディング画面を表示
     * */
     private fun showLoadingDialog(){
+        loadingDialogView.bringToFront()
         loadingDialogView.visibility = View.VISIBLE
     }
 
@@ -324,6 +334,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
     * ローディング画面を非表示
     * */
     private fun hideLoadingDialog(){
+        rootConstraintLayout.bringToFront()
         loadingDialogView.visibility = View.INVISIBLE
     }
 
