@@ -176,6 +176,10 @@ class SearchPersonViewActivity : AppCompatActivity() {
         //メニュー表示時後ろにクリックを通さないため
         menuRootConstraintLayout.setOnClickListener{}
 
+        allPhotosViewButton.setOnClickListener{
+            Log.d("TEST","ALL_PTHOS_VIEW")
+        }
+
         addPersonButton.setOnClickListener{
             val intent = Intent(this,PersonalInfoViewActivity::class.java)
             startActivityForResult(intent,NO_MEANS_REQUEST_CODE)
