@@ -30,14 +30,24 @@ object BitmapUtils {
     }
 
     /*
-    * BitmapをBinaryに変換
+    * ビットマップをバイナリに変換
     *
-    * @param Bitmap
-    * @return Binary
+    * @param ビットマップ
+    * @return バイナリ
     * */
     fun convertBitmapToBinary(bitmap:Bitmap):ByteArray{
         val byteArrayOutputStream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.PNG,100,byteArrayOutputStream)
         return byteArrayOutputStream.toByteArray()
+    }
+
+    /*
+    * バイナリをビットマップに変換
+    *
+    * @param バイナリ
+    * @return ビットマップ
+    * */
+    fun convertBinaryToBitmap(binary:ByteArray):Bitmap{
+        return BitmapFactory.decodeByteArray(binary,0,binary.size)
     }
 }

@@ -514,8 +514,8 @@ class SearchPersonViewActivity : AppCompatActivity() {
         this.layoutInflater.inflate(R.layout.person_listview_item,personListLinearLayout)
         val item = personListLinearLayout.getChildAt(personListLinearLayout.childCount - 1) as ConstraintLayout
         item.tag = person.getId().toString()
-        item.setOnClickListener(PersonItemOnClickListener())
-        item.setOnLongClickListener(PersonItemOnLongClickListener())
+        item.setOnClickListener(ItemOnClickListener())
+        item.setOnLongClickListener(ItemOnLongClickListener())
 
         val nameTextView = item.findViewById<TextView>(R.id.nameTextView)
         val phoneticNameTextView = item.findViewById<TextView>(R.id.phoneticNameTextView)
@@ -558,11 +558,11 @@ class SearchPersonViewActivity : AppCompatActivity() {
     }
 
     /*
-    * 人物アイテムのクリックリスナ
+    * 人物リストビューのアイテム、クリックリスナ
     *
     * 写真一覧画面に遷移する
     * */
-    private inner class PersonItemOnClickListener:View.OnClickListener{
+    private inner class ItemOnClickListener:View.OnClickListener{
         override fun onClick(v: View?) {
             v?:return
             val view = v as ConstraintLayout
@@ -588,11 +588,11 @@ class SearchPersonViewActivity : AppCompatActivity() {
             .plus(getString(R.string.selected_item_count_text))
     }
     /*
-    * 人物アイテムのロングクリックリスナ
+    * 人物リストビューのアイテム、ロングクリックリスナ
     *
     * 削除対象人物リストに追加・削除する
     * */
-    private inner class PersonItemOnLongClickListener:View.OnLongClickListener{
+    private inner class ItemOnLongClickListener:View.OnLongClickListener{
         override fun onLongClick(v: View?): Boolean {
             v?:return false
 
