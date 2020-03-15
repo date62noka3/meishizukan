@@ -1,6 +1,7 @@
 package com.example.meishizukan.activity
 
 import android.app.Activity
+import android.app.DownloadManager
 import android.content.ContentValues
 import android.content.Intent
 import android.database.Cursor
@@ -27,6 +28,7 @@ import androidx.core.content.ContextCompat.getColor
 import com.example.meishizukan.dto.Photo
 import com.example.meishizukan.dto.PhotoLink
 import com.example.meishizukan.util.BitmapUtils
+import com.google.android.gms.ads.RequestConfiguration
 import java.security.MessageDigest
 
 private const val OPEN_CAMERA_REQUEST_CODE  = 0
@@ -49,10 +51,14 @@ class PhotosViewActivity : AppCompatActivity() {
         writableDB = dbHelper.writableDatabase
 
         //AdMob初期化
-        MobileAds.initialize(this) {}
-        val adRequest = AdRequest.Builder()
-            .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+        val testDevices = mutableListOf<String>()
+        testDevices.add(AdRequest.DEVICE_ID_EMULATOR)
+        val requestConfiguration = RequestConfiguration.Builder()
+            .setTestDeviceIds(testDevices)
             .build()
+        MobileAds.initialize(this) {}
+        MobileAds.setRequestConfiguration(requestConfiguration)
+        val adRequest = AdRequest.Builder().build()
         adView.loadAd(adRequest)
         adView.adListener = object: AdListener() {
             override fun onAdLoaded() {}
