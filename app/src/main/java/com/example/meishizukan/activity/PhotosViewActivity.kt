@@ -138,6 +138,7 @@ class PhotosViewActivity : AppCompatActivity() {
     override fun onDestroy(){
         adView.destroy()
         readableDB.close()
+        writableDB.close()
         super.onDestroy()
     }
 
