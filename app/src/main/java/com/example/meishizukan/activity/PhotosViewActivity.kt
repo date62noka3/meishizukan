@@ -1,7 +1,6 @@
 package com.example.meishizukan.activity
 
 import android.app.Activity
-import android.content.ClipData
 import android.content.ContentValues
 import android.content.Intent
 import android.database.Cursor
@@ -11,7 +10,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.BaseColumns
 import android.provider.MediaStore
-import android.util.Log
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
@@ -30,7 +28,6 @@ import com.example.meishizukan.dto.Photo
 import com.example.meishizukan.dto.PhotoLink
 import com.example.meishizukan.util.BitmapUtils
 import java.security.MessageDigest
-import java.util.*
 
 private const val OPEN_CAMERA_REQUEST_CODE  = 0
 
@@ -109,6 +106,27 @@ class PhotosViewActivity : AppCompatActivity() {
         val person = loadPersonalInfo(personId)
         if(person != null) {
             setPersonalInfoToTextView(person)
+
+            //人物にリンクしている写真をリストビューに表示
+            val allLinkedPhotosCursor = searchAllLinkedPhotos()
+            if(allLinkedPhotosCursor.count == 0){
+                displayPhotoCount()
+                return
+            }
+
+            while(allLinkedPhotosCursor.moveToNext()){
+                val photoId = allLinkedPhotosCursor.getInt(0)
+
+                val linkedPhotoCursor = searchPhoto(photoId)
+                if(linkedPhotoCursor.count == 0){
+                    return
+                }
+
+                linkedPhotoCursor.moveToNext()
+                val binary = linkedPhotoCursor.getBlob(1)
+                val bitmap = BitmapUtils.convertBinaryToBitmap(binary)
+                displayPhoto(photoId,bitmap)
+            }
         }
     }
 
@@ -194,13 +212,42 @@ class PhotosViewActivity : AppCompatActivity() {
 
     /*
     * 写真をDBで検索
+    * (写真追加処理で既存するものかを確認している)
     *
     * @param ハッシュ化したバイナリ
-    * @return カーソル
+    * @return 検索結果カーソル
     * */
     private fun searchPhoto(hashedBinary:ByteArray): Cursor {
         val sql = "SELECT ${BaseColumns._ID} FROM ${DbContracts.Photos.TABLE_NAME}" +
                 " WHERE ${DbContracts.Photos.COLUMN_HASHED_BINARY} = '$hashedBinary'"
+        return readableDB.rawQuery(sql,null)
+    }
+
+    /*
+    * 写真をDBで検索
+    * (リンクしている写真を一覧表示する際に使う)
+    *
+    * @param 写真ID
+    * @return 検索結果カーソル
+    * */
+    private fun searchPhoto(photoId: Int):Cursor{
+        val sql = "SELECT ${BaseColumns._ID}," +
+                DbContracts.Photos.COLUMN_BINARY +
+                " FROM ${DbContracts.Photos.TABLE_NAME}" +
+                " WHERE ${BaseColumns._ID} = $photoId"
+        return readableDB.rawQuery(sql,null)
+    }
+
+    /*
+    * 人物にリンクしている写真をすべて検索
+    *
+    * @return 検索結果カーソル
+    * */
+    private fun searchAllLinkedPhotos():Cursor{
+        val sql = "SELECT ${BaseColumns._ID}," +
+                DbContracts.PhotosLinks.COLUMN_PHOTO_ID +
+                " FROM ${DbContracts.PhotosLinks.TABLE_NAME}" +
+                " WHERE ${DbContracts.PhotosLinks.COLUMN_PERSON_ID} = $personId"
         return readableDB.rawQuery(sql,null)
     }
 
@@ -227,7 +274,7 @@ class PhotosViewActivity : AppCompatActivity() {
         writableDB.insert(DbContracts.PhotosLinks.TABLE_NAME,null,values)
     }
 
-    private var displayPhotoCount = 0
+    private var displayedPhotoCount = 0
     private val itemCountPerLine = 3 //1行当たりのアイテム数
     /*
     * 写真をリストビューに表示
@@ -236,13 +283,13 @@ class PhotosViewActivity : AppCompatActivity() {
     * @param ビットマップ
     * */
     private fun displayPhoto(photoId:Int,bitmap: Bitmap){
-        if(displayPhotoCount % itemCountPerLine == 0){
+        if(displayedPhotoCount % itemCountPerLine == 0){
             this.layoutInflater.inflate(R.layout.photo_listview_item,photoListLinearLayout)
         }
 
         val photoListViewItem = photoListLinearLayout.getChildAt(photoListLinearLayout.childCount - 1)
 
-        val photoImageView:ImageView? = when(displayPhotoCount % itemCountPerLine){
+        val photoImageView:ImageView? = when(displayedPhotoCount % itemCountPerLine){
             0 -> {
                 val leftConstraintLayout = photoListViewItem.findViewById<ConstraintLayout>(R.id.leftConstraintLayout)
                 leftConstraintLayout.findViewById(R.id.photoImageView)
@@ -267,8 +314,15 @@ class PhotosViewActivity : AppCompatActivity() {
         photoImageView.setOnClickListener(ItemOnClickListener())
         photoImageView.setOnLongClickListener(ItemOnLongClickListener())
 
-        displayPhotoCount++
-        photoCountTextView.text = displayPhotoCount.toString()
+        displayedPhotoCount++
+        displayPhotoCount()
+    }
+
+    /*
+    * 写真数を表示
+    * */
+    private fun displayPhotoCount(){
+        photoCountTextView.text = displayedPhotoCount.toString().plus("件")
     }
 
     /*
@@ -306,7 +360,6 @@ class PhotosViewActivity : AppCompatActivity() {
 
         if(cursor.count == 0){
             cursor.close()
-            readableDB.close()
             return null
         }
 
