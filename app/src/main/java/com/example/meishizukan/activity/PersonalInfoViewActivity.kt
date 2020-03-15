@@ -21,6 +21,7 @@ import com.example.meishizukan.util.*
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration
 import kotlinx.android.synthetic.main.activity_personal_info_view.*
 
 class PersonalInfoViewActivity : AppCompatActivity() {
@@ -40,10 +41,14 @@ class PersonalInfoViewActivity : AppCompatActivity() {
         readableDB = dbHelper.readableDatabase
 
         //AdMob初期化
-        MobileAds.initialize(this) {}
-        val adRequest = AdRequest.Builder()
-            .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+        val testDevices = mutableListOf<String>()
+        testDevices.add(AdRequest.DEVICE_ID_EMULATOR)
+        val requestConfiguration = RequestConfiguration.Builder()
+            .setTestDeviceIds(testDevices)
             .build()
+        MobileAds.initialize(this) {}
+        MobileAds.setRequestConfiguration(requestConfiguration)
+        val adRequest = AdRequest.Builder().build()
         adView.loadAd(adRequest)
         adView.adListener = object: AdListener() {
             override fun onAdLoaded() {}
