@@ -2,17 +2,17 @@ package com.example.meishizukan.dto
 
 class Photo(
     id:Int,
-    bitmapIndex:Int,
-    bitmapBinary:ByteArray,
+    hashedBinary:ByteArray,
+    binary:ByteArray,
     createdOn:String
 ) {
     private val id = id
-    private val bitmapIndex = bitmapIndex
-    private val bitmapBinary = bitmapBinary
+    private val hashedBinary = hashedBinary
+    private val binary = binary
     private val createdOn = createdOn
 
     fun getId():Int{ return id }
-    fun getBitmapIndex():Int{ return bitmapIndex }
-    fun getBitmapBinary():ByteArray{ return bitmapBinary }
+    fun getHashedBinary():ByteArray{ return hashedBinary }
+    fun getBinary():ByteArray{ return binary }
     fun getCreatedOn():String{ return createdOn }
 }

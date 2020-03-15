@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.BaseColumns
 import android.provider.MediaStore
+import android.util.Log
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
@@ -20,6 +21,9 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import kotlinx.android.synthetic.main.activity_photos_view.*
 import androidx.core.content.ContextCompat.getColor
+import com.example.meishizukan.util.BitmapUtils
+import java.security.MessageDigest
+import java.util.*
 
 private const val OPEN_CAMERA_REQUEST_CODE  = 0
 
@@ -108,6 +112,7 @@ class PhotosViewActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
+    private val messageDigest = MessageDigest.getInstance("MD5")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -116,6 +121,8 @@ class PhotosViewActivity : AppCompatActivity() {
             val data = data.extras.get("data")
             data?:return
             val bitmap = data as Bitmap
+            val binary = BitmapUtils.convertBitmapToBinary(bitmap)
+            val hashedBinary = messageDigest.digest(binary)
         }
     }
 
