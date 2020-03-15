@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.ParcelFileDescriptor
+import java.io.ByteArrayOutputStream
 import java.io.FileDescriptor
 import java.lang.Exception
 
@@ -26,5 +27,27 @@ object BitmapUtils {
         }finally {
             parcelFileDescriptor?.close()
         }
+    }
+
+    /*
+    * ビットマップをバイナリに変換
+    *
+    * @param ビットマップ
+    * @return バイナリ
+    * */
+    fun convertBitmapToBinary(bitmap:Bitmap):ByteArray{
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG,100,byteArrayOutputStream)
+        return byteArrayOutputStream.toByteArray()
+    }
+
+    /*
+    * バイナリをビットマップに変換
+    *
+    * @param バイナリ
+    * @return ビットマップ
+    * */
+    fun convertBinaryToBitmap(binary:ByteArray):Bitmap{
+        return BitmapFactory.decodeByteArray(binary,0,binary.size)
     }
 }
