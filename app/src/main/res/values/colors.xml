@@ -23,10 +23,10 @@
     <!-- 人物リストビュー -->
     <color name="personListViewSeparatorBackground">#C8E4FC</color>
 
-    <!-- 人物情報＆写真画面ヘッダーメニュー -->
+    <!-- 人物情報＆写真一覧画面ヘッダーメニュー -->
     <color name="backButtonTextColor">#005CFF</color>
 
-    <!-- 人物情報＆写真画面フッターメニュー -->
+    <!-- 人物情報＆写真一覧画面フッターメニュー -->
     <color name="enabledButtonTextColor">#303030</color>
     <color name="disabledButtonTextColor">#FFFFFF</color>
 
@@ -42,4 +42,7 @@
 
     <!-- 写真一覧画面 -->
     <color name="selectButtonTextColor">#FFFFFF</color>
+    <color name="fullScreenViewBackground">#000000</color>
+    <color name="optionBarBackground">#2B2B2E</color>
+    <color name="fullScreenViewTextColor">#FFFFFF</color>
 </resources>
