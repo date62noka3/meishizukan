@@ -43,6 +43,6 @@
     <!-- 写真一覧画面 -->
     <color name="selectButtonTextColor">#FFFFFF</color>
     <color name="fullScreenViewBackground">#000000</color>
-    <color name="optionBarBackground">#2B2B2E</color>
+    <color name="optionBarBackground">#7F2B2B2E</color>
     <color name="fullScreenViewTextColor">#FFFFFF</color>
 </resources>

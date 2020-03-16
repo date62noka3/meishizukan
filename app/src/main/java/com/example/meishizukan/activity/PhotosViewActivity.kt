@@ -1,16 +1,18 @@
 package com.example.meishizukan.activity
 
 import android.app.Activity
-import android.app.DownloadManager
 import android.content.ContentValues
 import android.content.Intent
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.BaseColumns
 import android.provider.MediaStore
+import android.util.Log
+import android.view.GestureDetector
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
@@ -28,6 +30,7 @@ import androidx.core.content.ContextCompat.getColor
 import com.example.meishizukan.dto.Photo
 import com.example.meishizukan.dto.PhotoLink
 import com.example.meishizukan.util.BitmapUtils
+import com.example.meishizukan.util.OnSwipeGestureListener
 import com.google.android.gms.ads.RequestConfiguration
 import java.security.MessageDigest
 
@@ -38,6 +41,8 @@ class PhotosViewActivity : AppCompatActivity() {
     private var personId = 0
     private val newPhotoId = 0
     private val newPhotoLinkId = 0
+
+    private var displayedPhotoImageViewIdOnFullScreen = -1 //全画面表示されている写真イメージビューID
 
     private val dbHelper = DbHelper(this)
     private lateinit var readableDB: SQLiteDatabase
@@ -100,6 +105,63 @@ class PhotosViewActivity : AppCompatActivity() {
 
         }
 
+        closeButton.setOnClickListener{
+            hideFullScreenView()
+        }
+
+        fullScreenView.setOnClickListener{
+            if(fullScreenViewHeaderOptionBar.visibility == View.VISIBLE){
+                hideFullScreenViewOptionBar()
+            }else{
+                showFullScreenViewOptionBar()
+            }
+        }
+
+        /*
+        * 全画面表示のスワイプリスナ
+        *
+        * 右にスワイプで次の写真を表示する
+        * 左にスワイプで前の写真を表示する
+        * */
+        class SwipeListener:OnSwipeGestureListener(){
+            override fun onSwipeBottom() {}
+            override fun onSwipeTop() {}
+            override fun onSwipeLeft() {
+                val nextPhotoImageViewId = getNextPhotoImageViewId()
+                if(nextPhotoImageViewId == -1){
+                    return
+                }
+                val nextPhotoImageView = findViewById<ImageView>(nextPhotoImageViewId)
+                fullScreenViewPhotoImageView.setImageDrawable(nextPhotoImageView.drawable)
+
+                val currentPage = displayedPhotoImageViews.indexOf(nextPhotoImageViewId) + 1
+                displayPageNumber(currentPage)
+
+                displayedPhotoImageViewIdOnFullScreen = nextPhotoImageViewId
+            }
+            override fun onSwipeRight() {
+                val prevPhotoImageViewId = getPrevPhotoImageViewId()
+                if(prevPhotoImageViewId == -1) {
+                    return
+                }
+                val prevPhotoImageView = findViewById<ImageView>(prevPhotoImageViewId)
+                fullScreenViewPhotoImageView.setImageDrawable(prevPhotoImageView.drawable)
+
+                val currentPage = displayedPhotoImageViews.indexOf(prevPhotoImageViewId) + 1
+                displayPageNumber(currentPage)
+
+                displayedPhotoImageViewIdOnFullScreen = prevPhotoImageViewId
+            }
+        }
+        val gestureDetector = GestureDetector(this,SwipeListener())
+        fullScreenView.setOnTouchListener { v, event -> gestureDetector.onTouchEvent(event) }
+
+        rotateLeftButton.setOnClickListener{}
+
+        rotateRightButton.setOnClickListener{}
+
+        fullScreenViewDownloadButton.setOnClickListener{}
+
         personId = intent.getIntExtra("PERSON_ID",0)
 
         personalInfoViewButton.setOnClickListener{
@@ -131,7 +193,7 @@ class PhotosViewActivity : AppCompatActivity() {
                 linkedPhotoCursor.moveToNext()
                 val binary = linkedPhotoCursor.getBlob(1)
                 val bitmap = BitmapUtils.convertBinaryToBitmap(binary)
-                displayPhoto(photoId,bitmap)
+                displayPhoto(bitmap)
             }
         }
     }
@@ -157,7 +219,7 @@ class PhotosViewActivity : AppCompatActivity() {
             val data = data.extras.get("data")
             data?:return
             val bitmap = data as Bitmap
-            val binary = BitmapUtils.convertBitmapToBinary(bitmap)
+            val binary = BitmapUtils.convertBitmapToBinaryJPEG(bitmap)
             val hashedBinary = messageDigest.digest(binary)
 
             val cursor = searchPhoto(hashedBinary)
@@ -187,7 +249,7 @@ class PhotosViewActivity : AppCompatActivity() {
 
             addPhotoLink(photoLink)
 
-            displayPhoto(photoId,bitmap)
+            displayPhoto(bitmap)
         }
     }
 
@@ -281,22 +343,50 @@ class PhotosViewActivity : AppCompatActivity() {
         writableDB.insert(DbContracts.PhotosLinks.TABLE_NAME,null,values)
     }
 
-    private var displayedPhotoCount = 0
+    private val displayedPhotoImageViews = mutableListOf<Int>() //値は写真イメージビューのビューID
+
+    /*
+    * 全画面表示モードで使う次の写真イメージビューのIDを取得
+    *
+    * @return 次の写真イメージビューのID
+    * */
+    private fun getNextPhotoImageViewId():Int{
+        val nextIndex = displayedPhotoImageViews.indexOf(displayedPhotoImageViewIdOnFullScreen) + 1
+        return if(nextIndex < displayedPhotoImageViews.count()){
+            displayedPhotoImageViews[nextIndex]
+        }else{
+            -1
+        }
+    }
+
+    /*
+    * 全画面表示モードで使う前の写真イメージビューのIDを取得
+    *
+    * @return 前の写真イメージビューのID
+    * */
+    private fun getPrevPhotoImageViewId():Int{
+        val prevIndex = displayedPhotoImageViews.indexOf(displayedPhotoImageViewIdOnFullScreen) - 1
+        return if(0 <= prevIndex){
+            displayedPhotoImageViews[prevIndex]
+        }else{
+            -1
+        }
+    }
+
     private val itemCountPerLine = 3 //1行当たりのアイテム数
     /*
     * 写真をリストビューに表示
     *
-    * @param 写真ID
     * @param ビットマップ
     * */
-    private fun displayPhoto(photoId:Int,bitmap: Bitmap){
-        if(displayedPhotoCount % itemCountPerLine == 0){
+    private fun displayPhoto(bitmap: Bitmap){
+        if(displayedPhotoImageViews.count() % itemCountPerLine == 0){
             this.layoutInflater.inflate(R.layout.photo_listview_item,photoListLinearLayout)
         }
 
         val photoListViewItem = photoListLinearLayout.getChildAt(photoListLinearLayout.childCount - 1)
 
-        val photoImageView:ImageView? = when(displayedPhotoCount % itemCountPerLine){
+        val photoImageView:ImageView? = when(displayedPhotoImageViews.count() % itemCountPerLine){
             0 -> {
                 val leftConstraintLayout = photoListViewItem.findViewById<ConstraintLayout>(R.id.leftConstraintLayout)
                 leftConstraintLayout.findViewById(R.id.photoImageView)
@@ -317,11 +407,11 @@ class PhotosViewActivity : AppCompatActivity() {
         photoImageView?:return
 
         photoImageView.setImageBitmap(bitmap)
-        photoImageView.tag = photoId.toString()
         photoImageView.setOnClickListener(ItemOnClickListener())
         photoImageView.setOnLongClickListener(ItemOnLongClickListener())
 
-        displayedPhotoCount++
+        photoImageView.id = View.generateViewId() //一意のIDを付与
+        displayedPhotoImageViews.add(photoImageView.id)
         displayPhotoCount()
     }
 
@@ -329,14 +419,40 @@ class PhotosViewActivity : AppCompatActivity() {
     * 写真数を表示
     * */
     private fun displayPhotoCount(){
-        photoCountTextView.text = displayedPhotoCount.toString().plus("件")
+        photoCountTextView.text = displayedPhotoImageViews.count().toString().plus("件")
+    }
+
+    /*
+    * ページ番号を表示
+    *
+    * @param 現在ページ
+    * */
+    private fun displayPageNumber(currentPage:Int){
+        pageNumberTextView.text = currentPage.toString().plus(" / ").plus(displayedPhotoImageViews.count())
+    }
+
+    /*
+    * 写真を全画面表示
+    *
+    * @param 表示する写真
+    * */
+    private fun displayPhotoByFullScreen(drawable: Drawable){
+        fullScreenViewPhotoImageView.setImageDrawable(drawable)
     }
 
     /*
     * 写真リストビューのアイテム、クリックリスナ
     * */
     private inner class ItemOnClickListener:View.OnClickListener{
-        override fun onClick(v: View?) {}
+        override fun onClick(v: View?) {
+            v?:return
+            val imageView = v as ImageView
+            val currentPage = displayedPhotoImageViews.indexOf(imageView.id) + 1
+            displayPageNumber(currentPage)
+            displayPhotoByFullScreen(imageView.drawable)
+            displayedPhotoImageViewIdOnFullScreen = imageView.id
+            showFullScreenView()
+        }
     }
 
     /*
@@ -421,6 +537,8 @@ class PhotosViewActivity : AppCompatActivity() {
             phoneticNameTextView.text = getString(R.string.empty)
             phoneticNameTextView.setTextColor(getColor(this,R.color.emptyTextColor))
         }
+
+        fullScreenViewNameTextView.text = nameTextView.text
     }
 
     /*
@@ -465,5 +583,50 @@ class PhotosViewActivity : AppCompatActivity() {
 
         backgroundOnOpenedSelection.visibility = View.INVISIBLE
         addPhotoButtonsLinearLayout.visibility = View.INVISIBLE
+    }
+
+    /*
+    * 全画面表示ビューを表示
+    * */
+    private fun showFullScreenView(){
+        fullScreenView.clearAnimation()
+
+        fullScreenView.visibility = View.VISIBLE
+
+        val showFullScreenViewAnimation = AnimationUtils.loadAnimation(this,R.anim.show_full_screen_view)
+        fullScreenView.startAnimation(showFullScreenViewAnimation)
+    }
+
+    /*
+    * 全画面表示ビューを非表示
+    * */
+    private fun hideFullScreenView(){
+        fullScreenView.clearAnimation()
+
+        val hideFullScreenViewAnimation = AnimationUtils.loadAnimation(this,R.anim.hide_full_screen_view)
+        hideFullScreenViewAnimation.setAnimationListener(object:Animation.AnimationListener{
+            override fun onAnimationStart(animation: Animation?) {}
+            override fun onAnimationRepeat(animation: Animation?) {}
+            override fun onAnimationEnd(animation: Animation?) {
+                fullScreenView.visibility = View.INVISIBLE
+            }
+        })
+        fullScreenView.startAnimation(hideFullScreenViewAnimation)
+    }
+
+    /*
+    * 全画面表示ビューのオプションバーを表示
+    * */
+    private fun showFullScreenViewOptionBar(){
+        fullScreenViewHeaderOptionBar.visibility = View.VISIBLE
+        fullScreenViewFooterOptionBar.visibility = View.VISIBLE
+    }
+
+    /*
+    * 全画面表示ビューのオプションバーを非表示
+    * */
+    private fun hideFullScreenViewOptionBar(){
+        fullScreenViewHeaderOptionBar.visibility = View.INVISIBLE
+        fullScreenViewFooterOptionBar.visibility = View.INVISIBLE
     }
 }
