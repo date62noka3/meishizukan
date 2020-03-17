@@ -27,9 +27,11 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import kotlinx.android.synthetic.main.activity_photos_view.*
 import androidx.core.content.ContextCompat.getColor
+import androidx.core.graphics.drawable.toBitmap
 import com.example.meishizukan.dto.Photo
 import com.example.meishizukan.dto.PhotoLink
 import com.example.meishizukan.util.BitmapUtils
+import com.example.meishizukan.util.BitmapUtils.rotateBitmap
 import com.example.meishizukan.util.OnSwipeGestureListener
 import com.google.android.gms.ads.RequestConfiguration
 import java.security.MessageDigest
@@ -43,6 +45,8 @@ class PhotosViewActivity : AppCompatActivity() {
     private val newPhotoLinkId = 0
 
     private var displayedPhotoImageViewIdOnFullScreen = -1 //全画面表示されている写真イメージビューID
+    private val rotateLeftAngle = -90F //全画面表示で画像を回転させるときの回転角度(左回転)
+    private val rotateRightAngle = 90F //全画面表示で画像を回転させるときの回転角度(右回転)
 
     private val dbHelper = DbHelper(this)
     private lateinit var readableDB: SQLiteDatabase
@@ -156,11 +160,19 @@ class PhotosViewActivity : AppCompatActivity() {
         val gestureDetector = GestureDetector(this,SwipeListener())
         fullScreenView.setOnTouchListener { v, event -> gestureDetector.onTouchEvent(event) }
 
-        rotateLeftButton.setOnClickListener{}
+        rotateLeftButton.setOnClickListener{
+            val rotatedBitmap = rotateBitmap(fullScreenViewPhotoImageView.drawable.toBitmap(),rotateLeftAngle)
+            fullScreenViewPhotoImageView.setImageBitmap(rotatedBitmap)
+        }
 
-        rotateRightButton.setOnClickListener{}
+        rotateRightButton.setOnClickListener{
+            val rotatedBitmap = rotateBitmap(fullScreenViewPhotoImageView.drawable.toBitmap(),rotateRightAngle)
+            fullScreenViewPhotoImageView.setImageBitmap(rotatedBitmap)
+        }
 
-        fullScreenViewDownloadButton.setOnClickListener{}
+        fullScreenViewDownloadButton.setOnClickListener{
+            
+        }
 
         personId = intent.getIntExtra("PERSON_ID",0)
 

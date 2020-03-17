@@ -3,6 +3,7 @@ package com.example.meishizukan.util
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.net.Uri
 import android.os.ParcelFileDescriptor
 import java.io.ByteArrayOutputStream
@@ -61,5 +62,19 @@ object BitmapUtils {
     * */
     fun convertBinaryToBitmap(binary:ByteArray):Bitmap{
         return BitmapFactory.decodeByteArray(binary,0,binary.size)
+    }
+
+    /*
+    * ビットマップを指定角度回転
+    *
+    * @param ビットマップ
+    * @param 回転角度
+    * @return ビットマップ
+    * */
+    fun rotateBitmap(bitmap: Bitmap,angle:Float): Bitmap {
+        val matrix = Matrix()
+       matrix.postRotate(angle)
+
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
 }
