@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.net.Uri
 import android.os.ParcelFileDescriptor
+import android.provider.MediaStore
 import java.io.ByteArrayOutputStream
 import java.io.FileDescriptor
 import java.lang.Exception
@@ -76,5 +77,23 @@ object BitmapUtils {
        matrix.postRotate(angle)
 
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+    }
+
+    /*
+    * ビットマップをギャラリーに保存
+    *
+    * @param コンテキスト
+    * @param ビットマップ
+    * @return 保存先URI
+    * */
+    fun saveBitmapToGallery(context: Context, bitmap: Bitmap): Uri {
+        val savedBitmapUri = MediaStore.Images.Media.insertImage(
+            context.contentResolver,
+            bitmap,
+            null,
+            null
+        )
+
+        return Uri.parse(savedBitmapUri)
     }
 }

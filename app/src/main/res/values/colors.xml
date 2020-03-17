@@ -34,15 +34,19 @@
     <color name="toastTextColor">#303030</color>
     <color name="toastBackgroundColor">#F0F0F0</color>
 
+    <!-- 人物情報＆写真一覧画面トースト -->
+    <color name="textColorOnSaved">#FFFFFF</color>
+    <color name="backgroundColorOnSaved">#4D4DDB</color>
+
     <!-- 人物情報画面 -->
     <color name="textColorOnInputError">#FFFFFF</color>
     <color name="backgroundColorOnInputError">#EE5365</color>
-    <color name="textColorOnSaved">#FFFFFF</color>
-    <color name="backgroundColorOnSaved">#4D4DDB</color>
 
     <!-- 写真一覧画面 -->
     <color name="selectButtonTextColor">#FFFFFF</color>
     <color name="fullScreenViewBackground">#000000</color>
     <color name="optionBarBackground">#7F2B2B2E</color>
     <color name="fullScreenViewTextColor">#FFFFFF</color>
+    <color name="textColorOnFailedDownload">#FFFFFF</color>
+    <color name="backgroundColorOnFailedDownload">#EE5365</color>
 </resources>

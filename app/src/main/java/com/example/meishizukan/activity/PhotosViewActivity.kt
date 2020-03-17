@@ -1,8 +1,10 @@
 package com.example.meishizukan.activity
 
+import android.Manifest
 import android.app.Activity
 import android.content.ContentValues
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.graphics.Bitmap
@@ -17,11 +19,10 @@ import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.meishizukan.R
 import com.example.meishizukan.dto.Person
-import com.example.meishizukan.util.DbContracts
-import com.example.meishizukan.util.DbHelper
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
@@ -30,13 +31,14 @@ import androidx.core.content.ContextCompat.getColor
 import androidx.core.graphics.drawable.toBitmap
 import com.example.meishizukan.dto.Photo
 import com.example.meishizukan.dto.PhotoLink
-import com.example.meishizukan.util.BitmapUtils
+import com.example.meishizukan.util.*
 import com.example.meishizukan.util.BitmapUtils.rotateBitmap
-import com.example.meishizukan.util.OnSwipeGestureListener
+import com.example.meishizukan.util.BitmapUtils.saveBitmapToGallery
 import com.google.android.gms.ads.RequestConfiguration
 import java.security.MessageDigest
 
 private const val OPEN_CAMERA_REQUEST_CODE  = 0
+private const val WRITE_EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE = 1 //ストレージ書き込み権限の要求コード
 
 class PhotosViewActivity : AppCompatActivity() {
 
@@ -171,7 +173,15 @@ class PhotosViewActivity : AppCompatActivity() {
         }
 
         fullScreenViewDownloadButton.setOnClickListener{
-            
+            //権限がなければ要求
+            if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+                requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), WRITE_EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE)
+                return@setOnClickListener
+            }
+
+            val displayedPhotoImageView =
+                findViewById<ImageView>(displayedPhotoImageViewIdOnFullScreen)
+            downloadPhoto(displayedPhotoImageView.drawable.toBitmap())
         }
 
         personId = intent.getIntExtra("PERSON_ID",0)
@@ -222,6 +232,28 @@ class PhotosViewActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        if(requestCode == WRITE_EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE) {
+            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                val displayedPhotoImageView =
+                    findViewById<ImageView>(displayedPhotoImageViewIdOnFullScreen)
+                downloadPhoto(displayedPhotoImageView.drawable.toBitmap())
+            } else {
+                Toaster.createToast(
+                    context = this,
+                    text = getString(R.string.message_on_failed_download),
+                    textColor = getColor(this, R.color.textColorOnFailedDownload),
+                    backgroundColor = getColor(this, R.color.backgroundColorOnFailedDownload),
+                    displayTime = Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
     private val messageDigest = MessageDigest.getInstance("MD5")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -263,6 +295,24 @@ class PhotosViewActivity : AppCompatActivity() {
 
             displayPhoto(bitmap)
         }
+    }
+
+    /*
+    * 写真をダウンロード
+    *
+    * @param ビットマップ
+    * */
+    private fun downloadPhoto(bitmap: Bitmap){
+        val savedBitmapUri = saveBitmapToGallery(this, bitmap)
+        Log.d("SAVED_BITMAP_URI",savedBitmapUri.toString())
+
+        Toaster.createToast(
+            context = this,
+            text = getString(R.string.message_on_saved_photo),
+            textColor = getColor(this, R.color.textColorOnSaved),
+            backgroundColor = getColor(this, R.color.backgroundColorOnSaved),
+            displayTime = Toast.LENGTH_LONG
+        ).show()
     }
 
     /*
