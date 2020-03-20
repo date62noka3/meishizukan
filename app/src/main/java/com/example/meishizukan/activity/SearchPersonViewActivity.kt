@@ -55,6 +55,11 @@ class SearchPersonViewActivity : AppCompatActivity() {
         setContentView(R.layout.activity_search_person_view)
 
         readableDB = dbHelper.readableDatabase
+        /*val wri = dbHelper.writableDatabase
+        var s = "delete from photos_links where _id <> 1000"
+        wri.execSQL(s)
+        s = "delete from photos where _id <> 1000"
+        wri.execSQL(s)*/
 
         sexTypes = resources.getStringArray(R.array.sex_types)
 
@@ -246,8 +251,8 @@ class SearchPersonViewActivity : AppCompatActivity() {
                     Toaster.createToast(
                         context = this,
                         text = getString(R.string.message_on_deleted_persons),
-                        textColor = getColor(this,R.color.textColorOnSaved),
-                        backgroundColor = getColor(this,R.color.backgroundColorOnSaved),
+                        textColor = getColor(this,R.color.toastTextColorOnSuccess),
+                        backgroundColor = getColor(this,R.color.toastBackgroundColorOnSuccess),
                         displayTime = Toast.LENGTH_SHORT
                     ).show()
                 }

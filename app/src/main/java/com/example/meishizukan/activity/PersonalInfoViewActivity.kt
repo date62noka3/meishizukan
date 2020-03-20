@@ -193,8 +193,8 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                 Toaster.createToast(
                     context = this,
                     text = getString(R.string.message_on_blank_error),
-                    textColor = getColor(this,R.color.textColorOnInputError),
-                    backgroundColor = getColor(this,R.color.backgroundColorOnInputError),
+                    textColor = getColor(this,R.color.toastTextColorOnFailed),
+                    backgroundColor = getColor(this,R.color.toastBackgroundColorOnFailed),
                     displayTime = Toast.LENGTH_LONG
                 ).show()
                 return@setOnClickListener
@@ -205,8 +205,8 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                 Toaster.createToast(
                     context = this,
                     text = getString(R.string.message_on_illegal_error),
-                    textColor = getColor(this,R.color.textColorOnInputError),
-                    backgroundColor = getColor(this,R.color.backgroundColorOnInputError),
+                    textColor = getColor(this,R.color.toastTextColorOnFailed),
+                    backgroundColor = getColor(this,R.color.toastBackgroundColorOnFailed),
                     displayTime = Toast.LENGTH_LONG
                 ).show()
                 return@setOnClickListener
@@ -222,8 +222,8 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                 Toaster.createToast(
                     context = this,
                     text = getString(R.string.message_on_saved_new_person),
-                    textColor = getColor(this,R.color.textColorOnSaved),
-                    backgroundColor = getColor(this,R.color.backgroundColorOnSaved),
+                    textColor = getColor(this,R.color.toastTextColorOnSuccess),
+                    backgroundColor = getColor(this,R.color.toastBackgroundColorOnSuccess),
                     displayTime = Toast.LENGTH_SHORT
                 ).show()
 
@@ -236,8 +236,8 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                 Toaster.createToast(
                     context = this,
                     text = getString(R.string.message_on_updated_personal_info),
-                    textColor = getColor(this,R.color.textColorOnSaved),
-                    backgroundColor = getColor(this,R.color.backgroundColorOnSaved),
+                    textColor = getColor(this,R.color.toastTextColorOnSuccess),
+                    backgroundColor = getColor(this,R.color.toastBackgroundColorOnSuccess),
                     displayTime = Toast.LENGTH_SHORT
                 ).show()
             }

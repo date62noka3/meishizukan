@@ -7,8 +7,12 @@ import android.graphics.Matrix
 import android.net.Uri
 import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
+import android.util.Base64
+import android.util.Log
 import java.io.ByteArrayOutputStream
 import java.io.FileDescriptor
+import java.io.FileNotFoundException
+import java.io.IOException
 import java.lang.Exception
 
 object BitmapUtils {
@@ -20,15 +24,36 @@ object BitmapUtils {
     * @return Bitmap
     * */
     fun getBitmapFromUri(context: Context, uri: Uri): Bitmap? {
-        val parcelFileDescriptor = context.contentResolver.openFileDescriptor(uri, "r")
-        val fileDescriptor = parcelFileDescriptor?.fileDescriptor
+        /*var parcelFileDescriptor:ParcelFileDescriptor? = null
         return try{
+            parcelFileDescriptor = context.contentResolver.openFileDescriptor(uri, "r")
+            val fileDescriptor = parcelFileDescriptor?.fileDescriptor
             BitmapFactory.decodeFileDescriptor(fileDescriptor)
-        }catch (e:Exception){
+        }catch (e:Exception) {
+            Log.d("FAILED_GET_BITMAP",e.message)
             null
-        }finally {
-            parcelFileDescriptor?.close()
         }
+        finally {
+            parcelFileDescriptor?.close()
+        }*/
+        return try{
+            MediaStore.Images.Media.getBitmap(context.contentResolver,uri)
+        }catch (e:Exception){
+            Log.d("GET_BITMAP_ERROR",e.message)
+            null
+        }
+        /*return try{
+            val inputStream = context.contentResolver.openInputStream(uri)
+            inputStream?:return null
+            val opt = BitmapFactory.Options()
+            opt.inJustDecodeBounds = false
+            val bitmap = BitmapFactory.decodeStream(inputStream,null,opt)
+            inputStream.close()
+            return bitmap
+        }catch (e:Exception){
+            Log.d("GET_BITMAP_ERROR",e.message)
+            null
+        }*/
     }
 
     /*
