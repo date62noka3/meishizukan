@@ -392,7 +392,7 @@
             android:fontFamily="@font/source_han_serif_regular"
             android:includeFontPadding="false"
             android:text="@string/personal_info_label_text"
-            android:textColor="#4D4DDB"
+            android:textColor="@color/activeButtonTextColor"
             android:textSize="19sp"
             android:textStyle="bold"
             android:visibility="visible"
@@ -404,8 +404,8 @@
 
     <com.google.android.gms.ads.AdView
         android:id="@+id/adView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="320dp"
+        android:layout_height="50dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         app:adSize="BANNER"

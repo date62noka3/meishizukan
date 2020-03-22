@@ -45,4 +45,8 @@
     <color name="fullScreenViewBackground">#000000</color>
     <color name="optionBarBackground">#7F2B2B2E</color>
     <color name="fullScreenViewTextColor">#FFFFFF</color>
+
+    <!-- 全ての写真一覧画面 -->
+    <color name="allPhotosViewBackground">#ECECEC</color>
+    <color name="activeButtonTextColor">#4D4DDB</color>
 </resources>

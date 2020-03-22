@@ -13,6 +13,7 @@ import android.text.TextWatcher
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
+import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -55,11 +56,6 @@ class SearchPersonViewActivity : AppCompatActivity() {
         setContentView(R.layout.activity_search_person_view)
 
         readableDB = dbHelper.readableDatabase
-        /*val wri = dbHelper.writableDatabase
-        var s = "delete from photos_links where _id <> 1000"
-        wri.execSQL(s)
-        s = "delete from photos where _id <> 1000"
-        wri.execSQL(s)*/
 
         sexTypes = resources.getStringArray(R.array.sex_types)
 
@@ -221,7 +217,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
 
             personListScrollView.postDelayed({
                 //前回の追加検索が0件だった場合追加検索を行わない
-                if(prevAddedPersonsCount == 0){
+                if(prevAdditionalSearchPersonsCount == 0){
                     return@postDelayed
                 }
 
@@ -340,6 +336,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
     * ローディング画面を表示
     * */
     private fun showLoadingDialog(){
+        window.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) //タッチ無効化
         loadingDialogView.bringToFront()
         loadingDialogView.visibility = View.VISIBLE
     }
@@ -350,6 +347,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
     private fun hideLoadingDialog(){
         rootConstraintLayout.bringToFront()
         loadingDialogView.visibility = View.INVISIBLE
+        window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) //タッチ無効化解除
     }
 
     /*
@@ -408,6 +406,8 @@ class SearchPersonViewActivity : AppCompatActivity() {
         return persons
     }
 
+    private val limit = 15 //1回で追加表示するアイテム数の上限
+    private var offset = 0 //検索位置
     /*
     * 検索SQLを作成
     *
@@ -449,8 +449,6 @@ class SearchPersonViewActivity : AppCompatActivity() {
 
     private var isSearchedBeforeTransition = false //別アクティビティに遷移する前に検索したか否か
     private val searchHandler = Handler()
-    private val limit = 15 //1回の更新で追加表示するアイテム数の上限
-    private var offset = 0 //検索位置
     private var prevSQL = ""
     /*
     * 人物を検索
@@ -458,7 +456,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
     private fun search(){
         currentJapaneseSyllabaryRegex = "" //現在のア段正規表現をクリア
         prevPhoneticNameFirstChar = "" //前回のふりがな1文字目をクリア
-        prevAddedPersonsCount = -1 //前回の追加検索件数をクリア
+        prevAdditionalSearchPersonsCount = -1 //前回の追加検索件数をクリア
         offset = 0 //オフセットをクリア
 
         personListLinearLayout.removeAllViews() //人物アイテムを全てクリア
@@ -473,7 +471,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
 
         val addPersonsCount = addPersonsToListView(readPersons(sql))
 
-        if(keyword.isBlank()){ //全検索且つDBのpersonsレコードが0件の場合
+        if(keyword.isBlank()){ //全検索の場合且つDBのpersonsレコードが0件の場合
             noResultsTextView.text = getString(R.string.no_persons_text)
         }else{
             noResultsTextView.text = getString(R.string.no_results_textview_text)
@@ -490,7 +488,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
         isSearchedBeforeTransition = true
     }
 
-    private var prevAddedPersonsCount:Int = -1 //前回の追加検索件数
+    private var prevAdditionalSearchPersonsCount:Int = -1 //前回の追加検索件数
     /*
     * 人物を追加検索する
     * */
@@ -504,7 +502,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
 
         Log.d("ADDITIONAL_SEARCH_SQL",prevSQL)
 
-        prevAddedPersonsCount = addPersonsToListView(readPersons(prevSQL))
+        prevAdditionalSearchPersonsCount = addPersonsToListView(readPersons(prevSQL))
     }
 
     /*
@@ -520,6 +518,8 @@ class SearchPersonViewActivity : AppCompatActivity() {
     private val nameSplit = ','
     /*
     * リストビューに人物を追加
+    *
+    * @param 人物
     * */
     private fun addPersonToListView(person: Person){
         this.layoutInflater.inflate(R.layout.person_listview_item,personListLinearLayout)
@@ -661,7 +661,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
     * */
     private fun addPersonsToListView(persons:MutableList<Person>):Int{
         if(persons.count() == 0){
-            if(0 < prevAddedPersonsCount) {
+            if(0 < prevAdditionalSearchPersonsCount) {
                 //一番下に余白を作る
                 this.layoutInflater.inflate(
                     R.layout.person_listview_empty_item,

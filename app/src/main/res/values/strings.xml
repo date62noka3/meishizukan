@@ -88,4 +88,10 @@
     <!-- 写真一覧画面 -->
     <string name="select_button_text">選択</string>
     <string name="select_button_cancel_text">キャンセル</string>
+
+    <!-- すべての写真一覧画面 -->
+    <string name="all_button_text">すべて</string>
+    <string name="year_button_text">年別</string>
+    <string name="month_button_text">月別</string>
+    <string name="day_button_text">日別</string>
 </resources>

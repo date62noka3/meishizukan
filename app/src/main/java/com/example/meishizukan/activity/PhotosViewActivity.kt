@@ -43,8 +43,9 @@ import java.security.MessageDigest
 
 private const val OPEN_CAMERA_REQUEST_CODE  = 0
 private const val OPEN_GALLERY_REQUEST_CODE = 1
+private const val GET_PHOTOS_IN_APP_REQUEST_CODE = 2
 
-private const val WRITE_EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE = 2 //ストレージ書き込み権限の要求コード
+private const val WRITE_EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE = 3 //ストレージ書き込み権限の要求コード
 
 class PhotosViewActivity : AppCompatActivity() {
 
@@ -112,7 +113,7 @@ class PhotosViewActivity : AppCompatActivity() {
         }
 
         galleryButton.setOnClickListener{
-            var intent = Intent()
+            val intent = Intent()
             intent.type = "image/*"
             intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
             intent.action = Intent.ACTION_GET_CONTENT
@@ -120,7 +121,9 @@ class PhotosViewActivity : AppCompatActivity() {
         }
 
         addedPhotosButton.setOnClickListener{
-
+            val intent = Intent(this,AllPhotosViewActivity::class.java)
+            intent.putExtra("REQUEST_CODE", GET_PHOTOS_IN_APP_REQUEST_CODE)
+            startActivityForResult(intent, GET_PHOTOS_IN_APP_REQUEST_CODE)
         }
 
         closeButton.setOnClickListener{
@@ -270,7 +273,8 @@ class PhotosViewActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if(requestCode == OPEN_CAMERA_REQUEST_CODE && resultCode == Activity.RESULT_OK && data != null){
+        if(requestCode == OPEN_CAMERA_REQUEST_CODE && resultCode == Activity.RESULT_OK
+            && data != null){
             data.extras?:return
             val data = data.extras.get("data")
             data?:return
@@ -353,6 +357,11 @@ class PhotosViewActivity : AppCompatActivity() {
                     displayTime = Toast.LENGTH_LONG
                 ).show()
             }
+        }
+
+        if(requestCode == GET_PHOTOS_IN_APP_REQUEST_CODE && resultCode == Activity.RESULT_OK
+            && data != null){
+            //TODO 選択された写真を取得し追加
         }
     }
 
