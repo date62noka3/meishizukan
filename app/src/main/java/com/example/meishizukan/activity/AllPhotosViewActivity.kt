@@ -129,6 +129,10 @@ class AllPhotosViewActivity : AppCompatActivity() {
         headerMenu.setOnClickListener{
             scrollToTop(true)
         }
+
+        backButton.setOnClickListener{
+            super.onBackPressed()
+        }
     }
 
     override fun onResume(){
@@ -136,7 +140,7 @@ class AllPhotosViewActivity : AppCompatActivity() {
         adView.resume()
     }
 
-    override fun onDestroy(){
+    override fun onDestroy() {
         adView.destroy()
         readableDB.close()
         super.onDestroy()
