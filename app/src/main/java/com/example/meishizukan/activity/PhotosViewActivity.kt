@@ -362,6 +362,8 @@ class PhotosViewActivity : AppCompatActivity() {
         if(requestCode == GET_PHOTOS_IN_APP_REQUEST_CODE && resultCode == Activity.RESULT_OK
             && data != null){
             //TODO 選択された写真を取得し追加
+            val selectedPhotos = data.getIntArrayExtra("SELECTED_PHOTOS_ID")
+            Log.d("SELECTED_PHOTO_COUNT",selectedPhotos.count().toString())
         }
     }
 

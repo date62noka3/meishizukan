@@ -6,7 +6,7 @@
     <string name="search_edittext_hint">人物を検索</string>
     <string name="no_persons_text">人物が登録されていません。</string>
     <string name="no_results_textview_text">該当する人物はいませんでした。</string>
-    <string name="selected_item_count_text">名の人物を選択中</string>
+    <string name="selected_person_count_text">名の人物を選択中</string>
     <string name="message_on_deleted_persons">削除しました</string>
 
     <!-- ローディング画面 -->
@@ -94,4 +94,6 @@
     <string name="year_button_text">年別</string>
     <string name="month_button_text">月別</string>
     <string name="day_button_text">日別</string>
+    <string name="finish_button_text">確定</string>
+    <string name="selected_photo_count_text">枚の写真を選択中</string>
 </resources>

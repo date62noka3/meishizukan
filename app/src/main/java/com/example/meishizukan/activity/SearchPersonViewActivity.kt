@@ -204,6 +204,9 @@ class SearchPersonViewActivity : AppCompatActivity() {
             scrollToTop(true)
         }
 
+        //オプションバー背後のリストアイテムにクリックを通さないようにする
+        footerOptionBar.setOnClickListener{}
+
         personListScrollView.viewTreeObserver.addOnScrollChangedListener{
             val loadingItem = personListLinearLayout.findViewById<LinearLayout>(R.id.rootLinearLayout)
             loadingItem?:return@addOnScrollChangedListener
@@ -239,7 +242,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
                 .setPositiveButton(getString(R.string.positive_button_text)) { _, _ ->
                     deletePersons()
 
-                    optionBar.visibility = View.INVISIBLE
+                    footerOptionBar.visibility = View.INVISIBLE
                     addPersonButton.visibility = View.VISIBLE
 
                     search()
@@ -596,7 +599,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
     * */
     private fun displaySelectedItemCount(){
         selectedItemCountTextView.text = removePersons.count().toString()
-            .plus(getString(R.string.selected_item_count_text))
+            .plus(getString(R.string.selected_person_count_text))
     }
     /*
     * 人物リストビューのアイテム、ロングクリックリスナ
@@ -622,10 +625,10 @@ class SearchPersonViewActivity : AppCompatActivity() {
             displaySelectedItemCount()
 
             if(removePersons.isNotEmpty()){
-                optionBar.visibility = View.VISIBLE
+                footerOptionBar.visibility = View.VISIBLE
                 addPersonButton.visibility = View.INVISIBLE
             }else{
-                optionBar.visibility = View.INVISIBLE
+                footerOptionBar.visibility = View.INVISIBLE
                 addPersonButton.visibility = View.VISIBLE
             }
 

@@ -62,7 +62,7 @@
             android:fontFamily="@font/source_han_serif_regular"
             android:includeFontPadding="false"
             android:text="@string/search_person_view"
-            android:textColor="#4D4DDB"
+            android:textColor="@color/activeButtonTextColor"
             android:textSize="17sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="@+id/searchPersonViewButton"
@@ -278,7 +278,7 @@
             app:layout_constraintStart_toStartOf="parent"></com.google.android.gms.ads.AdView>
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/optionBar"
+            android:id="@+id/footerOptionBar"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:layout_marginBottom="20dp"

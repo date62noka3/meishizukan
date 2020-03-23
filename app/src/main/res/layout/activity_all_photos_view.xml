@@ -78,7 +78,7 @@
     <ScrollView
         android:id="@+id/photoListScrollView"
         android:layout_width="match_parent"
-        android:layout_height="480dp"
+        android:layout_height="470dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/headerMenu">
@@ -94,7 +94,7 @@
         android:id="@+id/footerMenu"
         android:layout_width="389dp"
         android:layout_height="50dp"
-        android:layout_marginBottom="15dp"
+        android:layout_marginBottom="20dp"
         android:background="@drawable/inactive_footer_menu_button_background"
         app:layout_constraintBottom_toTopOf="@+id/adView"
         app:layout_constraintEnd_toEndOf="parent"
@@ -217,6 +217,55 @@
             app:layout_constraintEnd_toEndOf="@+id/dayButton"
             app:layout_constraintStart_toStartOf="@+id/dayButton"
             app:layout_constraintTop_toTopOf="@+id/dayButton" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/footerOptionBar"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginBottom="20dp"
+        android:background="#FFFFFF"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/adView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:id="@+id/selectedItemCountTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/source_han_serif_regular"
+            android:includeFontPadding="false"
+            android:text="1枚の写真を選択中"
+            android:textColor="#303030"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/finishButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/disabled_save_button_background"
+            android:clickable="false"
+            android:fontFamily="@font/source_han_serif_regular"
+            android:includeFontPadding="false"
+            android:paddingLeft="17dp"
+            android:paddingTop="1dp"
+            android:paddingRight="17dp"
+            android:paddingBottom="1dp"
+            android:text="@string/finish_button_text"
+            android:textColor="#FFFFFF"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.gms.ads.AdView

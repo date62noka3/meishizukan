@@ -1,17 +1,15 @@
 package com.example.meishizukan.activity
 
+import android.app.Activity
+import android.content.Intent
 import android.database.sqlite.SQLiteDatabase
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.provider.BaseColumns
-import android.util.Log
 import android.view.View
-import android.view.ViewTreeObserver
 import android.view.WindowManager
 import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.ScrollView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.meishizukan.R
@@ -45,6 +43,8 @@ class AllPhotosViewActivity : AppCompatActivity() {
     private val dbHelper = DbHelper(this)
     private lateinit var readableDB:SQLiteDatabase
 
+    private var isSelecting = false //選択中かいなか
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_all_photos_view)
@@ -71,6 +71,8 @@ class AllPhotosViewActivity : AppCompatActivity() {
         }
 
         val requestCode = intent.getIntExtra("REQUEST_CODE",0)
+
+        //すべて表示する
         if(requestCode == GET_PHOTOS_IN_APP_REQUEST_CODE){ //のちにトップの写真一覧画面が実装されるため分岐がある
             searchHandler.post{
                 changeActiveDisplayTypeButton()
@@ -78,6 +80,7 @@ class AllPhotosViewActivity : AppCompatActivity() {
             }
         }
 
+        //すべて表示する
         allButton.setOnClickListener{
             if(displayType == DISPLAY_TYPE_ALL){
                 return@setOnClickListener
@@ -90,6 +93,7 @@ class AllPhotosViewActivity : AppCompatActivity() {
             }
         }
 
+        //年別表示する
         yearButton.setOnClickListener{
             if(displayType == DISPLAY_TYPE_YEAR){
                 return@setOnClickListener
@@ -102,6 +106,7 @@ class AllPhotosViewActivity : AppCompatActivity() {
             }
         }
 
+        //月別表示する
         monthButton.setOnClickListener{
             if(displayType == DISPLAY_TYPE_MONTH){
                 return@setOnClickListener
@@ -114,6 +119,7 @@ class AllPhotosViewActivity : AppCompatActivity() {
             }
         }
 
+        //日別表示する
         dayButton.setOnClickListener{
             if(displayType == DISPLAY_TYPE_DAY){
                 return@setOnClickListener
@@ -126,12 +132,51 @@ class AllPhotosViewActivity : AppCompatActivity() {
             }
         }
 
+        //スクロールビューを先頭にスクロールする
         headerMenu.setOnClickListener{
             scrollToTop(true)
         }
 
+        //前の画面に戻る
         backButton.setOnClickListener{
             super.onBackPressed()
+        }
+
+        //写真を選択・選択解除する
+        selectButton.setOnClickListener{
+            if(isSelecting){
+                //チェックボタンを非表示
+                selectedPhotos.keys.forEach{
+                    val imageView = findViewById<ImageView>(it)
+                    val parent = imageView.parent as ConstraintLayout
+                    val checkedImageView = parent.findViewById<ImageView>(R.id.checkedImageView)
+                    checkedImageView.visibility = View.INVISIBLE
+                }
+
+                selectedPhotos.clear()
+
+                selectButton.text = getString(R.string.select_button_text)
+                footerOptionBar.visibility = View.INVISIBLE
+                footerMenu.visibility = View.VISIBLE
+            }else{
+                selectButton.text = getString(R.string.select_button_cancel_text)
+                displaySelectedPhotoCount()
+                footerMenu.visibility = View.INVISIBLE
+                footerOptionBar.visibility = View.VISIBLE
+            }
+            isSelecting = !isSelecting
+        }
+
+        //写真IDを保持し、アクティビティを終了する
+        finishButton.setOnClickListener{
+            if(selectedPhotos.isEmpty()){
+                return@setOnClickListener
+            }
+
+            val intent = Intent()
+            intent.putExtra("SELECTED_PHOTOS_ID",selectedPhotos.values.toIntArray())
+            setResult(Activity.RESULT_OK,intent)
+            finish()
         }
     }
 
@@ -361,7 +406,9 @@ class AllPhotosViewActivity : AppCompatActivity() {
         val bitmap = convertBinaryToBitmap(photo.getBinary())
         photoImageView.setImageBitmap(bitmap)
         photoImageView.setOnClickListener(ItemOnClickListener())
-        photoImageView.setOnLongClickListener(ItemOnLongClickListener())
+
+        //選択、選択解除の処理で使う
+        photoImageView.id = View.generateViewId()
         photoImageView.tag = photo.getId().toString()
 
         displayedPhotoCount++
@@ -382,22 +429,33 @@ class AllPhotosViewActivity : AppCompatActivity() {
     * */
     private inner class ItemOnClickListener:View.OnClickListener{
         override fun onClick(v: View?) {
-            /*v?:return
-            val imageView = v as ImageView
-            val currentPage = displayedPhotoImageViews.indexOf(imageView.id) + 1
-            displayPageNumber(currentPage)
-            displayPhotoByFullScreen(imageView.drawable)
-            displayedPhotoImageViewIdOnFullScreen = imageView.id
-            showFullScreenView()*/
-        }
-    }
+            if(!isSelecting) {
+                return
+            }
 
-    /*
-    * 写真リストビューのアイテム、ロングクリックリスナ
-    * */
-    private inner class ItemOnLongClickListener:View.OnLongClickListener{
-        override fun onLongClick(v: View?): Boolean {
-            return true
+            v?:return
+
+            val imageView = v as ImageView
+            val parent = imageView.parent as ConstraintLayout
+            val checkedImageView = parent.findViewById<ImageView>(R.id.checkedImageView)
+
+            val photoImageViewId = imageView.id
+            val photoId = imageView.tag.toString().toInt()
+            if(selectedPhotos.keys.contains(photoImageViewId)){
+                selectedPhotos.remove(photoImageViewId)
+                checkedImageView.visibility = View.INVISIBLE
+            }else {
+                selectedPhotos.put(photoImageViewId,photoId)
+                checkedImageView.visibility = View.VISIBLE
+            }
+
+            if(selectedPhotos.isEmpty()){
+                finishButton.setBackgroundResource(R.drawable.disabled_save_button_background)
+            }else{
+                finishButton.setBackgroundResource(R.drawable.save_button_background)
+            }
+
+            displaySelectedPhotoCount()
         }
     }
 
@@ -432,5 +490,13 @@ class AllPhotosViewActivity : AppCompatActivity() {
                 dayButtonLabel.setTextColor(getColor(this,R.color.activeButtonTextColor))
             }
         }
+    }
+
+    private val selectedPhotos = hashMapOf<Int,Int>() //選択された写真のリスト Key:写真イメージビューID, Value:写真ID
+    /*
+    * 選択された写真の枚数を表示
+    * */
+    private fun displaySelectedPhotoCount(){
+        selectedItemCountTextView.text = selectedPhotos.count().toString().plus(getString(R.string.selected_photo_count_text))
     }
 }
