@@ -188,6 +188,7 @@ class AllPhotosViewActivity : AppCompatActivity() {
     override fun onDestroy() {
         adView.destroy()
         readableDB.close()
+        dbHelper.close()
         super.onDestroy()
     }
 
@@ -290,22 +291,25 @@ class AllPhotosViewActivity : AppCompatActivity() {
     private fun search(){
         showLoadingDialog()
 
-        prevDisplayedPhotoDate = "0000-00-00"
-        displayedPhotoCount = 0
-        prevDisplayedPlace = DISPLAYED_PLACE_RIGHT
+        searchHandler.postDelayed({
+            prevDisplayedPhotoDate = "0000-00-00"
+            displayedPhotoCount = 0
+            prevDisplayedPlace = DISPLAYED_PLACE_RIGHT
 
-        photoListLinearLayout.removeAllViews() //写真アイテムを全てクリア
+            photoListLinearLayout.removeAllViews() //写真アイテムを全てクリア
 
-        val sql = createSearchSQL()
+            val sql = createSearchSQL()
 
-        val photos = readPhotos(sql)
-        photos.forEach{
-            displayPhoto(it)
-        }
+            val photos = readPhotos(sql)
+            photos.forEach {
+                displayPhoto(it)
+            }
 
-        displayPhotoCount()
+            displayPhotoCount()
 
-        scrollToBottom(false)
+            scrollToBottom(false)
+
+        },500)
     }
 
     /*

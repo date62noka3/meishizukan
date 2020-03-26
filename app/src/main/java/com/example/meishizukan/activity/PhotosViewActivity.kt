@@ -33,12 +33,18 @@ import androidx.core.graphics.drawable.toBitmap
 import com.example.meishizukan.dto.Photo
 import com.example.meishizukan.dto.PhotoLink
 import com.example.meishizukan.util.*
+import com.example.meishizukan.util.BitmapUtils.convertBinaryToBitmap
 import com.example.meishizukan.util.BitmapUtils.convertBitmapToBinaryJPEG
 import com.example.meishizukan.util.BitmapUtils.convertBitmapToBinaryPNG
 import com.example.meishizukan.util.BitmapUtils.getBitmapFromUri
 import com.example.meishizukan.util.BitmapUtils.rotateBitmap
 import com.example.meishizukan.util.BitmapUtils.saveBitmapToGallery
 import com.google.android.gms.ads.RequestConfiguration
+import kotlinx.android.synthetic.main.activity_all_photos_view.*
+import kotlinx.android.synthetic.main.activity_photos_view.adView
+import kotlinx.android.synthetic.main.activity_photos_view.backButton
+import kotlinx.android.synthetic.main.activity_photos_view.photoListLinearLayout
+import java.lang.StringBuilder
 import java.security.MessageDigest
 
 private const val OPEN_CAMERA_REQUEST_CODE  = 0
@@ -229,7 +235,7 @@ class PhotosViewActivity : AppCompatActivity() {
 
                 linkedPhotoCursor.moveToNext()
                 val binary = linkedPhotoCursor.getBlob(1)
-                val bitmap = BitmapUtils.convertBinaryToBitmap(binary)
+                val bitmap = convertBinaryToBitmap(binary)
                 displayPhoto(bitmap)
             }
         }
@@ -244,6 +250,7 @@ class PhotosViewActivity : AppCompatActivity() {
         adView.destroy()
         readableDB.close()
         writableDB.close()
+        dbHelper.close()
         super.onDestroy()
     }
 
@@ -280,7 +287,7 @@ class PhotosViewActivity : AppCompatActivity() {
             data?:return
             val bitmap = data as Bitmap
             val binary = convertBitmapToBinaryJPEG(bitmap)
-            val addedPhotosCount = addPhoto(bitmap,binary)
+            val addedPhotosCount = addPhoto(binary)
 
             if(0 == addedPhotosCount){
                 Toaster.createToast(
@@ -292,6 +299,8 @@ class PhotosViewActivity : AppCompatActivity() {
                 ).show()
                 return
             }
+
+            displayPhoto(bitmap)
 
             Toaster.createToast(
                 context = this,
@@ -310,7 +319,10 @@ class PhotosViewActivity : AppCompatActivity() {
                     val bitmap = getBitmapFromUri(this,data.clipData.getItemAt(i).uri)
                     bitmap?:return
                     val binary = convertBitmapToBinaryPNG(bitmap)
-                    addedPhotosCount += addPhoto(bitmap,binary)
+                    if(1 == addPhoto(binary)){
+                        displayPhoto(bitmap)
+                        addedPhotosCount++
+                    }
                 }
 
                 if(0 == addedPhotosCount){
@@ -336,7 +348,7 @@ class PhotosViewActivity : AppCompatActivity() {
                 bitmap?:return
 
                 val binary = convertBitmapToBinaryPNG(bitmap)
-                val addedPhotosCount = addPhoto(bitmap,binary)
+                val addedPhotosCount = addPhoto(binary)
 
                 if(0 == addedPhotosCount) {
                     Toaster.createToast(
@@ -348,6 +360,8 @@ class PhotosViewActivity : AppCompatActivity() {
                     ).show()
                     return
                 }
+
+                displayPhoto(bitmap)
 
                 Toaster.createToast(
                     context = this,
@@ -361,13 +375,86 @@ class PhotosViewActivity : AppCompatActivity() {
 
         if(requestCode == GET_PHOTOS_IN_APP_REQUEST_CODE && resultCode == Activity.RESULT_OK
             && data != null){
-            //TODO 選択された写真を取得し追加
-            val selectedPhotos = data.getIntArrayExtra("SELECTED_PHOTOS_ID")
-            Log.d("SELECTED_PHOTO_COUNT",selectedPhotos.count().toString())
+            val selectedPhotos = data.getIntArrayExtra("SELECTED_PHOTOS_ID").toMutableList()
+
+            //選択された写真の中で未リンクのものを取得
+            val getLinkedPhotosSql = StringBuilder()
+            getLinkedPhotosSql.append("SELECT DISTINCT ${DbContracts.PhotosLinks.COLUMN_PHOTO_ID} FROM ${DbContracts.PhotosLinks.TABLE_NAME}" +
+                    " WHERE ${DbContracts.PhotosLinks.COLUMN_PERSON_ID} = $personId" +
+                    " AND ${DbContracts.PhotosLinks.COLUMN_PHOTO_ID} IN (")
+            selectedPhotos.forEach {
+                photoId ->
+                getLinkedPhotosSql.append("$photoId,")
+            }
+            getLinkedPhotosSql.replace(getLinkedPhotosSql.length - 1,getLinkedPhotosSql.length,"") //末尾のカンマを削除
+            getLinkedPhotosSql.append(")")
+
+            val getLinkedPhotosCursor = readableDB.rawQuery(getLinkedPhotosSql.toString(),null)
+
+            if(getLinkedPhotosCursor.count != 0) {
+                //既にリンクしている写真をリストから除外する
+                while (getLinkedPhotosCursor.moveToNext()) {
+                    val photoId = getLinkedPhotosCursor.getInt(0)
+                    selectedPhotos.remove(photoId)
+                }
+            }
+            getLinkedPhotosCursor.close()
+
+            if(selectedPhotos.count() == 0){
+                //全て既に追加されている
+                Toaster.createToast(
+                    context = this,
+                    text = getString(R.string.message_on_not_added_photos),
+                    textColor = getColor(this, R.color.toastTextColorOnFailed),
+                    backgroundColor = getColor(this, R.color.toastBackgroundColorOnFailed),
+                    displayTime = Toast.LENGTH_LONG
+                ).show()
+                getLinkedPhotosCursor.close()
+                return
+            }
+
+            //画面に表示するためにビットマップを取得する
+            val getBinarySql = StringBuilder()
+            getBinarySql.append("SELECT DISTINCT ${DbContracts.Photos.COLUMN_BINARY} FROM ${DbContracts.Photos.TABLE_NAME}" +
+                    " WHERE ${BaseColumns._ID} IN (")
+
+            //選択された写真と人物を紐づける
+            selectedPhotos.forEach{
+                photoId ->
+                val photoLink = PhotoLink(
+                    id = newPhotoLinkId,
+                    photoId = photoId,
+                    personId = personId
+                )
+                val values = getContentValues(photoLink)
+                writableDB.insert(DbContracts.PhotosLinks.TABLE_NAME,null,values)
+
+                getBinarySql.append("$photoId,")
+            }
+
+            getBinarySql.replace(getBinarySql.length - 1,getBinarySql.length,"") //末尾のカンマを削除する
+            getBinarySql.append(") ORDER BY ${BaseColumns._ID}")
+
+            val getBinaryCursor = readableDB.rawQuery(getBinarySql.toString(),null)
+            if(getBinaryCursor.count != 0){
+                while(getBinaryCursor.moveToNext()){
+                    val binary = getBinaryCursor.getBlob(0)
+                    val bitmap = convertBinaryToBitmap(binary)
+                    displayPhoto(bitmap)
+                }
+            }
+            getBinaryCursor.close()
+
+            Toaster.createToast(
+                context = this,
+                text = getString(R.string.message_on_added_photos),
+                textColor = getColor(this, R.color.toastTextColorOnSuccess),
+                backgroundColor = getColor(this, R.color.toastBackgroundColorOnSuccess),
+                displayTime = Toast.LENGTH_LONG
+            ).show()
         }
     }
 
-    private val isAddedPhoto = 1
     /*
     * 写真を追加
     *
@@ -376,11 +463,10 @@ class PhotosViewActivity : AppCompatActivity() {
     * 新規レコードとリンクさせる。
     * 既にリンクされている場合はリンクせずに返す。
     *
-    * @param ビットマップ
     * @param バイナリ
     * @return 追加件数(追加:1,追加しなかった:0)
     * */
-    private fun addPhoto(bitmap: Bitmap, binary:ByteArray):Int{
+    private fun addPhoto(binary:ByteArray):Int{
         val hashedBinary = messageDigest.digest(binary)
 
         val cursor = searchPhoto(hashedBinary)
@@ -402,7 +488,7 @@ class PhotosViewActivity : AppCompatActivity() {
         }
         cursor.close()
 
-        if(isPhotoLinkExists(photoId,personId)){
+        if(isPhotoLinked(photoId,personId)){
             return 0
         }
 
@@ -413,8 +499,6 @@ class PhotosViewActivity : AppCompatActivity() {
         )
 
         addPhotoLink(photoLink)
-
-        displayPhoto(bitmap)
 
         return 1
     }
@@ -477,13 +561,13 @@ class PhotosViewActivity : AppCompatActivity() {
     }
 
     /*
-    * 指定写真リンクがDBに存在するか否かを取得
+    * 指定写真が既にリンクされているか否か
     *
     * @param 写真ID
     * @param 人物ID
     * @return 指定写真リンクがDBに存在するか否か
     * */
-    private fun isPhotoLinkExists(photoId:Int,personId: Int):Boolean{
+    private fun isPhotoLinked(photoId:Int, personId: Int):Boolean{
         val sql = "SELECT ${BaseColumns._ID} FROM ${DbContracts.PhotosLinks.TABLE_NAME}" +
                 " WHERE ${DbContracts.PhotosLinks.COLUMN_PHOTO_ID} = $photoId" +
                 " AND ${DbContracts.PhotosLinks.COLUMN_PERSON_ID} = $personId"
@@ -514,8 +598,7 @@ class PhotosViewActivity : AppCompatActivity() {
     * @return 検索結果カーソル
     * */
     private fun searchAllLinkedPhotos():Cursor{
-        val sql = "SELECT ${BaseColumns._ID}," +
-                DbContracts.PhotosLinks.COLUMN_PHOTO_ID +
+        val sql = "SELECT ${DbContracts.PhotosLinks.COLUMN_PHOTO_ID}" +
                 " FROM ${DbContracts.PhotosLinks.TABLE_NAME}" +
                 " WHERE ${DbContracts.PhotosLinks.COLUMN_PERSON_ID} = $personId"
         return readableDB.rawQuery(sql,null)

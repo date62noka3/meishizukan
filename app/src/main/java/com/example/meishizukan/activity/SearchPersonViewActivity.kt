@@ -31,6 +31,7 @@ import kotlinx.android.synthetic.main.activity_search_person_view.*
 import androidx.core.content.ContextCompat.getColor
 import com.example.meishizukan.util.*
 import com.google.android.gms.ads.RequestConfiguration
+import java.lang.StringBuilder
 
 private object Sex{
     const val NOT_KNOWN = 0
@@ -272,6 +273,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
     override fun onDestroy(){
         adView.destroy()
         readableDB.close()
+        dbHelper.close()
         super.onDestroy()
     }
 

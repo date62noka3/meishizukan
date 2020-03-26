@@ -285,6 +285,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     override fun onDestroy(){
         adView.destroy()
         readableDB.close()
+        dbHelper.close()
         super.onDestroy()
     }
 
