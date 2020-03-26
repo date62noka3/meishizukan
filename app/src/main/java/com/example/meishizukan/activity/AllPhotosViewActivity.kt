@@ -284,6 +284,7 @@ class AllPhotosViewActivity : AppCompatActivity() {
     }
 
     private val searchHandler = Handler()
+    private val searchDelay = 500L
     private var prevDisplayedPhotoDate = "0000-00-00" //前回表示した写真の追加日付
     /*
     * 写真を検索
@@ -309,7 +310,7 @@ class AllPhotosViewActivity : AppCompatActivity() {
 
             scrollToBottom(false)
 
-        },500)
+        },searchDelay)
     }
 
     /*
