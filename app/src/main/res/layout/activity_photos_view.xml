@@ -294,8 +294,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/footerOptionBar"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginBottom="20dp"
+        android:layout_height="50dp"
+        android:layout_marginBottom="15dp"
         android:background="#FFFFFF"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/adView"
