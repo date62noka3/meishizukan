@@ -40,7 +40,6 @@ import com.example.meishizukan.util.BitmapUtils.getBitmapFromUri
 import com.example.meishizukan.util.BitmapUtils.rotateBitmap
 import com.example.meishizukan.util.BitmapUtils.saveBitmapToGallery
 import com.google.android.gms.ads.RequestConfiguration
-import kotlinx.android.synthetic.main.activity_all_photos_view.*
 import kotlinx.android.synthetic.main.activity_photos_view.adView
 import kotlinx.android.synthetic.main.activity_photos_view.backButton
 import kotlinx.android.synthetic.main.activity_photos_view.photoListLinearLayout
@@ -95,14 +94,17 @@ class PhotosViewActivity : AppCompatActivity() {
             override fun onAdClosed() {}
         }
 
+        //前画面に戻る
         backButton.setOnClickListener{
             super.onBackPressed()
         }
 
+        //写真追加ボタンを非表示
         backgroundOnOpenedSelection.setOnClickListener{
             hideAddPhotoButtons()
         }
 
+        //写真追加ボタンを表示
         addPhotoButton.setOnClickListener{
             if(addPhotoButtonsLinearLayout.visibility == View.INVISIBLE) {
                 showAddPhotoButtons()
@@ -111,6 +113,7 @@ class PhotosViewActivity : AppCompatActivity() {
             }
         }
 
+        //カメラを起動
         cameraButton.setOnClickListener{
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             if(intent.resolveActivity(packageManager) != null){
@@ -118,6 +121,7 @@ class PhotosViewActivity : AppCompatActivity() {
             }
         }
 
+        //ギャラリー選択画面を表示
         galleryButton.setOnClickListener{
             val intent = Intent()
             intent.type = "image/*"
@@ -126,16 +130,19 @@ class PhotosViewActivity : AppCompatActivity() {
             startActivityForResult(intent, OPEN_GALLERY_REQUEST_CODE)
         }
 
+        //アプリ内写真選択画面を表示
         addedPhotosButton.setOnClickListener{
             val intent = Intent(this,AllPhotosViewActivity::class.java)
             intent.putExtra("REQUEST_CODE", GET_PHOTOS_IN_APP_REQUEST_CODE)
             startActivityForResult(intent, GET_PHOTOS_IN_APP_REQUEST_CODE)
         }
 
+        //全画面表示をやめる処理
         closeButton.setOnClickListener{
             hideFullScreenView()
         }
 
+        //全画面表示処理
         fullScreenView.setOnClickListener{
             if(fullScreenViewHeaderOptionBar.visibility == View.VISIBLE){
                 hideFullScreenViewOptionBar()
@@ -183,16 +190,19 @@ class PhotosViewActivity : AppCompatActivity() {
         val gestureDetector = GestureDetector(this,SwipeListener())
         fullScreenView.setOnTouchListener { v, event -> gestureDetector.onTouchEvent(event) }
 
+        //全画面表示時の写真回転処理(左90度)
         rotateLeftButton.setOnClickListener{
             val rotatedBitmap = rotateBitmap(fullScreenViewPhotoImageView.drawable.toBitmap(),rotateLeftAngle)
             fullScreenViewPhotoImageView.setImageBitmap(rotatedBitmap)
         }
 
+        //全画面表示時の写真回転処理(右90度)
         rotateRightButton.setOnClickListener{
             val rotatedBitmap = rotateBitmap(fullScreenViewPhotoImageView.drawable.toBitmap(),rotateRightAngle)
             fullScreenViewPhotoImageView.setImageBitmap(rotatedBitmap)
         }
 
+        //全画面表示時のダウンロード処理
         fullScreenViewDownloadButton.setOnClickListener{
             //権限がなければ要求
             if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
@@ -203,6 +213,11 @@ class PhotosViewActivity : AppCompatActivity() {
             val displayedPhotoImageView =
                 findViewById<ImageView>(displayedPhotoImageViewIdOnFullScreen)
             downloadPhoto(displayedPhotoImageView.drawable.toBitmap())
+        }
+
+        //写真リストビューを一番上までスクロールする
+        headerMenu.setOnClickListener{
+            scrollToTop(true)
         }
 
         personId = intent.getIntExtra("PERSON_ID",0)
@@ -279,6 +294,12 @@ class PhotosViewActivity : AppCompatActivity() {
     private val messageDigest = MessageDigest.getInstance("SHA-256")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+
+        //写真追加ボタンを非表示
+        if(requestCode == OPEN_CAMERA_REQUEST_CODE || requestCode == OPEN_GALLERY_REQUEST_CODE
+            || requestCode == GET_PHOTOS_IN_APP_REQUEST_CODE){
+            hideAddPhotoButtons()
+        }
 
         if(requestCode == OPEN_CAMERA_REQUEST_CODE && resultCode == Activity.RESULT_OK
             && data != null){
@@ -912,5 +933,18 @@ class PhotosViewActivity : AppCompatActivity() {
     private fun hideFullScreenViewOptionBar(){
         fullScreenViewHeaderOptionBar.visibility = View.INVISIBLE
         fullScreenViewFooterOptionBar.visibility = View.INVISIBLE
+    }
+
+    /*
+    * 一番上までスクロール
+    *
+    * @param スムーズなスクロールをするか
+    * */
+    private fun scrollToTop(smooth:Boolean){
+        if(smooth) {
+            photoListScrollView.smoothScrollTo(0, 0)
+        }else{
+            photoListScrollView.scrollTo(0, 0)
+        }
     }
 }
