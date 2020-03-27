@@ -94,7 +94,7 @@ class PhotosViewActivity : AppCompatActivity() {
             override fun onAdClosed() {}
         }
 
-        //前画面に戻る
+        //前の画面(人物検索画面)に戻る
         backButton.setOnClickListener{
             super.onBackPressed()
         }
@@ -222,6 +222,7 @@ class PhotosViewActivity : AppCompatActivity() {
 
         personId = intent.getIntExtra("PERSON_ID",0)
 
+        //人物情報画面に遷移する
         personalInfoViewButton.setOnClickListener{
             val intent = Intent(this,PersonalInfoViewActivity::class.java)
             intent.putExtra("PERSON_ID",personId)
