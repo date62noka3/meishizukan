@@ -62,6 +62,8 @@ class PhotosViewActivity : AppCompatActivity() {
     private val rotateLeftAngle = -90F //全画面表示で画像を回転させるときの回転角度(左回転)
     private val rotateRightAngle = 90F //全画面表示で画像を回転させるときの回転角度(右回転)
 
+    private var isSelecting = false //選択中かいなか
+
     private val dbHelper = DbHelper(this)
     private lateinit var readableDB: SQLiteDatabase
     private lateinit var writableDB: SQLiteDatabase
@@ -220,6 +222,31 @@ class PhotosViewActivity : AppCompatActivity() {
             scrollToTop(true)
         }
 
+        //写真を選択・選択解除する
+        selectButton.setOnClickListener{
+            if(isSelecting){
+                //チェックボタンを非表示
+                selectedPhotos.keys.forEach{
+                    val imageView = findViewById<ImageView>(it)
+                    val parent = imageView.parent as ConstraintLayout
+                    val checkedImageView = parent.findViewById<ImageView>(R.id.checkedImageView)
+                    checkedImageView.visibility = View.INVISIBLE
+                }
+
+                selectedPhotos.clear()
+
+                selectButton.text = getString(R.string.select_button_text)
+                footerOptionBar.visibility = View.INVISIBLE
+                footerMenu.visibility = View.VISIBLE
+            }else{
+                selectButton.text = getString(R.string.select_button_cancel_text)
+                displaySelectedPhotoCount()
+                footerMenu.visibility = View.INVISIBLE
+                footerOptionBar.visibility = View.VISIBLE
+            }
+            isSelecting = !isSelecting
+        }
+
         personId = intent.getIntExtra("PERSON_ID",0)
 
         //人物情報画面に遷移する
@@ -250,9 +277,14 @@ class PhotosViewActivity : AppCompatActivity() {
                 }
 
                 linkedPhotoCursor.moveToNext()
-                val binary = linkedPhotoCursor.getBlob(1)
-                val bitmap = convertBinaryToBitmap(binary)
-                displayPhoto(bitmap)
+                val binary = linkedPhotoCursor.getBlob(0)
+                val photo = Photo(
+                    id = photoId,
+                    hashedBinary = "".toByteArray(),
+                    binary = binary,
+                    createdOn = ""
+                )
+                displayPhoto(photo)
             }
         }
     }
@@ -309,9 +341,9 @@ class PhotosViewActivity : AppCompatActivity() {
             data?:return
             val bitmap = data as Bitmap
             val binary = convertBitmapToBinaryJPEG(bitmap)
-            val addedPhotosCount = addPhoto(binary)
+            val photoId = addPhoto(binary)
 
-            if(0 == addedPhotosCount){
+            if(-1 == photoId){
                 Toaster.createToast(
                     context = this,
                     text = getString(R.string.message_on_not_added_photos),
@@ -322,7 +354,13 @@ class PhotosViewActivity : AppCompatActivity() {
                 return
             }
 
-            displayPhoto(bitmap)
+            val photo = Photo(
+                id = photoId,
+                hashedBinary = "".toByteArray(),
+                binary = binary,
+                createdOn = ""
+            )
+            displayPhoto(photo)
 
             Toaster.createToast(
                 context = this,
@@ -341,8 +379,15 @@ class PhotosViewActivity : AppCompatActivity() {
                     val bitmap = getBitmapFromUri(this,data.clipData.getItemAt(i).uri)
                     bitmap?:return
                     val binary = convertBitmapToBinaryPNG(bitmap)
-                    if(1 == addPhoto(binary)){
-                        displayPhoto(bitmap)
+                    val photoId = addPhoto(binary)
+                    if(-1 != photoId){
+                        val photo = Photo(
+                            id = photoId,
+                            hashedBinary = "".toByteArray(),
+                            binary = binary,
+                            createdOn = ""
+                        )
+                        displayPhoto(photo)
                         addedPhotosCount++
                     }
                 }
@@ -370,9 +415,9 @@ class PhotosViewActivity : AppCompatActivity() {
                 bitmap?:return
 
                 val binary = convertBitmapToBinaryPNG(bitmap)
-                val addedPhotosCount = addPhoto(binary)
+                val photoId = addPhoto(binary)
 
-                if(0 == addedPhotosCount) {
+                if(-1 == photoId) {
                     Toaster.createToast(
                         context = this,
                         text = getString(R.string.message_on_not_added_photos),
@@ -383,7 +428,13 @@ class PhotosViewActivity : AppCompatActivity() {
                     return
                 }
 
-                displayPhoto(bitmap)
+                val photo = Photo(
+                    id = photoId,
+                    hashedBinary = "".toByteArray(),
+                    binary = binary,
+                    createdOn = ""
+                )
+                displayPhoto(photo)
 
                 Toaster.createToast(
                     context = this,
@@ -437,7 +488,9 @@ class PhotosViewActivity : AppCompatActivity() {
 
             //画面に表示するためにビットマップを取得する
             val getBinarySql = StringBuilder()
-            getBinarySql.append("SELECT DISTINCT ${DbContracts.Photos.COLUMN_BINARY} FROM ${DbContracts.Photos.TABLE_NAME}" +
+            getBinarySql.append("SELECT DISTINCT ${BaseColumns._ID}," +
+                    DbContracts.Photos.COLUMN_BINARY +
+                    " FROM ${DbContracts.Photos.TABLE_NAME}" +
                     " WHERE ${BaseColumns._ID} IN (")
 
             //選択された写真と人物を紐づける
@@ -460,9 +513,15 @@ class PhotosViewActivity : AppCompatActivity() {
             val getBinaryCursor = readableDB.rawQuery(getBinarySql.toString(),null)
             if(getBinaryCursor.count != 0){
                 while(getBinaryCursor.moveToNext()){
-                    val binary = getBinaryCursor.getBlob(0)
-                    val bitmap = convertBinaryToBitmap(binary)
-                    displayPhoto(bitmap)
+                    val photoId = getBinaryCursor.getInt(0)
+                    val binary = getBinaryCursor.getBlob(1)
+                    val photo = Photo(
+                        id = photoId,
+                        hashedBinary = "".toByteArray(),
+                        binary = binary,
+                        createdOn = ""
+                    )
+                    displayPhoto(photo)
                 }
             }
             getBinaryCursor.close()
@@ -486,7 +545,7 @@ class PhotosViewActivity : AppCompatActivity() {
     * 既にリンクされている場合はリンクせずに返す。
     *
     * @param バイナリ
-    * @return 追加件数(追加:1,追加しなかった:0)
+    * @return 追加件数(追加:写真ID,追加しなかった:-1)
     * */
     private fun addPhoto(binary:ByteArray):Int{
         val hashedBinary = messageDigest.digest(binary)
@@ -511,7 +570,7 @@ class PhotosViewActivity : AppCompatActivity() {
         cursor.close()
 
         if(isPhotoLinked(photoId,personId)){
-            return 0
+            return -1
         }
 
         val photoLink = PhotoLink(
@@ -522,7 +581,7 @@ class PhotosViewActivity : AppCompatActivity() {
 
         addPhotoLink(photoLink)
 
-        return 1
+        return photoId
     }
 
     /*
@@ -607,8 +666,7 @@ class PhotosViewActivity : AppCompatActivity() {
     * @return 検索結果カーソル
     * */
     private fun searchPhoto(photoId: Int):Cursor{
-        val sql = "SELECT ${BaseColumns._ID}," +
-                DbContracts.Photos.COLUMN_BINARY +
+        val sql = "SELECT ${DbContracts.Photos.COLUMN_BINARY}" +
                 " FROM ${DbContracts.Photos.TABLE_NAME}" +
                 " WHERE ${BaseColumns._ID} = $photoId"
         return readableDB.rawQuery(sql,null)
@@ -683,9 +741,9 @@ class PhotosViewActivity : AppCompatActivity() {
     /*
     * 写真をリストビューに表示
     *
-    * @param ビットマップ
+    * @param 写真
     * */
-    private fun displayPhoto(bitmap: Bitmap){
+    private fun displayPhoto(photo: Photo){
         if(displayedPhotoImageViews.count() % itemCountPerLine == 0){
             this.layoutInflater.inflate(R.layout.photo_listview_item,photoListLinearLayout)
         }
@@ -712,10 +770,10 @@ class PhotosViewActivity : AppCompatActivity() {
 
         photoImageView?:return
 
+        val bitmap = convertBinaryToBitmap(photo.getBinary())
         photoImageView.setImageBitmap(bitmap)
         photoImageView.setOnClickListener(ItemOnClickListener())
-        photoImageView.setOnLongClickListener(ItemOnLongClickListener())
-
+        photoImageView.tag = photo.getId().toString()
         photoImageView.id = View.generateViewId() //一意のIDを付与
         displayedPhotoImageViews.add(photoImageView.id)
         displayPhotoCount()
@@ -752,21 +810,33 @@ class PhotosViewActivity : AppCompatActivity() {
     private inner class ItemOnClickListener:View.OnClickListener{
         override fun onClick(v: View?) {
             v?:return
-            val imageView = v as ImageView
-            val currentPage = displayedPhotoImageViews.indexOf(imageView.id) + 1
-            displayPageNumber(currentPage)
-            displayPhotoByFullScreen(imageView.drawable)
-            displayedPhotoImageViewIdOnFullScreen = imageView.id
-            showFullScreenView()
-        }
-    }
 
-    /*
-    * 写真リストビューのアイテム、ロングクリックリスナ
-    * */
-    private inner class ItemOnLongClickListener:View.OnLongClickListener{
-        override fun onLongClick(v: View?): Boolean {
-            return true
+            //選択中はアイテムの選択・選択解除を処理
+            //選択中でなければ全画面表示処理
+            if(isSelecting) {
+                val imageView = v as ImageView
+                val parent = imageView.parent as ConstraintLayout
+                val checkedImageView = parent.findViewById<ImageView>(R.id.checkedImageView)
+
+                val photoImageViewId = imageView.id
+                val photoId = imageView.tag.toString().toInt()
+                if(selectedPhotos.keys.contains(photoImageViewId)){
+                    selectedPhotos.remove(photoImageViewId)
+                    checkedImageView.visibility = View.INVISIBLE
+                }else {
+                    selectedPhotos.put(photoImageViewId,photoId)
+                    checkedImageView.visibility = View.VISIBLE
+                }
+
+                displaySelectedPhotoCount()
+            }else {
+                val imageView = v as ImageView
+                val currentPage = displayedPhotoImageViews.indexOf(imageView.id) + 1
+                displayPageNumber(currentPage)
+                displayPhotoByFullScreen(imageView.drawable)
+                displayedPhotoImageViewIdOnFullScreen = imageView.id
+                showFullScreenView()
+            }
         }
     }
 
@@ -947,5 +1017,13 @@ class PhotosViewActivity : AppCompatActivity() {
         }else{
             photoListScrollView.scrollTo(0, 0)
         }
+    }
+
+    private val selectedPhotos = hashMapOf<Int,Int>() //選択された写真のリスト Key:写真イメージビューID, Value:写真ID
+    /*
+    * 選択された写真の枚数を表示
+    * */
+    private fun displaySelectedPhotoCount(){
+        selectedItemCountTextView.text = selectedPhotos.count().toString().plus(getString(R.string.selected_photo_count_text))
     }
 }
