@@ -2,6 +2,7 @@ package com.example.meishizukan.activity
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -43,7 +44,6 @@ import com.google.android.gms.ads.RequestConfiguration
 import kotlinx.android.synthetic.main.activity_photos_view.adView
 import kotlinx.android.synthetic.main.activity_photos_view.backButton
 import kotlinx.android.synthetic.main.activity_photos_view.photoListLinearLayout
-import kotlinx.android.synthetic.main.photo_listview_item.*
 import java.lang.StringBuilder
 import java.security.MessageDigest
 
@@ -283,6 +283,37 @@ class PhotosViewActivity : AppCompatActivity() {
             selectButton.performClick()
         }
 
+        //選択中の写真を削除
+        deleteButton.setOnClickListener{
+            val positiveButtonText = getString(R.string.positive_button_text)
+            val negativeButtonText = getString(R.string.negative_button_text)
+            AlertDialog.Builder(this)
+                .setTitle(getString(R.string.confirm_dialog_title))
+                .setMessage(getString(R.string.message_on_confirm_delete_photo_link))
+                .setPositiveButton(positiveButtonText) { _, _ ->
+                    selectedPhotos.forEach{
+                        writableDB.delete(DbContracts.PhotosLinks.TABLE_NAME,
+                            "${DbContracts.PhotosLinks.COLUMN_PHOTO_ID} = ${it.getPhotoId()}",
+                            null)
+                    }
+
+                    //選択を解除
+                    selectButton.performClick()
+
+                    displayLinkedPhotos()
+
+                    Toaster.createToast(
+                        context = this,
+                        text = getString(R.string.message_on_deleted_photo_link),
+                        textColor = getColor(this,R.color.toastTextColorOnSuccess),
+                        backgroundColor = getColor(this,R.color.toastBackgroundColorOnSuccess)
+                    ).show()
+                }
+                .setNegativeButton(negativeButtonText) { _, _ -> }
+                .setCancelable(false)
+                .show()
+        }
+
         personId = intent.getIntExtra("PERSON_ID",0)
 
         //人物情報画面に遷移する
@@ -297,31 +328,7 @@ class PhotosViewActivity : AppCompatActivity() {
         if(person != null) {
             setPersonalInfoToTextView(person)
 
-            //人物にリンクしている写真をリストビューに表示
-            val allLinkedPhotosCursor = searchAllLinkedPhotos()
-            if(allLinkedPhotosCursor.count == 0){
-                displayPhotoCount()
-                return
-            }
-
-            while(allLinkedPhotosCursor.moveToNext()){
-                val photoId = allLinkedPhotosCursor.getInt(0)
-
-                val linkedPhotoCursor = searchPhoto(photoId)
-                if(linkedPhotoCursor.count == 0){
-                    return
-                }
-
-                linkedPhotoCursor.moveToNext()
-                val binary = linkedPhotoCursor.getBlob(0)
-                val photo = Photo(
-                    id = photoId,
-                    hashedBinary = "".toByteArray(),
-                    binary = binary,
-                    createdOn = ""
-                )
-                displayPhoto(photo)
-            }
+            displayLinkedPhotos()
         }
     }
 
@@ -1086,5 +1093,40 @@ class PhotosViewActivity : AppCompatActivity() {
     * */
     private fun displaySelectedPhotoCount(){
         selectedItemCountTextView.text = selectedPhotos.count().toString().plus(getString(R.string.selected_photo_count_text))
+    }
+
+    /*
+    * 人物にリンクしている写真をすべて表示
+    * */
+    private fun displayLinkedPhotos(){
+        displayedPhotoImageViews.clear()
+        photoListLinearLayout.removeAllViews()
+
+        val allLinkedPhotosCursor = searchAllLinkedPhotos()
+        if(allLinkedPhotosCursor.count == 0){
+            displayPhotoCount()
+            return
+        }
+
+        while(allLinkedPhotosCursor.moveToNext()){
+            val photoId = allLinkedPhotosCursor.getInt(0)
+
+            val linkedPhotoCursor = searchPhoto(photoId)
+            if(linkedPhotoCursor.count == 0){
+                return
+            }
+
+            linkedPhotoCursor.moveToNext()
+            val binary = linkedPhotoCursor.getBlob(0)
+            val photo = Photo(
+                id = photoId,
+                hashedBinary = "".toByteArray(),
+                binary = binary,
+                createdOn = ""
+            )
+            displayPhoto(photo)
+        }
+
+        displaySelectedPhotoCount()
     }
 }

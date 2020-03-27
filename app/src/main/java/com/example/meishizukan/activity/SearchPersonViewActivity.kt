@@ -31,7 +31,6 @@ import kotlinx.android.synthetic.main.activity_search_person_view.*
 import androidx.core.content.ContextCompat.getColor
 import com.example.meishizukan.util.*
 import com.google.android.gms.ads.RequestConfiguration
-import java.lang.StringBuilder
 
 private object Sex{
     const val NOT_KNOWN = 0
@@ -245,7 +244,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
         deleteButton.setOnClickListener{
             AlertDialog.Builder(this)
                 .setTitle(getString(R.string.confirm_dialog_title))
-                .setMessage(getString(R.string.confirm_message_on_delete))
+                .setMessage(getString(R.string.message_on_confirm_delete_person))
                 .setPositiveButton(getString(R.string.positive_button_text)) { _, _ ->
                     deletePersons()
 
