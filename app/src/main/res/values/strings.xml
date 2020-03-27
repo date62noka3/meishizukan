@@ -25,10 +25,7 @@
     <string name="positive_button_text">はい</string>
     <string name="negative_button_text">いいえ</string>
     <string name="confirm_dialog_title">確認</string>
-    <string name="confirm_message_on_transit">保存されていませんが、遷移してもよろしいでしょうか？</string>
-    <string name="confirm_message_on_delete">削除してもよろしいでしょうか？</string>
     <string name="information_dialog_title">情報</string>
-    <string name="information_message_on_deleted">人物を削除しました。トップ画面に戻ります。</string>
 
     <!-- 人物情報画面 -->
     <string-array name="sex_types">
@@ -52,6 +49,9 @@
     <string name="message_on_illegal_error">フリガナは全角で入力してください</string>
     <string name="message_on_saved_new_person">人物を追加しました</string>
     <string name="message_on_updated_personal_info">人物情報を保存しました</string>
+    <string name="message_on_confirm_delete_person">削除してもよろしいでしょうか？</string>
+    <string name="dialog_message_on_deleted_person">人物を削除しました。トップ画面に戻ります。</string>
+    <string name="message_on_confirm_transit">保存されていませんが、遷移してもよろしいでしょうか？</string>
 
     <!-- 写真一覧画面 -->
     <string name="message_on_saved_photos">Picturesフォルダに写真を保存しました</string>
@@ -88,6 +88,8 @@
     <!-- 写真一覧画面 -->
     <string name="select_button_text">選択</string>
     <string name="select_button_cancel_text">キャンセル</string>
+    <string name="message_on_confirm_delete_photo_link">削除してもよろしいでしょうか？</string>
+    <string name="message_on_deleted_photo_link">写真を削除しました</string>
 
     <!-- すべての写真一覧画面 -->
     <string name="all_button_text">すべて</string>

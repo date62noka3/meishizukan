@@ -78,7 +78,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
 
             AlertDialog.Builder(this)
                 .setTitle(getString(R.string.confirm_dialog_title))
-                .setMessage(getString(R.string.confirm_message_on_transit))
+                .setMessage(getString(R.string.message_on_confirm_transit))
                 .setPositiveButton(getString(R.string.positive_button_text)) { _, _ ->
                     val intent = Intent(this, PhotosViewActivity::class.java)
                     intent.putExtra("PERSON_ID", personId)
@@ -258,7 +258,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             val negativeButtonText = getString(R.string.negative_button_text)
             AlertDialog.Builder(this)
                 .setTitle(getString(R.string.confirm_dialog_title))
-                .setMessage(getString(R.string.confirm_message_on_delete))
+                .setMessage(getString(R.string.message_on_confirm_delete_person))
                 .setPositiveButton(positiveButtonText) { _, _ ->
                     deleteLinkedPhotos(personId)
                     deletePerson(personId)
@@ -267,7 +267,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                     //トップ画面に遷移
                     AlertDialog.Builder(this)
                         .setTitle(getString(R.string.information_dialog_title))
-                        .setMessage(getString(R.string.information_message_on_deleted))
+                        .setMessage(getString(R.string.message_on_deleted_persons))
                         .setPositiveButton(positiveButtonText) { _, _ ->
                             super.onBackPressed()
                             finish()
@@ -301,7 +301,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
 
         AlertDialog.Builder(this)
             .setTitle(getString(R.string.confirm_dialog_title))
-            .setMessage(getString(R.string.confirm_message_on_transit))
+            .setMessage(getString(R.string.message_on_confirm_transit))
             .setPositiveButton(getString(R.string.positive_button_text)) { _, _ ->
                 super.onBackPressed()
             }
