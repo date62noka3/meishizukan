@@ -43,6 +43,7 @@ import com.google.android.gms.ads.RequestConfiguration
 import kotlinx.android.synthetic.main.activity_photos_view.adView
 import kotlinx.android.synthetic.main.activity_photos_view.backButton
 import kotlinx.android.synthetic.main.activity_photos_view.photoListLinearLayout
+import kotlinx.android.synthetic.main.photo_listview_item.*
 import java.lang.StringBuilder
 import java.security.MessageDigest
 
@@ -50,7 +51,24 @@ private const val OPEN_CAMERA_REQUEST_CODE  = 0
 private const val OPEN_GALLERY_REQUEST_CODE = 1
 private const val GET_PHOTOS_IN_APP_REQUEST_CODE = 2
 
-private const val WRITE_EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE = 3 //ストレージ書き込み権限の要求コード
+private const val WRITE_PERMISSION_REQUEST_CODE_ON_DOWNLOAD_FULL_DISPLAYED_PHOTO = 3 //ストレージ書き込み権限の要求コード(全画面表示されている写真のダウンロード時)
+private const val WRITE_PERMISSION_REQUEST_CODE_ON_DOWNLOAD_SELECTED_PHOTOS = 4 //ストレージ書き込み権限の要求コード(選択中の写真のダウンロード時)
+
+/*
+* 選択中写真のラッパークラス
+* */
+class SelectedPhotosWrapper(photoImageViewId:Int,photoId:Int){
+    private val photoImageViewId = photoImageViewId
+    private val photoId = photoId
+
+    fun getPhotoImageViewId():Int{
+        return photoImageViewId
+    }
+
+    fun getPhotoId():Int{
+        return photoId
+    }
+}
 
 class PhotosViewActivity : AppCompatActivity() {
 
@@ -208,7 +226,7 @@ class PhotosViewActivity : AppCompatActivity() {
         fullScreenViewDownloadButton.setOnClickListener{
             //権限がなければ要求
             if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-                requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), WRITE_EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE)
+                requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), WRITE_PERMISSION_REQUEST_CODE_ON_DOWNLOAD_FULL_DISPLAYED_PHOTO)
                 return@setOnClickListener
             }
 
@@ -226,7 +244,7 @@ class PhotosViewActivity : AppCompatActivity() {
         selectButton.setOnClickListener{
             if(isSelecting){
                 //チェックボタンを非表示
-                selectedPhotos.keys.forEach{
+                selectedPhotos.map{it.getPhotoImageViewId()}.forEach{
                     val imageView = findViewById<ImageView>(it)
                     val parent = imageView.parent as ConstraintLayout
                     val checkedImageView = parent.findViewById<ImageView>(R.id.checkedImageView)
@@ -245,6 +263,24 @@ class PhotosViewActivity : AppCompatActivity() {
                 footerOptionBar.visibility = View.VISIBLE
             }
             isSelecting = !isSelecting
+        }
+
+        //選択中の写真をダウンロード
+        downloadButton.setOnClickListener{
+            //権限がなければ要求
+            if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+                requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), WRITE_PERMISSION_REQUEST_CODE_ON_DOWNLOAD_SELECTED_PHOTOS)
+                return@setOnClickListener
+            }
+
+            selectedPhotos.map{it.getPhotoImageViewId()}.forEach{
+                photoImageViewId ->
+                val selectedImageView = findViewById<ImageView>(photoImageViewId)
+                downloadPhoto(selectedImageView.drawable.toBitmap())
+            }
+
+            //選択を解除する
+            selectButton.performClick()
         }
 
         personId = intent.getIntExtra("PERSON_ID",0)
@@ -307,12 +343,36 @@ class PhotosViewActivity : AppCompatActivity() {
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        if(requestCode == WRITE_EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE) {
+        //ストレージへの書き込み権限がある場合ダウンロード
+        //なければ、書き込めない旨をトーストで表示
+        if(requestCode == WRITE_PERMISSION_REQUEST_CODE_ON_DOWNLOAD_FULL_DISPLAYED_PHOTO) {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                 val displayedPhotoImageView =
                     findViewById<ImageView>(displayedPhotoImageViewIdOnFullScreen)
                 downloadPhoto(displayedPhotoImageView.drawable.toBitmap())
-            } else {
+            } else{
+                //書き込み権限がない場合
+                Toaster.createToast(
+                    context = this,
+                    text = getString(R.string.message_on_failed_saved_photos),
+                    textColor = getColor(this, R.color.toastTextColorOnFailed),
+                    backgroundColor = getColor(this, R.color.toastBackgroundColorOnFailed),
+                    displayTime = Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+        else if(requestCode == WRITE_PERMISSION_REQUEST_CODE_ON_DOWNLOAD_SELECTED_PHOTOS){
+            if((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)){
+                selectedPhotos.map{it.getPhotoImageViewId()}.forEach{
+                        photoImageViewId ->
+                    val selectedImageView = findViewById<ImageView>(photoImageViewId)
+                    downloadPhoto(selectedImageView.drawable.toBitmap())
+                }
+
+                //選択を解除する
+                selectButton.performClick()
+            }else{
+                //書き込み権限がない場合
                 Toaster.createToast(
                     context = this,
                     text = getString(R.string.message_on_failed_saved_photos),
@@ -820,11 +880,12 @@ class PhotosViewActivity : AppCompatActivity() {
 
                 val photoImageViewId = imageView.id
                 val photoId = imageView.tag.toString().toInt()
-                if(selectedPhotos.keys.contains(photoImageViewId)){
-                    selectedPhotos.remove(photoImageViewId)
+                val i = selectedPhotos.map{it.getPhotoImageViewId()}.indexOf(photoImageViewId)
+                if(-1 < i){
+                    selectedPhotos.removeAt(i)
                     checkedImageView.visibility = View.INVISIBLE
                 }else {
-                    selectedPhotos.put(photoImageViewId,photoId)
+                    selectedPhotos.add(SelectedPhotosWrapper(photoImageViewId,photoId))
                     checkedImageView.visibility = View.VISIBLE
                 }
 
@@ -1019,7 +1080,7 @@ class PhotosViewActivity : AppCompatActivity() {
         }
     }
 
-    private val selectedPhotos = hashMapOf<Int,Int>() //選択された写真のリスト Key:写真イメージビューID, Value:写真ID
+    private val selectedPhotos = mutableListOf<SelectedPhotosWrapper>() //選択された写真のリスト
     /*
     * 選択された写真の枚数を表示
     * */

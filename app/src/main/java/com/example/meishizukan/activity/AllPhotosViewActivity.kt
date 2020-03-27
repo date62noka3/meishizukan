@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.provider.BaseColumns
+import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
@@ -146,7 +147,7 @@ class AllPhotosViewActivity : AppCompatActivity() {
         selectButton.setOnClickListener{
             if(isSelecting){
                 //チェックボタンを非表示
-                selectedPhotos.keys.forEach{
+                selectedPhotos.map{it.getPhotoImageViewId()}.forEach{
                     val imageView = findViewById<ImageView>(it)
                     val parent = imageView.parent as ConstraintLayout
                     val checkedImageView = parent.findViewById<ImageView>(R.id.checkedImageView)
@@ -174,7 +175,7 @@ class AllPhotosViewActivity : AppCompatActivity() {
             }
 
             val intent = Intent()
-            intent.putExtra("SELECTED_PHOTOS_ID",selectedPhotos.values.toIntArray())
+            intent.putExtra("SELECTED_PHOTOS_ID",selectedPhotos.map{it.getPhotoId()}.toIntArray())
             setResult(Activity.RESULT_OK,intent)
             finish()
         }
@@ -446,11 +447,12 @@ class AllPhotosViewActivity : AppCompatActivity() {
 
             val photoImageViewId = imageView.id
             val photoId = imageView.tag.toString().toInt()
-            if(selectedPhotos.keys.contains(photoImageViewId)){
-                selectedPhotos.remove(photoImageViewId)
+            val i = selectedPhotos.map{it.getPhotoImageViewId()}.indexOf(photoImageViewId)
+            if(-1 < i){
+                selectedPhotos.removeAt(i)
                 checkedImageView.visibility = View.INVISIBLE
             }else {
-                selectedPhotos.put(photoImageViewId,photoId)
+                selectedPhotos.add(SelectedPhotosWrapper(photoImageViewId,photoId))
                 checkedImageView.visibility = View.VISIBLE
             }
 
@@ -497,7 +499,7 @@ class AllPhotosViewActivity : AppCompatActivity() {
         }
     }
 
-    private val selectedPhotos = hashMapOf<Int,Int>() //選択された写真のリスト Key:写真イメージビューID, Value:写真ID
+    private val selectedPhotos = mutableListOf<SelectedPhotosWrapper>() //選択された写真のリスト
     /*
     * 選択された写真の枚数を表示
     * */
