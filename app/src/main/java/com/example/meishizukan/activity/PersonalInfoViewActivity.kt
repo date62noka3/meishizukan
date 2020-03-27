@@ -59,6 +59,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             override fun onAdClosed() {}
         }
 
+        //前の画面(人物検索画面)に戻る
         backButton.setOnClickListener{
             onBackPressed()
         }
@@ -187,6 +188,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             }
         }
 
+        //人物情報を保存する
         saveButton.setOnClickListener{
             //未入力チェック
             if(isRequiredFieldsBlank()){
@@ -250,6 +252,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             setInputValueToTag()
         }
 
+        //人物を削除する
         deleteButton.setOnClickListener{
             val positiveButtonText = getString(R.string.positive_button_text)
             val negativeButtonText = getString(R.string.negative_button_text)
@@ -257,6 +260,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                 .setTitle(getString(R.string.confirm_dialog_title))
                 .setMessage(getString(R.string.confirm_message_on_delete))
                 .setPositiveButton(positiveButtonText) { _, _ ->
+                    deleteLinkedPhotos(personId)
                     deletePerson(personId)
                     Log.d("DELETED_PERSON_ID",personId.toString())
 
@@ -611,11 +615,22 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     /*
     * 人物を削除
     *
-    * @param 削除する人物のID
+    * @param 人物ID
     * */
     private fun deletePerson(personId: Int){
         val writableDB = dbHelper.writableDatabase
         writableDB.delete(DbContracts.Persons.TABLE_NAME,"${BaseColumns._ID} = $personId",null)
+        writableDB.close()
+    }
+
+    /*
+    * 人物にリンクしている写真のリンクを解除する
+    *
+    * @param 人物ID
+    * */
+    private fun deleteLinkedPhotos(personId:Int){
+        val writableDB = dbHelper.writableDatabase
+        writableDB.delete(DbContracts.PhotosLinks.TABLE_NAME,"${DbContracts.PhotosLinks.COLUMN_PERSON_ID} = $personId",null)
         writableDB.close()
     }
 

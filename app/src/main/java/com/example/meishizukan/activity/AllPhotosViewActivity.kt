@@ -137,7 +137,7 @@ class AllPhotosViewActivity : AppCompatActivity() {
             scrollToTop(true)
         }
 
-        //前の画面に戻る
+        //前の画面(写真一覧画面)に戻る
         backButton.setOnClickListener{
             super.onBackPressed()
         }

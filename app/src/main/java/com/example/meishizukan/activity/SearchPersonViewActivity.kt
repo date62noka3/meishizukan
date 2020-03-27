@@ -150,6 +150,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
             }
         }
 
+        //検索
         searchButton.setOnClickListener{
             inputMethodManager.hideSoftInputFromWindow(it.windowToken,0) //キーボードを非表示
 
@@ -191,15 +192,18 @@ class SearchPersonViewActivity : AppCompatActivity() {
             drawerLayout.closeDrawer(menuRootConstraintLayout,true)
         }
 
+        //全ての写真一覧画面を表示(今はトーストだけ)
         allPhotosViewButton.setOnClickListener{
             Log.d("TEST","ALL_PHOTOS_VIEW_BUTTON_CLICKED")
         }
 
+        //人物情報画面を新規追加で表示
         addPersonButton.setOnClickListener{
             val intent = Intent(this,PersonalInfoViewActivity::class.java)
             startActivityForResult(intent,NO_MEANS_REQUEST_CODE)
         }
 
+        //人物リストビューの一番上までスクロール
         headerMenu.setOnClickListener{
             //直前に強いスクロールがあった場合、スムーズでないとひっくり返せない
             scrollToTop(true)
@@ -208,6 +212,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
         //オプションバー背後のリストアイテムにクリックを通さないようにする
         footerOptionBar.setOnClickListener{}
 
+        //人物リストビューにおいて一番下までスクロールされたかを判定し、追加検索を行う
         personListScrollView.viewTreeObserver.addOnScrollChangedListener{
             val loadingItem = personListLinearLayout.findViewById<LinearLayout>(R.id.rootLinearLayout)
             loadingItem?:return@addOnScrollChangedListener
@@ -236,6 +241,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
             },500)
         }
 
+        //選択されている人物を削除
         deleteButton.setOnClickListener{
             AlertDialog.Builder(this)
                 .setTitle(getString(R.string.confirm_dialog_title))
@@ -259,6 +265,17 @@ class SearchPersonViewActivity : AppCompatActivity() {
                 .setNegativeButton(getString(R.string.negative_button_text)) { _, _ -> }
                 .setCancelable(false)
                 .show()
+        }
+
+        val s = "select * from photos_links"
+        val c = readableDB.rawQuery(s,null)
+        if(c.count == 0){
+            Log.d("TEST","NOTHING")
+        }else{
+            while(c.moveToNext()){
+                Log.d("TEST","${c.getInt(0)},${c.getInt(1)},${c.getInt(2)}")
+            }
+            Log.d("TEST","COUNT : ${c.count}")
         }
     }
 
