@@ -6,4 +6,9 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    <!-- スプラッシュ表示用テーマ -->
+    <style name="ThemeOnDisplaySplash" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:windowBackground">@drawable/splash</item>
+    </style>
+
 </resources>

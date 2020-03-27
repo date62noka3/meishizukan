@@ -12,7 +12,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activity.AllPhotosViewActivity"></activity>
+        <activity android:name=".activity.AllPhotosViewActivity" />
         <activity android:name=".activity.PhotosViewActivity" />
         <activity
             android:name=".activity.PersonalInfoViewActivity"
@@ -24,7 +24,8 @@
 
         <activity
             android:name=".activity.SearchPersonViewActivity"
-            android:windowSoftInputMode="adjustPan">
+            android:windowSoftInputMode="adjustPan"
+            android:theme="@style/ThemeOnDisplaySplash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
