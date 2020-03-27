@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootConstraintLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/allPhotosViewBackground"
+    tools:context=".activity.AllPhotosViewActivity">
+
+    <View
+        android:id="@+id/headerMenu"
+        android:layout_width="match_parent"
+        android:layout_height="46dp"
+        android:background="#FFFFFF"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/saveButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:background="@drawable/disabled_save_button_background"
+        android:clickable="false"
+        android:fontFamily="@font/source_han_serif_regular"
+        android:includeFontPadding="false"
+        android:paddingLeft="17dp"
+        android:paddingTop="1dp"
+        android:paddingRight="17dp"
+        android:paddingBottom="1dp"
+        android:text="@string/save_button_text"
+        android:textColor="#FFFFFF"
+        android:textSize="17sp"
+        android:textStyle="bold"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/headerMenu"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/headerMenu" />
+
+    <TextView
+        android:id="@+id/selectButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:background="@drawable/select_button_background"
+        android:clickable="false"
+        android:fontFamily="@font/source_han_serif_regular"
+        android:includeFontPadding="false"
+        android:paddingLeft="17dp"
+        android:paddingTop="1dp"
+        android:paddingRight="17dp"
+        android:paddingBottom="1dp"
+        android:text="@string/select_button_text"
+        android:textColor="@color/selectButtonTextColor"
+        android:textSize="17sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/headerMenu"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/headerMenu" />
+
+    <TextView
+        android:id="@+id/backButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:fontFamily="@font/source_han_serif_regular"
+        android:includeFontPadding="false"
+        android:text="@string/back_button_text"
+        android:textColor="@color/backButtonTextColor"
+        android:textSize="19sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/headerMenu"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/headerMenu" />
+
+    <ScrollView
+        android:id="@+id/photoListScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="470dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/headerMenu">
+
+        <LinearLayout
+            android:id="@+id/photoListLinearLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </ScrollView>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/footerMenu"
+        android:layout_width="389dp"
+        android:layout_height="50dp"
+        android:layout_marginBottom="15dp"
+        android:background="@drawable/inactive_footer_menu_button_background"
+        app:layout_constraintBottom_toTopOf="@+id/adView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <View
+            android:id="@+id/allButton"
+            android:layout_width="103dp"
+            android:layout_height="42dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/inactive_footer_menu_button_background"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/allButtonLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/source_han_serif_regular"
+            android:includeFontPadding="false"
+            android:text="@string/all_button_text"
+            android:textColor="@color/textColor"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="@+id/allButton"
+            app:layout_constraintEnd_toEndOf="@+id/allButton"
+            app:layout_constraintStart_toStartOf="@+id/allButton"
+            app:layout_constraintTop_toTopOf="@+id/allButton" />
+
+        <View
+            android:id="@+id/yearButton"
+            android:layout_width="76dp"
+            android:layout_height="42dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="13dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/inactive_footer_menu_button_background"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/monthButton"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="1.0" />
+
+        <TextView
+            android:id="@+id/yearButtonLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/source_han_serif_regular"
+            android:includeFontPadding="false"
+            android:text="@string/year_button_text"
+            android:textColor="@color/textColor"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="@+id/allButton"
+            app:layout_constraintEnd_toEndOf="@+id/yearButton"
+            app:layout_constraintStart_toStartOf="@+id/yearButton"
+            app:layout_constraintTop_toTopOf="@+id/allButton" />
+
+        <View
+            android:id="@+id/monthButton"
+            android:layout_width="76dp"
+            android:layout_height="42dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="13dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/inactive_footer_menu_button_background"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/dayButton"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="1.0" />
+
+        <TextView
+            android:id="@+id/monthButtonLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/source_han_serif_regular"
+            android:includeFontPadding="false"
+            android:text="@string/month_button_text"
+            android:textColor="@color/textColor"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="@+id/monthButton"
+            app:layout_constraintEnd_toEndOf="@+id/monthButton"
+            app:layout_constraintStart_toStartOf="@+id/monthButton"
+            app:layout_constraintTop_toTopOf="@+id/monthButton" />
+
+        <View
+            android:id="@+id/dayButton"
+            android:layout_width="76dp"
+            android:layout_height="42dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/active_footer_menu_button_background"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/dayButtonLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/source_han_serif_regular"
+            android:includeFontPadding="false"
+            android:text="@string/day_button_text"
+            android:textColor="@color/activeButtonTextColor"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="@+id/dayButton"
+            app:layout_constraintEnd_toEndOf="@+id/dayButton"
+            app:layout_constraintStart_toStartOf="@+id/dayButton"
+            app:layout_constraintTop_toTopOf="@+id/dayButton" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/footerOptionBar"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginBottom="15dp"
+        android:background="#FFFFFF"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/adView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:id="@+id/selectedItemCountTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/source_han_serif_regular"
+            android:includeFontPadding="false"
+            android:text="1枚の写真を選択中"
+            android:textColor="#303030"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/finishButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/disabled_save_button_background"
+            android:clickable="false"
+            android:fontFamily="@font/source_han_serif_regular"
+            android:includeFontPadding="false"
+            android:paddingLeft="17dp"
+            android:paddingTop="1dp"
+            android:paddingRight="17dp"
+            android:paddingBottom="1dp"
+            android:text="@string/finish_button_text"
+            android:textColor="#FFFFFF"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/adView"
+        android:layout_width="320dp"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        app:adSize="BANNER"
+        app:adUnitId="ca-app-pub-3940256099942544/6300978111"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"></com.google.android.gms.ads.AdView>
+
+    <include
+        android:id="@+id/loadingDialogView"
+        layout="@layout/loading_dialog_fill_parent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

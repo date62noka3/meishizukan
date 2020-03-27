@@ -6,7 +6,7 @@
     <string name="search_edittext_hint">人物を検索</string>
     <string name="no_persons_text">人物が登録されていません。</string>
     <string name="no_results_textview_text">該当する人物はいませんでした。</string>
-    <string name="selected_item_count_text">名の人物を選択中</string>
+    <string name="selected_person_count_text">名の人物を選択中</string>
     <string name="message_on_deleted_persons">削除しました</string>
 
     <!-- ローディング画面 -->
@@ -53,6 +53,12 @@
     <string name="message_on_saved_new_person">人物を追加しました</string>
     <string name="message_on_updated_personal_info">人物情報を保存しました</string>
 
+    <!-- 写真一覧画面 -->
+    <string name="message_on_saved_photos">Picturesフォルダに写真を保存しました</string>
+    <string name="message_on_failed_saved_photos">書き込み権限がないので保存できませんでした</string>
+    <string name="message_on_added_photos">写真を追加しました</string>
+    <string name="message_on_not_added_photos">同じ写真が既に追加されていました</string>
+
     <!-- 50音のア段 -->
     <string-array name="japanese_syllabary_regex">
         <item>[ァ-オ]</item> <!-- ァ-オ -->
@@ -82,4 +88,12 @@
     <!-- 写真一覧画面 -->
     <string name="select_button_text">選択</string>
     <string name="select_button_cancel_text">キャンセル</string>
+
+    <!-- すべての写真一覧画面 -->
+    <string name="all_button_text">すべて</string>
+    <string name="year_button_text">年別</string>
+    <string name="month_button_text">月別</string>
+    <string name="day_button_text">日別</string>
+    <string name="finish_button_text">確定</string>
+    <string name="selected_photo_count_text">枚の写真を選択中</string>
 </resources>

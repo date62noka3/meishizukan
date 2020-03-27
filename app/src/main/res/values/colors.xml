@@ -23,10 +23,10 @@
     <!-- 人物リストビュー -->
     <color name="personListViewSeparatorBackground">#C8E4FC</color>
 
-    <!-- 人物情報＆写真画面ヘッダーメニュー -->
+    <!-- 人物情報＆写真一覧画面ヘッダーメニュー -->
     <color name="backButtonTextColor">#005CFF</color>
 
-    <!-- 人物情報＆写真画面フッターメニュー -->
+    <!-- 人物情報＆写真一覧画面フッターメニュー -->
     <color name="enabledButtonTextColor">#303030</color>
     <color name="disabledButtonTextColor">#FFFFFF</color>
 
@@ -34,12 +34,19 @@
     <color name="toastTextColor">#303030</color>
     <color name="toastBackgroundColor">#F0F0F0</color>
 
-    <!-- 人物情報画面 -->
-    <color name="textColorOnInputError">#FFFFFF</color>
-    <color name="backgroundColorOnInputError">#EE5365</color>
-    <color name="textColorOnSaved">#FFFFFF</color>
-    <color name="backgroundColorOnSaved">#4D4DDB</color>
+    <!-- Toast成功した時、エラーした時 -->
+    <color name="toastTextColorOnSuccess">#FFFFFF</color>
+    <color name="toastBackgroundColorOnSuccess">#4D4DDB</color>
+    <color name="toastTextColorOnFailed">#FFFFFF</color>
+    <color name="toastBackgroundColorOnFailed">#EE5365</color>
 
     <!-- 写真一覧画面 -->
     <color name="selectButtonTextColor">#FFFFFF</color>
+    <color name="fullScreenViewBackground">#000000</color>
+    <color name="optionBarBackground">#7F2B2B2E</color>
+    <color name="fullScreenViewTextColor">#FFFFFF</color>
+
+    <!-- 全ての写真一覧画面 -->
+    <color name="allPhotosViewBackground">#ECECEC</color>
+    <color name="activeButtonTextColor">#4D4DDB</color>
 </resources>

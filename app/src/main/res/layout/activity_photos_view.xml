@@ -177,7 +177,7 @@
             android:fontFamily="@font/source_han_serif_regular"
             android:includeFontPadding="false"
             android:text="@string/photos_label_text"
-            android:textColor="#4D4DDB"
+            android:textColor="@color/activeButtonTextColor"
             android:textSize="19sp"
             android:textStyle="bold"
             android:visibility="visible"
@@ -221,7 +221,7 @@
     <ImageView
         android:id="@+id/addPhotoButton"
         android:layout_width="57dp"
-        android:layout_height="57dp"
+        android:layout_height="60dp"
         android:layout_marginEnd="15dp"
         android:layout_marginBottom="20dp"
         android:background="@drawable/add_button_background"
@@ -294,8 +294,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/footerOptionBar"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginBottom="20dp"
+        android:layout_height="50dp"
+        android:layout_marginBottom="15dp"
         android:background="#FFFFFF"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/adView"
@@ -335,13 +335,13 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/download_button" />
+            app:srcCompat="@drawable/download_button_black" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.gms.ads.AdView
         android:id="@+id/adView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="320dp"
+        android:layout_height="50dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         app:adSize="BANNER"
@@ -349,5 +349,123 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"></com.google.android.gms.ads.AdView>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/fullScreenView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/fullScreenViewBackground"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/fullScreenViewPhotoImageView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/azarashi" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/fullScreenViewHeaderOptionBar"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:background="@color/optionBarBackground"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <View
+                android:id="@+id/closeButton"
+                android:layout_width="23dp"
+                android:layout_height="23dp"
+                android:layout_marginStart="15dp"
+                android:background="@drawable/close_button"
+                android:foreground="@drawable/white_ripple"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/fullScreenViewNameTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/source_han_serif_regular"
+                android:includeFontPadding="false"
+                android:text="佐川 綾香"
+                android:textColor="@color/fullScreenViewTextColor"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/pageNumberTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:layout_marginBottom="5dp"
+                android:fontFamily="@font/source_han_serif_regular"
+                android:includeFontPadding="false"
+                android:text="1 / 2"
+                android:textColor="@color/fullScreenViewTextColor"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/fullScreenViewFooterOptionBar"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:background="@color/optionBarBackground"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <View
+                android:id="@+id/fullScreenViewDownloadButton"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:background="@drawable/download_button_white"
+                android:foreground="@drawable/white_ripple"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <View
+                android:id="@+id/rotateLeftButton"
+                android:layout_width="21dp"
+                android:layout_height="21dp"
+                android:background="@drawable/rotate_left_button"
+                android:foreground="@drawable/white_ripple"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/fullScreenViewDownloadButton"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <View
+                android:id="@+id/rotateRightButton"
+                android:layout_width="21dp"
+                android:layout_height="21dp"
+                android:background="@drawable/rotate_right_button"
+                android:foreground="@drawable/white_ripple"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/fullScreenViewDownloadButton"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
