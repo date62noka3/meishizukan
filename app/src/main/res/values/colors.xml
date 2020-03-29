@@ -32,7 +32,7 @@
 
     <!-- Toasterデフォルト -->
     <color name="toastTextColor">#303030</color>
-    <color name="toastBackgroundColor">#F0F0F0</color>
+    <color name="toastBackgroundColor">#E0E0E0</color>
 
     <!-- Toast成功した時、エラーした時 -->
     <color name="toastTextColorOnSuccess">#FFFFFF</color>

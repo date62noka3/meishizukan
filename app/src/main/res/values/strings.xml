@@ -8,6 +8,7 @@
     <string name="no_results_textview_text">該当する人物はいませんでした。</string>
     <string name="selected_person_count_text">名の人物を選択中</string>
     <string name="message_on_deleted_persons">削除しました</string>
+    <string name="message_on_click_all_photos_view_button">実装予定です</string>
 
     <!-- ローディング画面 -->
     <string name="loading_dialog_text">Loading</string>

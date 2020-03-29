@@ -10,6 +10,7 @@ import android.os.Handler
 import android.provider.BaseColumns
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.AttributeSet
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
@@ -53,6 +54,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setTheme(R.style.AppTheme) //スプラッシュ表示用テーマから戻す
         setContentView(R.layout.activity_search_person_view)
 
         readableDB = dbHelper.readableDatabase
@@ -69,9 +71,9 @@ class SearchPersonViewActivity : AppCompatActivity() {
         MobileAds.setRequestConfiguration(requestConfiguration)
         val adRequest = AdRequest.Builder().build()
         adView.loadAd(adRequest)
-        adView.adListener = object: AdListener() {
+        adView.adListener = object : AdListener() {
             override fun onAdLoaded() {}
-            override fun onAdFailedToLoad(errorCode : Int) {}
+            override fun onAdFailedToLoad(errorCode: Int) {}
             override fun onAdOpened() {}
             override fun onAdClicked() {}
             override fun onAdLeftApplication() {}
@@ -191,9 +193,12 @@ class SearchPersonViewActivity : AppCompatActivity() {
             drawerLayout.closeDrawer(menuRootConstraintLayout,true)
         }
 
-        //全ての写真一覧画面を表示(今はトーストだけ)
+        //全ての写真一覧画面を表示
         allPhotosViewButton.setOnClickListener{
-            Log.d("TEST","ALL_PHOTOS_VIEW_BUTTON_CLICKED")
+            Toaster.createToast(
+                context = this,
+                text = getString(R.string.message_on_click_all_photos_view_button)
+            ).show()
         }
 
         //人物情報画面を新規追加で表示
@@ -264,17 +269,6 @@ class SearchPersonViewActivity : AppCompatActivity() {
                 .setNegativeButton(getString(R.string.negative_button_text)) { _, _ -> }
                 .setCancelable(false)
                 .show()
-        }
-
-        val s = "select * from photos_links"
-        val c = readableDB.rawQuery(s,null)
-        if(c.count == 0){
-            Log.d("TEST","NOTHING")
-        }else{
-            while(c.moveToNext()){
-                Log.d("TEST","${c.getInt(0)},${c.getInt(1)},${c.getInt(2)}")
-            }
-            Log.d("TEST","COUNT : ${c.count}")
         }
     }
 
