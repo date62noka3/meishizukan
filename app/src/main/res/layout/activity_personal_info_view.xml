@@ -126,7 +126,7 @@
                 android:layout_marginStart="10dp"
                 android:background="@drawable/input_field_background"
                 android:fontFamily="@font/source_han_serif_regular"
-                android:hint="@string/last_phonetic_name_edit_text_hint"
+                android:hint="@string/last_phonetic_name_edittext_hint"
                 android:imeOptions="actionNext"
                 android:includeFontPadding="false"
                 android:inputType="textPersonName"
