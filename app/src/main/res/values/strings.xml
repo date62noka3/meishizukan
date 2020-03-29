@@ -41,13 +41,13 @@
     <string name="organization_label_text">組織名 ( 会社、企業、団体など )</string>
     <string name="memo_label_text">メモ</string>
     <string name="first_phonetic_name_edittext_hint">セイ</string>
-    <string name="last_phonetic_name_edit_text_hint">メイ</string>
+    <string name="last_phonetic_name_edittext_hint">メイ</string>
     <string name="first_name_edittext_hint">姓</string>
     <string name="last_name_edittext_hint">名</string>
     <string name="photos_label_text">写真</string>
     <string name="personal_info_label_text">人物情報</string>
     <string name="message_on_blank_error">必須項目が未入力です</string>
-    <string name="message_on_illegal_error">フリガナは全角で入力してください</string>
+    <string name="message_on_illegal_error">フリガナは全角カタカナorひらがなで入力してください</string>
     <string name="message_on_saved_new_person">人物を追加しました</string>
     <string name="message_on_updated_personal_info">人物情報を保存しました</string>
     <string name="message_on_confirm_delete_person">削除してもよろしいでしょうか？</string>
