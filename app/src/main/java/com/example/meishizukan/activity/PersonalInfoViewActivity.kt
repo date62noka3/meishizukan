@@ -18,6 +18,7 @@ import androidx.core.content.ContextCompat.getColor
 import com.example.meishizukan.R
 import com.example.meishizukan.dto.Person
 import com.example.meishizukan.util.*
+import com.example.meishizukan.util.PhoneticName.hiraganaToKatakana
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
@@ -315,7 +316,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * */
     private fun onInputValueChanged(){
         //入力値の変更があればボタンを有効、なければ無効
-        saveButton.isClickable = (valueChangedElements.isNotEmpty())
+        saveButton.isClickable = valueChangedElements.isNotEmpty()
 
         setSaveButtonBackground()
     }
@@ -518,10 +519,10 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * 入力値をタグに設定
     * */
     private fun setInputValueToTag(){
-        firstNameEditText.tag = firstPhoneticNameEditText.text.toString()
-        lastNameEditText.tag = lastPhoneticNameEditText.text.toString()
-        firstPhoneticNameEditText.tag = firstNameEditText.text.toString()
-        lastPhoneticNameEditText.tag = lastNameEditText.text.toString()
+        firstNameEditText.tag = firstNameEditText.text.toString()
+        lastNameEditText.tag = lastNameEditText.text.toString()
+        firstPhoneticNameEditText.tag = firstPhoneticNameEditText.text.toString()
+        lastPhoneticNameEditText.tag = lastPhoneticNameEditText.text.toString()
         sexSpinner.tag = sexSpinner.selectedItemPosition.toString()
         organizationNameEditText.tag = organizationNameEditText.text.toString()
         noteEditText.tag = noteEditText.text.toString()
@@ -649,7 +650,15 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             //元のテキストと異なる場合カウントアップ
             //同値の場合カウントダウン
             if(view is EditText){
-                if(view.tag.toString() != view.text.toString()){
+                //フリガナにおいてはひらがなとカタカナを区別しないためカタカナに揃えたうえで
+                //同値かどうかの判定をする
+                val viewText = if(view.id == firstPhoneticNameEditText.id || view.id == lastPhoneticNameEditText.id){
+                    hiraganaToKatakana(view.text.toString())
+                }else{
+                    view.text.toString()
+                }
+
+                if(view.tag.toString() != viewText){
                     valueChangedElements.add(view.id)
                     view.setBackgroundResource(R.drawable.value_changed_input_field_background)
                 }else{
