@@ -272,17 +272,6 @@ class SearchPersonViewActivity : AppCompatActivity() {
                 .setCancelable(false)
                 .show()
         }
-
-        val s = "select _id,photo_id,person_id from photos_links"
-        val c = readableDB.rawQuery(s,null)
-        if(c.count == 0){
-            Log.d("TEST","NOTHING")
-        }else{
-            while(c.moveToNext()){
-                Log.d("TEST","ID:${c.getInt(0)}, Photo:${c.getInt(1)}, Person:${c.getInt(2)}")
-            }
-        }
-        c.close()
     }
 
     override fun onResume(){
