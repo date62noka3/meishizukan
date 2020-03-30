@@ -2,6 +2,7 @@ package com.example.meishizukan.activity
 
 import NoFilterArrayAdapter
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.database.sqlite.SQLiteDatabase
 import android.graphics.Rect
@@ -12,6 +13,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.getColor
@@ -34,12 +36,14 @@ class PersonalInfoViewActivity : AppCompatActivity() {
 
     private val dbHelper = DbHelper(this)
     private lateinit var readableDB:SQLiteDatabase
+    private lateinit var writableDB:SQLiteDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_personal_info_view)
 
         readableDB = dbHelper.readableDatabase
+        writableDB = dbHelper.writableDatabase
 
         //AdMob初期化
         val testDevices = mutableListOf<String>()
@@ -189,6 +193,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             }
         }
 
+        val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         //人物情報を保存する
         saveButton.setOnClickListener{
             //未入力チェック
@@ -230,6 +235,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                     displayTime = Toast.LENGTH_SHORT
                 ).show()
 
+                inputMethodManager.hideSoftInputFromWindow(saveButton.windowToken,0) //キーボードを非表示
                 enablePhotosViewButton()
                 enableDeleteButton()
                 scrollToBottom()
@@ -245,6 +251,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                 ).show()
             }
 
+            inputMethodManager.hideSoftInputFromWindow(saveButton.windowToken,0) //キーボードを非表示
             valueChangedElements.clear()
             saveButton.isClickable = false
             setSaveButtonBackground()
@@ -290,6 +297,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     override fun onDestroy(){
         adView.destroy()
         readableDB.close()
+        writableDB.close()
         dbHelper.close()
         super.onDestroy()
     }
@@ -547,7 +555,6 @@ class PersonalInfoViewActivity : AppCompatActivity() {
 
         if(cursor.count == 0){
             cursor.close()
-            readableDB.close()
             return null
         }
 
@@ -590,7 +597,6 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * @return 追加した人物のID
     * */
     private fun insertPerson(person: Person):Int{
-        val writableDB = dbHelper.writableDatabase
         val values = getContentValues(person)
         val id = writableDB.insert(DbContracts.Persons.TABLE_NAME,null,values).toInt()
         writableDB.close()
@@ -604,7 +610,6 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * @param 人物
     * */
     private fun updatePerson(person:Person){
-        val writableDB = dbHelper.writableDatabase
         val values = getContentValues(person)
         writableDB.update(DbContracts.Persons.TABLE_NAME,
             values,
@@ -619,7 +624,6 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * @param 人物ID
     * */
     private fun deletePerson(personId: Int){
-        val writableDB = dbHelper.writableDatabase
         writableDB.delete(DbContracts.Persons.TABLE_NAME,"${BaseColumns._ID} = $personId",null)
         writableDB.close()
     }
@@ -630,7 +634,6 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * @param 人物ID
     * */
     private fun deleteLinkedPhotos(personId:Int){
-        val writableDB = dbHelper.writableDatabase
         writableDB.delete(DbContracts.PhotosLinks.TABLE_NAME,"${DbContracts.PhotosLinks.COLUMN_PERSON_ID} = $personId",null)
         writableDB.close()
     }
