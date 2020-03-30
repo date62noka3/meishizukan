@@ -47,6 +47,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
 
     private val dbHelper = DbHelper(this)
     private lateinit var readableDB:SQLiteDatabase
+    private lateinit var writableDB:SQLiteDatabase
 
     private lateinit var sexTypes:Array<String>
 
@@ -58,6 +59,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
         setContentView(R.layout.activity_search_person_view)
 
         readableDB = dbHelper.readableDatabase
+        writableDB = dbHelper.writableDatabase
 
         sexTypes = resources.getStringArray(R.array.sex_types)
 
@@ -270,6 +272,17 @@ class SearchPersonViewActivity : AppCompatActivity() {
                 .setCancelable(false)
                 .show()
         }
+
+        val s = "select _id,photo_id,person_id from photos_links"
+        val c = readableDB.rawQuery(s,null)
+        if(c.count == 0){
+            Log.d("TEST","NOTHING")
+        }else{
+            while(c.moveToNext()){
+                Log.d("TEST","ID:${c.getInt(0)}, Photo:${c.getInt(1)}, Person:${c.getInt(2)}")
+            }
+        }
+        c.close()
     }
 
     override fun onResume(){
@@ -283,6 +296,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
     override fun onDestroy(){
         adView.destroy()
         readableDB.close()
+        writableDB.close()
         dbHelper.close()
         super.onDestroy()
     }
@@ -310,14 +324,22 @@ class SearchPersonViewActivity : AppCompatActivity() {
     * 人物を削除
     * */
     private fun deletePersons(){
-        val writableDB = dbHelper.writableDatabase
-
         for(personId in removePersons){
+            deleteLinkedPhotos(personId)
             writableDB.delete(DbContracts.Persons.TABLE_NAME,"${BaseColumns._ID} = $personId",null)
             Log.d("DELETED_PERSON_ID",personId.toString())
         }
 
         removePersons.clear()
+    }
+
+    /*
+    * 人物にリンクしている写真のリンクを解除する
+    *
+    * @param 人物ID
+    * */
+    private fun deleteLinkedPhotos(personId:Int){
+        writableDB.delete(DbContracts.PhotosLinks.TABLE_NAME,"${DbContracts.PhotosLinks.COLUMN_PERSON_ID} = $personId",null)
     }
 
     /*
