@@ -56,9 +56,11 @@
 
     <!-- 写真一覧画面 -->
     <string name="message_on_saved_photos">Picturesフォルダに写真を保存しました</string>
-    <string name="message_on_failed_saved_photos">書き込み権限がないので保存できませんでした</string>
+    <string name="message_on_failed_save_photos">書き込み権限がないので保存できませんでした</string>
     <string name="message_on_added_photos">写真を追加しました</string>
-    <string name="message_on_not_added_photos">同じ写真が既に追加されていました</string>
+    <string name="message_on_failed_add_photos">同じ写真が既に追加されていました</string>
+    <string name="message_on_failed_open_camera">権限がないのでカメラを起動できませんでした</string>
+    <string name="message_on_no_camera_app">カメラアプリがありません</string>
 
     <!-- 50音のア段 -->
     <string-array name="japanese_syllabary_regex">

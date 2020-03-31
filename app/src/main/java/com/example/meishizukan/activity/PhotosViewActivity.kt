@@ -23,6 +23,8 @@ import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.example.meishizukan.R
 import com.example.meishizukan.dto.Person
 import com.google.android.gms.ads.AdListener
@@ -51,16 +53,13 @@ private const val OPEN_CAMERA_REQUEST_CODE  = 0
 private const val OPEN_GALLERY_REQUEST_CODE = 1
 private const val GET_PHOTOS_IN_APP_REQUEST_CODE = 2
 
-private const val WRITE_PERMISSION_REQUEST_CODE_ON_DOWNLOAD_FULL_DISPLAYED_PHOTO = 3 //ストレージ書き込み権限の要求コード(全画面表示されている写真のダウンロード時)
-private const val WRITE_PERMISSION_REQUEST_CODE_ON_DOWNLOAD_SELECTED_PHOTOS = 4 //ストレージ書き込み権限の要求コード(選択中の写真のダウンロード時)
+private const val WRITE_PERMISSION_REQUEST_CODE_ON_DOWNLOAD_FULL_DISPLAYED_PHOTO = 4 //ストレージ書き込み権限の要求コード(全画面表示されている写真のダウンロード時)
+private const val WRITE_PERMISSION_REQUEST_CODE_ON_DOWNLOAD_SELECTED_PHOTOS = 5 //ストレージ書き込み権限の要求コード(選択中の写真のダウンロード時)
 
 /*
 * 選択中写真のラッパークラス
 * */
-class SelectedPhotosWrapper(photoImageViewId:Int,photoId:Int){
-    private val photoImageViewId = photoImageViewId
-    private val photoId = photoId
-
+class SelectedPhotosWrapper(private val photoImageViewId: Int, private val photoId:Int){
     fun getPhotoImageViewId():Int{
         return photoImageViewId
     }
@@ -136,9 +135,20 @@ class PhotosViewActivity : AppCompatActivity() {
         //カメラを起動
         cameraButton.setOnClickListener{
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            if(intent.resolveActivity(packageManager) != null){
-                startActivityForResult(intent,OPEN_CAMERA_REQUEST_CODE)
+
+            //カメラアプリがない場合トーストを表示
+            if(intent.resolveActivity(packageManager) == null){
+                Toaster.createToast(
+                    context = this,
+                    text = getString(R.string.message_on_no_camera_app),
+                    textColor = getColor(this, R.color.toastTextColorOnFailed),
+                    backgroundColor = getColor(this, R.color.toastBackgroundColorOnFailed),
+                    displayTime = Toast.LENGTH_LONG
+                ).show()
+                return@setOnClickListener
             }
+
+            startActivityForResult(intent, OPEN_CAMERA_REQUEST_CODE)
         }
 
         //ギャラリー選択画面を表示
@@ -350,18 +360,16 @@ class PhotosViewActivity : AppCompatActivity() {
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        //ストレージへの書き込み権限がある場合ダウンロード
-        //なければ、書き込めない旨をトーストで表示
         if(requestCode == WRITE_PERMISSION_REQUEST_CODE_ON_DOWNLOAD_FULL_DISPLAYED_PHOTO) {
+            //ストレージへの書き込み権限がある場合ダウンロード。なければ、書き込めない旨をトーストで表示
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                 val displayedPhotoImageView =
                     findViewById<ImageView>(displayedPhotoImageViewIdOnFullScreen)
                 downloadPhoto(displayedPhotoImageView.drawable.toBitmap())
             } else{
-                //書き込み権限がない場合
                 Toaster.createToast(
                     context = this,
-                    text = getString(R.string.message_on_failed_saved_photos),
+                    text = getString(R.string.message_on_failed_save_photos),
                     textColor = getColor(this, R.color.toastTextColorOnFailed),
                     backgroundColor = getColor(this, R.color.toastBackgroundColorOnFailed),
                     displayTime = Toast.LENGTH_LONG
@@ -369,6 +377,7 @@ class PhotosViewActivity : AppCompatActivity() {
             }
         }
         else if(requestCode == WRITE_PERMISSION_REQUEST_CODE_ON_DOWNLOAD_SELECTED_PHOTOS){
+            //ストレージへの書き込み権限がある場合ダウンロード。なければ、書き込めない旨をトーストで表示
             if((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)){
                 selectedPhotos.map{it.getPhotoImageViewId()}.forEach{
                         photoImageViewId ->
@@ -379,10 +388,9 @@ class PhotosViewActivity : AppCompatActivity() {
                 //選択を解除する
                 selectButton.performClick()
             }else{
-                //書き込み権限がない場合
                 Toaster.createToast(
                     context = this,
-                    text = getString(R.string.message_on_failed_saved_photos),
+                    text = getString(R.string.message_on_failed_save_photos),
                     textColor = getColor(this, R.color.toastTextColorOnFailed),
                     backgroundColor = getColor(this, R.color.toastBackgroundColorOnFailed),
                     displayTime = Toast.LENGTH_LONG
@@ -413,7 +421,7 @@ class PhotosViewActivity : AppCompatActivity() {
             if(-1 == photoId){
                 Toaster.createToast(
                     context = this,
-                    text = getString(R.string.message_on_not_added_photos),
+                    text = getString(R.string.message_on_failed_add_photos),
                     textColor = getColor(this, R.color.toastTextColorOnFailed),
                     backgroundColor = getColor(this, R.color.toastBackgroundColorOnFailed),
                     displayTime = Toast.LENGTH_LONG
@@ -462,7 +470,7 @@ class PhotosViewActivity : AppCompatActivity() {
                 if(0 == addedPhotosCount){
                     Toaster.createToast(
                         context = this,
-                        text = getString(R.string.message_on_not_added_photos),
+                        text = getString(R.string.message_on_failed_add_photos),
                         textColor = getColor(this, R.color.toastTextColorOnFailed),
                         backgroundColor = getColor(this, R.color.toastBackgroundColorOnFailed),
                         displayTime = Toast.LENGTH_LONG
@@ -487,7 +495,7 @@ class PhotosViewActivity : AppCompatActivity() {
                 if(-1 == photoId) {
                     Toaster.createToast(
                         context = this,
-                        text = getString(R.string.message_on_not_added_photos),
+                        text = getString(R.string.message_on_failed_add_photos),
                         textColor = getColor(this, R.color.toastTextColorOnFailed),
                         backgroundColor = getColor(this, R.color.toastBackgroundColorOnFailed),
                         displayTime = Toast.LENGTH_LONG
@@ -544,7 +552,7 @@ class PhotosViewActivity : AppCompatActivity() {
                 //全て既に追加されている
                 Toaster.createToast(
                     context = this,
-                    text = getString(R.string.message_on_not_added_photos),
+                    text = getString(R.string.message_on_failed_add_photos),
                     textColor = getColor(this, R.color.toastTextColorOnFailed),
                     backgroundColor = getColor(this, R.color.toastBackgroundColorOnFailed),
                     displayTime = Toast.LENGTH_LONG
