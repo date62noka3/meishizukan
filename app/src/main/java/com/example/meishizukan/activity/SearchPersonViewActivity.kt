@@ -31,6 +31,7 @@ import com.google.android.gms.ads.MobileAds
 import kotlinx.android.synthetic.main.activity_search_person_view.*
 import androidx.core.content.ContextCompat.getColor
 import com.example.meishizukan.util.*
+import com.example.meishizukan.util.PhoneticName.hiraganaToKatakana
 import com.google.android.gms.ads.RequestConfiguration
 
 private object Sex{
@@ -451,8 +452,9 @@ class SearchPersonViewActivity : AppCompatActivity() {
                     " FROM ${DbContracts.Persons.TABLE_NAME}" +
                     " ORDER BY ${DbContracts.Persons.COLUMN_PHONETIC_NAME}" +
                     " LIMIT $limit OFFSET $offset"
-        }else { //曖昧検索
-            //キーワードがカタカナであれば名前においてフリガナで検索する
+        }else { //人物名と組織名で曖昧検索する
+            //キーワードに漢字が含まれていなければ名前(フリガナ)で検索し、
+            //含まれていなければ名前(漢字)で検索する
             "SELECT ${BaseColumns._ID}," +
                     "${DbContracts.Persons.COLUMN_NAME}," +
                     "${DbContracts.Persons.COLUMN_PHONETIC_NAME}," +
@@ -461,7 +463,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
                     DbContracts.Persons.COLUMN_NOTE +
                     " FROM ${DbContracts.Persons.TABLE_NAME}" +
                     " WHERE " +
-                    if (keyword.matches(PhoneticName.phoneticNameRegex)) {
+                    if (hiraganaToKatakana(keyword).matches(PhoneticName.phoneticNameRegex)) {
                         DbContracts.Persons.COLUMN_PHONETIC_NAME
                     } else {
                         DbContracts.Persons.COLUMN_NAME
