@@ -10,7 +10,6 @@ import android.os.Handler
 import android.provider.BaseColumns
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.AttributeSet
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
@@ -493,7 +492,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
         scrollToTop(false)
 
         var keyword = searchEditText.text.toString()
-        keyword = PhoneticName.hiraganaToKatakana(keyword)
+        keyword = hiraganaToKatakana(keyword)
 
         val sql = createSearchSQL(keyword)
 
