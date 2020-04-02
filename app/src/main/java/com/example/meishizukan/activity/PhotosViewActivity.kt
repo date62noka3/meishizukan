@@ -23,8 +23,6 @@ import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.example.meishizukan.R
 import com.example.meishizukan.dto.Person
 import com.google.android.gms.ads.AdListener
@@ -82,15 +80,15 @@ class PhotosViewActivity : AppCompatActivity() {
     private var isSelecting = false //選択中かいなか
 
     private val dbHelper = DbHelper(this)
-    private lateinit var readableDB: SQLiteDatabase
-    private lateinit var writableDB: SQLiteDatabase
+    private lateinit var readableDb: SQLiteDatabase
+    private lateinit var writableDb: SQLiteDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_photos_view)
 
-        readableDB = dbHelper.readableDatabase
-        writableDB = dbHelper.writableDatabase
+        readableDb = dbHelper.readableDatabase
+        writableDb = dbHelper.writableDatabase
 
         //AdMob初期化
         val testDevices = mutableListOf<String>()
@@ -302,7 +300,7 @@ class PhotosViewActivity : AppCompatActivity() {
                 .setMessage(getString(R.string.message_on_confirm_delete_photo_link))
                 .setPositiveButton(positiveButtonText) { _, _ ->
                     selectedPhotos.forEach{
-                        writableDB.delete(DbContracts.PhotosLinks.TABLE_NAME,
+                        writableDb.delete(DbContracts.PhotosLinks.TABLE_NAME,
                             "${DbContracts.PhotosLinks.COLUMN_PHOTO_ID} = ${it.getPhotoId()}",
                             null)
                     }
@@ -349,8 +347,8 @@ class PhotosViewActivity : AppCompatActivity() {
 
     override fun onDestroy(){
         adView.destroy()
-        readableDB.close()
-        writableDB.close()
+        readableDb.close()
+        writableDb.close()
         dbHelper.close()
         super.onDestroy()
     }
@@ -537,7 +535,7 @@ class PhotosViewActivity : AppCompatActivity() {
             getLinkedPhotosSql.replace(getLinkedPhotosSql.length - 1,getLinkedPhotosSql.length,"") //末尾のカンマを削除
             getLinkedPhotosSql.append(")")
 
-            val getLinkedPhotosCursor = readableDB.rawQuery(getLinkedPhotosSql.toString(),null)
+            val getLinkedPhotosCursor = readableDb.rawQuery(getLinkedPhotosSql.toString(),null)
 
             if(getLinkedPhotosCursor.count != 0) {
                 //既にリンクしている写真をリストから除外する
@@ -577,7 +575,7 @@ class PhotosViewActivity : AppCompatActivity() {
                     personId = personId
                 )
                 val values = getContentValues(photoLink)
-                writableDB.insert(DbContracts.PhotosLinks.TABLE_NAME,null,values)
+                writableDb.insert(DbContracts.PhotosLinks.TABLE_NAME,null,values)
 
                 getBinarySql.append("$photoId,")
             }
@@ -585,7 +583,7 @@ class PhotosViewActivity : AppCompatActivity() {
             getBinarySql.replace(getBinarySql.length - 1,getBinarySql.length,"") //末尾のカンマを削除する
             getBinarySql.append(") ORDER BY ${BaseColumns._ID}")
 
-            val getBinaryCursor = readableDB.rawQuery(getBinarySql.toString(),null)
+            val getBinaryCursor = readableDb.rawQuery(getBinarySql.toString(),null)
             if(getBinaryCursor.count != 0){
                 while(getBinaryCursor.moveToNext()){
                     val photoId = getBinaryCursor.getInt(0)
@@ -713,7 +711,7 @@ class PhotosViewActivity : AppCompatActivity() {
     private fun searchPhoto(hashedBinary:ByteArray): Cursor {
         val sql = "SELECT ${BaseColumns._ID} FROM ${DbContracts.Photos.TABLE_NAME}" +
                 " WHERE ${DbContracts.Photos.COLUMN_HASHED_BINARY} = '${hashedBinary.contentToString()}'"
-        return readableDB.rawQuery(sql,null)
+        return readableDb.rawQuery(sql,null)
     }
 
     /*
@@ -727,7 +725,7 @@ class PhotosViewActivity : AppCompatActivity() {
         val sql = "SELECT ${BaseColumns._ID} FROM ${DbContracts.PhotosLinks.TABLE_NAME}" +
                 " WHERE ${DbContracts.PhotosLinks.COLUMN_PHOTO_ID} = $photoId" +
                 " AND ${DbContracts.PhotosLinks.COLUMN_PERSON_ID} = $personId"
-        val cursor = readableDB.rawQuery(sql,null)
+        val cursor = readableDb.rawQuery(sql,null)
         val recordCount:Int = cursor.count
         cursor.close()
         return 0 != recordCount
@@ -744,7 +742,7 @@ class PhotosViewActivity : AppCompatActivity() {
         val sql = "SELECT ${DbContracts.Photos.COLUMN_BINARY}" +
                 " FROM ${DbContracts.Photos.TABLE_NAME}" +
                 " WHERE ${BaseColumns._ID} = $photoId"
-        return readableDB.rawQuery(sql,null)
+        return readableDb.rawQuery(sql,null)
     }
 
     /*
@@ -756,7 +754,7 @@ class PhotosViewActivity : AppCompatActivity() {
         val sql = "SELECT ${DbContracts.PhotosLinks.COLUMN_PHOTO_ID}" +
                 " FROM ${DbContracts.PhotosLinks.TABLE_NAME}" +
                 " WHERE ${DbContracts.PhotosLinks.COLUMN_PERSON_ID} = $personId"
-        return readableDB.rawQuery(sql,null)
+        return readableDb.rawQuery(sql,null)
     }
 
     /*
@@ -768,7 +766,7 @@ class PhotosViewActivity : AppCompatActivity() {
     private fun insertPhoto(photo:Photo):Int{
         val values = getContentValues(photo)
 
-        return writableDB.insert(DbContracts.Photos.TABLE_NAME,null,values).toInt()
+        return writableDb.insert(DbContracts.Photos.TABLE_NAME,null,values).toInt()
     }
 
     /*
@@ -779,7 +777,7 @@ class PhotosViewActivity : AppCompatActivity() {
     private fun addPhotoLink(photoLink: PhotoLink){
         val values = getContentValues(photoLink)
 
-        writableDB.insert(DbContracts.PhotosLinks.TABLE_NAME,null,values)
+        writableDb.insert(DbContracts.PhotosLinks.TABLE_NAME,null,values)
     }
 
     private val displayedPhotoImageViews = mutableListOf<Int>() //値は写真イメージビューのビューID
@@ -931,7 +929,7 @@ class PhotosViewActivity : AppCompatActivity() {
                 " WHERE ${BaseColumns._ID} = $personId"
 
         //人物を取得
-        val cursor = readableDB.rawQuery(sql,null)
+        val cursor = readableDb.rawQuery(sql,null)
 
         if(cursor.count == 0){
             cursor.close()

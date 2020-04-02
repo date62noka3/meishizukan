@@ -46,8 +46,8 @@ private const val KEYCODE_ENTER = 66
 class SearchPersonViewActivity : AppCompatActivity() {
 
     private val dbHelper = DbHelper(this)
-    private lateinit var readableDB:SQLiteDatabase
-    private lateinit var writableDB:SQLiteDatabase
+    private lateinit var readableDb:SQLiteDatabase
+    private lateinit var writableDb:SQLiteDatabase
 
     private lateinit var sexTypes:Array<String>
 
@@ -58,8 +58,8 @@ class SearchPersonViewActivity : AppCompatActivity() {
         setTheme(R.style.AppTheme) //スプラッシュ表示用テーマから戻す
         setContentView(R.layout.activity_search_person_view)
 
-        readableDB = dbHelper.readableDatabase
-        writableDB = dbHelper.writableDatabase
+        readableDb = dbHelper.readableDatabase
+        writableDb = dbHelper.writableDatabase
 
         sexTypes = resources.getStringArray(R.array.sex_types)
 
@@ -284,8 +284,8 @@ class SearchPersonViewActivity : AppCompatActivity() {
 
     override fun onDestroy(){
         adView.destroy()
-        readableDB.close()
-        writableDB.close()
+        readableDb.close()
+        writableDb.close()
         dbHelper.close()
         super.onDestroy()
     }
@@ -315,7 +315,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
     private fun deletePersons(){
         for(personId in removePersons){
             deleteLinkedPhotos(personId)
-            writableDB.delete(DbContracts.Persons.TABLE_NAME,"${BaseColumns._ID} = $personId",null)
+            writableDb.delete(DbContracts.Persons.TABLE_NAME,"${BaseColumns._ID} = $personId",null)
             Log.d("DELETED_PERSON_ID",personId.toString())
         }
 
@@ -328,7 +328,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
     * @param 人物ID
     * */
     private fun deleteLinkedPhotos(personId:Int){
-        writableDB.delete(DbContracts.PhotosLinks.TABLE_NAME,"${DbContracts.PhotosLinks.COLUMN_PERSON_ID} = $personId",null)
+        writableDb.delete(DbContracts.PhotosLinks.TABLE_NAME,"${DbContracts.PhotosLinks.COLUMN_PERSON_ID} = $personId",null)
     }
 
     /*
@@ -408,7 +408,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
     * @return 人物リスト
     * */
     private fun readPersons(sql:String):MutableList<Person>{
-        val cursor = readableDB.rawQuery(sql,null)
+        val cursor = readableDb.rawQuery(sql,null)
         val persons = mutableListOf<Person>()
 
         if(cursor.count == 0){
@@ -440,7 +440,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
     * @param 検索キーワード
     * @return 検索SQL
     * */
-    private fun createSearchSQL(keyword:String):String{
+    private fun createSearchSql(keyword:String):String{
         return if(keyword.isBlank()){ //全てを取得
             "SELECT ${BaseColumns._ID}," +
                     "${DbContracts.Persons.COLUMN_NAME}," +
@@ -494,7 +494,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
         var keyword = searchEditText.text.toString()
         keyword = hiraganaToKatakana(keyword)
 
-        val sql = createSearchSQL(keyword)
+        val sql = createSearchSql(keyword)
 
         val addPersonsCount = addPersonsToListView(readPersons(sql))
 
