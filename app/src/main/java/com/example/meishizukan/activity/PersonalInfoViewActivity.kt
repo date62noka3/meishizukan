@@ -35,15 +35,15 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     private var valueChangedElements = mutableListOf<Int>() //値が変更された人物情報要素
 
     private val dbHelper = DbHelper(this)
-    private lateinit var readableDB:SQLiteDatabase
-    private lateinit var writableDB:SQLiteDatabase
+    private lateinit var readableDb:SQLiteDatabase
+    private lateinit var writableDb:SQLiteDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_personal_info_view)
 
-        readableDB = dbHelper.readableDatabase
-        writableDB = dbHelper.writableDatabase
+        readableDb = dbHelper.readableDatabase
+        writableDb = dbHelper.writableDatabase
 
         //AdMob初期化
         val testDevices = mutableListOf<String>()
@@ -296,8 +296,8 @@ class PersonalInfoViewActivity : AppCompatActivity() {
 
     override fun onDestroy(){
         adView.destroy()
-        readableDB.close()
-        writableDB.close()
+        readableDb.close()
+        writableDb.close()
         dbHelper.close()
         super.onDestroy()
     }
@@ -363,7 +363,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                 " ORDER BY CAST(LENGTH('$organizationName') as REAL) / CAST(LENGTH(${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}) as REAL) DESC" +
                 " LIMIT $limit"
 
-        val cursor = readableDB.rawQuery(sql,null)
+        val cursor = readableDb.rawQuery(sql,null)
 
         val organizations = mutableListOf<String>()
 
@@ -551,7 +551,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                 " WHERE ${BaseColumns._ID} = $personId"
 
         //人物を取得
-        val cursor = readableDB.rawQuery(sql,null)
+        val cursor = readableDb.rawQuery(sql,null)
 
         if(cursor.count == 0){
             cursor.close()
@@ -598,8 +598,8 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * */
     private fun insertPerson(person: Person):Int{
         val values = getContentValues(person)
-        val id = writableDB.insert(DbContracts.Persons.TABLE_NAME,null,values).toInt()
-        writableDB.close()
+        val id = writableDb.insert(DbContracts.Persons.TABLE_NAME,null,values).toInt()
+        writableDb.close()
 
         return id
     }
@@ -611,11 +611,11 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * */
     private fun updatePerson(person:Person){
         val values = getContentValues(person)
-        writableDB.update(DbContracts.Persons.TABLE_NAME,
+        writableDb.update(DbContracts.Persons.TABLE_NAME,
             values,
             "${BaseColumns._ID} = ${person.getId()}",
             null)
-        writableDB.close()
+        writableDb.close()
     }
 
     /*
@@ -624,8 +624,8 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * @param 人物ID
     * */
     private fun deletePerson(personId: Int){
-        writableDB.delete(DbContracts.Persons.TABLE_NAME,"${BaseColumns._ID} = $personId",null)
-        writableDB.close()
+        writableDb.delete(DbContracts.Persons.TABLE_NAME,"${BaseColumns._ID} = $personId",null)
+        writableDb.close()
     }
 
     /*
@@ -634,8 +634,8 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * @param 人物ID
     * */
     private fun deleteLinkedPhotos(personId:Int){
-        writableDB.delete(DbContracts.PhotosLinks.TABLE_NAME,"${DbContracts.PhotosLinks.COLUMN_PERSON_ID} = $personId",null)
-        writableDB.close()
+        writableDb.delete(DbContracts.PhotosLinks.TABLE_NAME,"${DbContracts.PhotosLinks.COLUMN_PERSON_ID} = $personId",null)
+        writableDb.close()
     }
 
     /*

@@ -7,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.provider.BaseColumns
-import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
@@ -42,7 +41,7 @@ private const val DISPLAYED_PLACE_RIGHT = 2
 class AllPhotosViewActivity : AppCompatActivity() {
 
     private val dbHelper = DbHelper(this)
-    private lateinit var readableDB:SQLiteDatabase
+    private lateinit var readableDb:SQLiteDatabase
 
     private var isSelecting = false //選択中かいなか
 
@@ -50,7 +49,7 @@ class AllPhotosViewActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_all_photos_view)
 
-        readableDB = dbHelper.readableDatabase
+        readableDb = dbHelper.readableDatabase
 
         //AdMob初期化
         val testDevices = mutableListOf<String>()
@@ -188,7 +187,7 @@ class AllPhotosViewActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         adView.destroy()
-        readableDB.close()
+        readableDb.close()
         dbHelper.close()
         super.onDestroy()
     }
@@ -248,7 +247,7 @@ class AllPhotosViewActivity : AppCompatActivity() {
     * @return 写真リスト
     * */
     private fun readPhotos(sql:String):MutableList<Photo>{
-        val cursor = readableDB.rawQuery(sql,null)
+        val cursor = readableDb.rawQuery(sql,null)
         val photos = mutableListOf<Photo>()
 
         if(cursor.count == 0){
