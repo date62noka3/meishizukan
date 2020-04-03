@@ -538,7 +538,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
     * @param 名前
     * @return 名前が空か否か
     * */
-    private fun nameIsEmpty(name:String):Boolean{
+    private fun personNameIsBlank(name:String):Boolean{
         return name == nameSplit.toString()
     }
 
@@ -559,7 +559,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
         val phoneticNameTextView = item.findViewById<TextView>(R.id.phoneticNameTextView)
         var name = person.getName()
         //名前 ( 漢字 )があれば通常通り表示し、なければemptyを表示
-        if(!nameIsEmpty(name)){
+        if(!personNameIsBlank(name)){
             //名前 ( 漢字 )において、姓のみ、名のみの可能性を考慮している
             name = name.replace(nameSplit,' ')
             nameTextView?.text = if(name[0] == ' '){
@@ -749,11 +749,13 @@ class SearchPersonViewActivity : AppCompatActivity() {
 
     // Start Test --------------------------------------------------------------------------
 
-    @Test
     /*
-    * 全検索の際のSQLをテスト
+    * 検索SQLをテスト1
+    *
+    * 全検索
     * */
-    fun testCreateSearchSql001(){
+    @Test
+    fun testCreateSearchSql01(){
         val sql = "SELECT ${BaseColumns._ID}," +
                 "${DbContracts.Persons.COLUMN_NAME}," +
                 "${DbContracts.Persons.COLUMN_PHONETIC_NAME}," +
@@ -764,5 +766,62 @@ class SearchPersonViewActivity : AppCompatActivity() {
                 " ORDER BY ${DbContracts.Persons.COLUMN_PHONETIC_NAME}" +
                 " LIMIT 15 OFFSET 0"
         assertEquals(sql,createSearchSql(""))
+    }
+
+    /*
+    * 検索SQLをテスト2
+    *
+    * キーワードが平仮名のみの場合、カタカナに変換して名前(フリガナ)で検索する
+    * 組織名はキーワードをそのまま使って検索する
+    * */
+    @Test
+    fun testCreateSearchSql02(){
+        val sql = "SELECT ${BaseColumns._ID}," +
+                "${DbContracts.Persons.COLUMN_NAME}," +
+                "${DbContracts.Persons.COLUMN_PHONETIC_NAME}," +
+                "${DbContracts.Persons.COLUMN_SEX}," +
+                "${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}," +
+                DbContracts.Persons.COLUMN_NOTE +
+                " FROM ${DbContracts.Persons.TABLE_NAME}" +
+                " WHERE ${DbContracts.Persons.COLUMN_PHONETIC_NAME} LIKE '%コスガ%'" +
+                " OR ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME} LIKE '%こすが%'" +
+                " ORDER BY ${DbContracts.Persons.COLUMN_PHONETIC_NAME}" +
+                " LIMIT 15 OFFSET 0"
+        assertEquals(sql,createSearchSql("こすが"))
+    }
+
+    /*
+    * 検索SQLをテスト3
+    *
+    * キーワードに漢字含まれる場合、名前(漢字)で検索し
+    * 組織名も検索する
+    * */
+    @Test
+    fun testCreateSearchSql03(){
+        val sql = "SELECT ${BaseColumns._ID}," +
+                "${DbContracts.Persons.COLUMN_NAME}," +
+                "${DbContracts.Persons.COLUMN_PHONETIC_NAME}," +
+                "${DbContracts.Persons.COLUMN_SEX}," +
+                "${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}," +
+                DbContracts.Persons.COLUMN_NOTE +
+                " FROM ${DbContracts.Persons.TABLE_NAME}" +
+                " WHERE ${DbContracts.Persons.COLUMN_NAME} LIKE '%たかはし工業%'" +
+                " OR ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME} LIKE '%たかはし工業%'" +
+                " ORDER BY ${DbContracts.Persons.COLUMN_PHONETIC_NAME}" +
+                " LIMIT 15 OFFSET 0"
+        assertEquals(sql,createSearchSql("たかはし工業"))
+    }
+
+    @Test
+    /*
+    * 人物名の空判定をテスト
+    *
+    * 人物名はカンマで姓と名を区切っており、カンマだけの場合空と見なしている
+    * */
+    fun testPersonNameIsBlank(){
+        assertEquals(true,personNameIsBlank(","))
+        assertEquals(false,personNameIsBlank("たかはし,"))
+        assertEquals(false,personNameIsBlank(",ゆうき"))
+        assertEquals(false,personNameIsBlank("たかはし,ゆうき"))
     }
 }
