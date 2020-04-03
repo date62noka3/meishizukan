@@ -690,6 +690,4 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             onInputValueChanged()
         }
     }
-
-
 }
