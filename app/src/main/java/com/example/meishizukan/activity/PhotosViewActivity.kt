@@ -41,9 +41,11 @@ import com.example.meishizukan.util.BitmapUtils.getBitmapFromUri
 import com.example.meishizukan.util.BitmapUtils.rotateBitmap
 import com.example.meishizukan.util.BitmapUtils.saveBitmapToGallery
 import com.google.android.gms.ads.RequestConfiguration
+import junit.framework.TestCase
 import kotlinx.android.synthetic.main.activity_photos_view.adView
 import kotlinx.android.synthetic.main.activity_photos_view.backButton
 import kotlinx.android.synthetic.main.activity_photos_view.photoListLinearLayout
+import org.junit.Test
 import java.lang.StringBuilder
 import java.security.MessageDigest
 
@@ -958,7 +960,7 @@ class PhotosViewActivity : AppCompatActivity() {
     * @param 名前
     * @return 名前が空か否か
     * */
-    private fun nameIsEmpty(name:String):Boolean{
+    private fun personNameIsBlank(name:String):Boolean{
         return name == nameSplit.toString()
     }
 
@@ -971,7 +973,7 @@ class PhotosViewActivity : AppCompatActivity() {
     private fun setPersonalInfoToTextView(person:Person){
         var name = person.getName()
         //名前 ( 漢字 )があれば通常通り表示し、なければemptyを表示
-        if(!nameIsEmpty(name)){
+        if(!personNameIsBlank(name)){
             //名前 ( 漢字 )において、姓のみ、名のみの可能性を考慮している
             name = name.replace(nameSplit,' ')
             nameTextView.text = if(name[0] == ' '){
@@ -1134,5 +1136,18 @@ class PhotosViewActivity : AppCompatActivity() {
         }
 
         displaySelectedPhotoCount()
+    }
+
+    /*
+    * 人物名の空判定をテスト
+    *
+    * 人物名はカンマで姓と名を区切っており、カンマだけの場合空と見なしている
+    * */
+    @Test
+    fun testPersonNameIsBlank(){
+        TestCase.assertEquals(true, personNameIsBlank(","))
+        TestCase.assertEquals(false, personNameIsBlank("たかはし,"))
+        TestCase.assertEquals(false, personNameIsBlank(",ゆうき"))
+        TestCase.assertEquals(false, personNameIsBlank("たかはし,ゆうき"))
     }
 }

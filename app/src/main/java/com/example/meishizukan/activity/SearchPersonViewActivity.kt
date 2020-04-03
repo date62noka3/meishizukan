@@ -810,12 +810,12 @@ class SearchPersonViewActivity : AppCompatActivity() {
         assertEquals(sql,createSearchSql("たかはし工業"))
     }
 
-    @Test
     /*
     * 人物名の空判定をテスト
     *
     * 人物名はカンマで姓と名を区切っており、カンマだけの場合空と見なしている
     * */
+    @Test
     fun testPersonNameIsBlank(){
         assertEquals(true,personNameIsBlank(","))
         assertEquals(false,personNameIsBlank("たかはし,"))
