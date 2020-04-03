@@ -348,6 +348,12 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     }
 
     private val limit = 5 //負荷が大きいため候補を制限する
+    /*
+    * 組織検索SQLを作成
+    *
+    * @param 組織名
+    * @return SQL
+    * */
     private fun createSearchOrganizationSql(organizationName: String):String{
         //OrderBy句の説明
         //検索組織名の文字数 / ヒットした組織名の文字数　で一致率を算出し降順に並び替えている
@@ -357,6 +363,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                 " ORDER BY CAST(LENGTH('$organizationName') as REAL) / CAST(LENGTH(${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}) as REAL) DESC" +
                 " LIMIT $limit"
     }
+
     /*
     * 組織を検索
     *
@@ -683,4 +690,6 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             onInputValueChanged()
         }
     }
+
+
 }
