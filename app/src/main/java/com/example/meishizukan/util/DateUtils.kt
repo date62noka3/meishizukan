@@ -1,5 +1,7 @@
 package com.example.meishizukan.util
 
+import junit.framework.TestCase.assertEquals
+import org.junit.Test
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -42,5 +44,31 @@ object DateUtils {
     * */
     fun getDay(date:String):Int{
         return date.substring(8,10).toInt()
+    }
+}
+
+class DateUtilsTester{
+    /*
+    * 日付から年を数値で取得できるかをテスト
+    * */
+    @Test
+    fun testGetYear(){
+        assertEquals(2020,DateUtils.getYear("2020-04-03"))
+    }
+
+    /*
+    * 日付から月を数値で取得できるかをテスト
+    * */
+    @Test
+    fun testGetMonth(){
+        assertEquals(4,DateUtils.getMonth("2020-04-03"))
+    }
+
+    /*
+    * 日付から日を数値で取得できるかをテスト
+    * */
+    @Test
+    fun testGetDay(){
+        assertEquals(3,DateUtils.getDay("2020-04-03"))
     }
 }
