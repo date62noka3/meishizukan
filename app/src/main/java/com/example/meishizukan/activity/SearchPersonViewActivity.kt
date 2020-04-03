@@ -32,6 +32,8 @@ import androidx.core.content.ContextCompat.getColor
 import com.example.meishizukan.util.*
 import com.example.meishizukan.util.PhoneticName.hiraganaToKatakana
 import com.google.android.gms.ads.RequestConfiguration
+import junit.framework.TestCase.assertEquals
+import org.junit.Test
 
 private object Sex{
     const val NOT_KNOWN = 0
@@ -745,5 +747,24 @@ class SearchPersonViewActivity : AppCompatActivity() {
         }
 
         return persons.count()
+    }
+
+    // Start Test --------------------------------------------------------------------------
+
+    @Test
+    /*
+    * 全検索の際のSQLをテスト
+    * */
+    fun testCreateSearchSql001(){
+        val sql = "SELECT ${BaseColumns._ID}," +
+                "${DbContracts.Persons.COLUMN_NAME}," +
+                "${DbContracts.Persons.COLUMN_PHONETIC_NAME}," +
+                "${DbContracts.Persons.COLUMN_SEX}," +
+                "${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}," +
+                DbContracts.Persons.COLUMN_NOTE +
+                " FROM ${DbContracts.Persons.TABLE_NAME}" +
+                " ORDER BY ${DbContracts.Persons.COLUMN_PHONETIC_NAME}" +
+                " LIMIT 15 OFFSET 0"
+        assertEquals(sql,createSearchSql(""))
     }
 }
