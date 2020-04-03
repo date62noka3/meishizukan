@@ -24,36 +24,12 @@ object BitmapUtils {
     * @return Bitmap
     * */
     fun getBitmapFromUri(context: Context, uri: Uri): Bitmap? {
-        /*var parcelFileDescriptor:ParcelFileDescriptor? = null
-        return try{
-            parcelFileDescriptor = context.contentResolver.openFileDescriptor(uri, "r")
-            val fileDescriptor = parcelFileDescriptor?.fileDescriptor
-            BitmapFactory.decodeFileDescriptor(fileDescriptor)
-        }catch (e:Exception) {
-            Log.d("FAILED_GET_BITMAP",e.message)
-            null
-        }
-        finally {
-            parcelFileDescriptor?.close()
-        }*/
         return try{
             MediaStore.Images.Media.getBitmap(context.contentResolver,uri)
         }catch (e:Exception){
             Log.d("GET_BITMAP_ERROR",e.message)
             null
         }
-        /*return try{
-            val inputStream = context.contentResolver.openInputStream(uri)
-            inputStream?:return null
-            val opt = BitmapFactory.Options()
-            opt.inJustDecodeBounds = false
-            val bitmap = BitmapFactory.decodeStream(inputStream,null,opt)
-            inputStream.close()
-            return bitmap
-        }catch (e:Exception){
-            Log.d("GET_BITMAP_ERROR",e.message)
-            null
-        }*/
     }
 
     /*
