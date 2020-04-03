@@ -747,8 +747,6 @@ class SearchPersonViewActivity : AppCompatActivity() {
         return persons.count()
     }
 
-    // Start Test --------------------------------------------------------------------------
-
     /*
     * 検索SQLをテスト1
     *
@@ -764,7 +762,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
                 DbContracts.Persons.COLUMN_NOTE +
                 " FROM ${DbContracts.Persons.TABLE_NAME}" +
                 " ORDER BY ${DbContracts.Persons.COLUMN_PHONETIC_NAME}" +
-                " LIMIT 15 OFFSET 0"
+                " LIMIT $limit OFFSET $offset"
         assertEquals(sql,createSearchSql(""))
     }
 
@@ -786,7 +784,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
                 " WHERE ${DbContracts.Persons.COLUMN_PHONETIC_NAME} LIKE '%コスガ%'" +
                 " OR ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME} LIKE '%こすが%'" +
                 " ORDER BY ${DbContracts.Persons.COLUMN_PHONETIC_NAME}" +
-                " LIMIT 15 OFFSET 0"
+                " LIMIT $limit OFFSET $offset"
         assertEquals(sql,createSearchSql("こすが"))
     }
 
@@ -808,7 +806,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
                 " WHERE ${DbContracts.Persons.COLUMN_NAME} LIKE '%たかはし工業%'" +
                 " OR ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME} LIKE '%たかはし工業%'" +
                 " ORDER BY ${DbContracts.Persons.COLUMN_PHONETIC_NAME}" +
-                " LIMIT 15 OFFSET 0"
+                " LIMIT $limit OFFSET $offset"
         assertEquals(sql,createSearchSql("たかはし工業"))
     }
 
