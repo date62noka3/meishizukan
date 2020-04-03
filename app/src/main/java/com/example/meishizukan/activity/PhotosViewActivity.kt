@@ -216,7 +216,7 @@ class PhotosViewActivity : AppCompatActivity() {
             }
         }
         val gestureDetector = GestureDetector(this,SwipeListener())
-        fullScreenView.setOnTouchListener { v, event -> gestureDetector.onTouchEvent(event) }
+        fullScreenView.setOnTouchListener { _, event -> gestureDetector.onTouchEvent(event) }
 
         //全画面表示時の写真回転処理(左90度)
         rotateLeftButton.setOnClickListener{
@@ -410,9 +410,9 @@ class PhotosViewActivity : AppCompatActivity() {
         if(requestCode == OPEN_CAMERA_REQUEST_CODE && resultCode == Activity.RESULT_OK
             && data != null){
             data.extras?:return
-            val data = data.extras.get("data")
-            data?:return
-            val bitmap = data as Bitmap
+            val captureData = data.extras.get("data")
+            captureData?:return
+            val bitmap = captureData as Bitmap
             val binary = convertBitmapToBinaryJPEG(bitmap)
             val photoId = addPhoto(binary)
 
