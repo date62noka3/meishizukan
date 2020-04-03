@@ -137,7 +137,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
             rootConstraintLayout.getWindowVisibleDisplayFrame(r)
             val screenHeight = rootConstraintLayout.rootView.height
 
-            val keypadHeight = screenHeight - r.bottom;
+            val keypadHeight = screenHeight - r.bottom
 
             if (keypadHeight > screenHeight * 0.15) {
                 if (!isKeyboardShown) {
@@ -749,7 +749,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
 
     // Start Test --------------------------------------------------------------------------
 
-    //@Test
+    @Test
     /*
     * 全検索の際のSQLをテスト
     * */
