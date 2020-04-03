@@ -686,9 +686,4 @@ class PersonalInfoViewActivity : AppCompatActivity() {
         assertEquals(true,isNewPerson(newPersonId))
         assertEquals(false,isNewPerson(12))
     }
-
-    /*@Test
-    fun tesConvertSexStringToSexNum(){
-        assertEquals(,)
-    }*/
 }
