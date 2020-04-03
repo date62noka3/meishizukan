@@ -103,9 +103,7 @@ class PhotosViewActivity : AppCompatActivity() {
         val adRequest = AdRequest.Builder().build()
         adView.loadAd(adRequest)
         adView.adListener = object: AdListener() {
-            override fun onAdLoaded() {
-                photoListLinearLayout.setPadding(0,0,0,180)
-            }
+            override fun onAdLoaded() {}
             override fun onAdFailedToLoad(errorCode : Int) {}
             override fun onAdOpened() {}
             override fun onAdClicked() {}
