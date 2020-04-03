@@ -465,11 +465,10 @@ class SearchPersonViewActivity : AppCompatActivity() {
                     " FROM ${DbContracts.Persons.TABLE_NAME}" +
                     " WHERE " +
                     if (hiraganaToKatakana(keyword).matches(PhoneticName.phoneticNameRegex)) {
-                        DbContracts.Persons.COLUMN_PHONETIC_NAME
+                        "${DbContracts.Persons.COLUMN_PHONETIC_NAME} LIKE '%${hiraganaToKatakana(keyword)}%'"
                     } else {
-                        DbContracts.Persons.COLUMN_NAME
+                        "${DbContracts.Persons.COLUMN_NAME} LIKE '%$keyword%'"
                     } +
-                    " LIKE '%$keyword%'" +
                     " OR ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME} LIKE '%$keyword%'" +
                     " ORDER BY ${DbContracts.Persons.COLUMN_PHONETIC_NAME}" +
                     " LIMIT $limit OFFSET $offset"
@@ -493,8 +492,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
         //スクロールに時間がかかり、人物追加が走ってしまうためfalse
         scrollToTop(false)
 
-        var keyword = searchEditText.text.toString()
-        keyword = hiraganaToKatakana(keyword)
+        val keyword = searchEditText.text.toString()
 
         val sql = createSearchSql(keyword)
 
@@ -751,7 +749,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
 
     // Start Test --------------------------------------------------------------------------
 
-    @Test
+    //@Test
     /*
     * 全検索の際のSQLをテスト
     * */
