@@ -175,7 +175,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             rootConstraintLayout.getWindowVisibleDisplayFrame(r)
             val screenHeight = rootConstraintLayout.rootView.height
 
-            val keypadHeight = screenHeight - r.bottom;
+            val keypadHeight = screenHeight - r.bottom
 
             if (keypadHeight > screenHeight * 0.15) {
                 if (!isKeyboardShown) {
@@ -314,7 +314,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             .setPositiveButton(getString(R.string.positive_button_text)) { _, _ ->
                 super.onBackPressed()
             }
-            .setNegativeButton(getString(R.string.negative_button_text),{ _, _ -> })
+            .setNegativeButton(getString(R.string.negative_button_text)) { _, _ -> }
             .setCancelable(false)
             .show()
     }
@@ -348,6 +348,15 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     }
 
     private val limit = 5 //負荷が大きいため候補を制限する
+    private fun createSearchOrganizationSql(organizationName: String):String{
+        //OrderBy句の説明
+        //検索組織名の文字数 / ヒットした組織名の文字数　で一致率を算出し降順に並び替えている
+        return "SELECT DISTINCT ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}" +
+                " FROM ${DbContracts.Persons.TABLE_NAME}" +
+                " WHERE ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME} LIKE '%$organizationName%'" +
+                " ORDER BY CAST(LENGTH('$organizationName') as REAL) / CAST(LENGTH(${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}) as REAL) DESC" +
+                " LIMIT $limit"
+    }
     /*
     * 組織を検索
     *
@@ -355,13 +364,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * @return 組織リスト
     * */
     private fun searchOrganization(organizationName:String):List<String>{
-        //OrderBy句の説明
-        //検索組織名の文字数 / ヒットした組織名の文字数　で一致率を算出し降順に並び替えている
-        val sql = "SELECT DISTINCT ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}" +
-                " FROM ${DbContracts.Persons.TABLE_NAME}" +
-                " WHERE ${DbContracts.Persons.COLUMN_ORGANIZATION_NAME} LIKE '%$organizationName%'" +
-                " ORDER BY CAST(LENGTH('$organizationName') as REAL) / CAST(LENGTH(${DbContracts.Persons.COLUMN_ORGANIZATION_NAME}) as REAL) DESC" +
-                " LIMIT $limit"
+        val sql = createSearchOrganizationSql(organizationName)
 
         val cursor = readableDb.rawQuery(sql,null)
 
@@ -469,7 +472,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
         var phoneticName = firstPhoneticNameEditText.text.toString()
             .plus(nameSplit)
             .plus(lastPhoneticNameEditText.text.toString())
-        phoneticName = PhoneticName.hiraganaToKatakana(phoneticName)
+        phoneticName = hiraganaToKatakana(phoneticName)
         val sex = convertSexStringToSexNum(sexSpinner.selectedItem.toString())
         val organizationName = organizationNameEditText.text.toString()
         val note = noteEditText.text.toString()
