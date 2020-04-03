@@ -456,17 +456,6 @@ class PersonalInfoViewActivity : AppCompatActivity() {
                 && lastPhoneticNameEditText.text.matches(PhoneticName.phoneticNameRegex))
     }
 
-    /*
-    * 性別文字列を性別値に変換
-    *
-    * @param 性別文字列
-    * @return 性別値
-    * */
-    private fun convertSexStringToSexNum(sex:String):Int{
-        val sexTypes = resources.getStringArray(R.array.sex_types)
-        return sexTypes.indexOf(sex)
-    }
-
     private val nameSplit = ','
     /*
     * 入力値から人物インスタンスを生成
@@ -482,7 +471,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             .plus(nameSplit)
             .plus(lastPhoneticNameEditText.text.toString())
         phoneticName = hiraganaToKatakana(phoneticName)
-        val sex = convertSexStringToSexNum(sexSpinner.selectedItem.toString())
+        val sex = sexSpinner.selectedItemPosition
         val organizationName = organizationNameEditText.text.toString()
         val note = noteEditText.text.toString()
 
