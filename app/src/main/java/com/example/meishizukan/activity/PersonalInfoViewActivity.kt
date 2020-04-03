@@ -25,7 +25,9 @@ import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
+import junit.framework.TestCase.assertEquals
 import kotlinx.android.synthetic.main.activity_personal_info_view.*
+import org.junit.Test
 
 class PersonalInfoViewActivity : AppCompatActivity() {
 
@@ -609,7 +611,6 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     private fun insertPerson(person: Person):Int{
         val values = getContentValues(person)
         val id = writableDb.insert(DbContracts.Persons.TABLE_NAME,null,values).toInt()
-        writableDb.close()
 
         return id
     }
@@ -625,7 +626,6 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             values,
             "${BaseColumns._ID} = ${person.getId()}",
             null)
-        writableDb.close()
     }
 
     /*
@@ -635,7 +635,6 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * */
     private fun deletePerson(personId: Int){
         writableDb.delete(DbContracts.Persons.TABLE_NAME,"${BaseColumns._ID} = $personId",null)
-        writableDb.close()
     }
 
     /*
@@ -645,7 +644,6 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * */
     private fun deleteLinkedPhotos(personId:Int){
         writableDb.delete(DbContracts.PhotosLinks.TABLE_NAME,"${DbContracts.PhotosLinks.COLUMN_PERSON_ID} = $personId",null)
-        writableDb.close()
     }
 
     /*
@@ -690,4 +688,18 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             onInputValueChanged()
         }
     }
+
+    /*
+    * 人物が新規かをテスト
+    * */
+    @Test
+    fun testIsNewPerson(){
+        assertEquals(true,isNewPerson(newPersonId))
+        assertEquals(false,isNewPerson(12))
+    }
+
+    /*@Test
+    fun tesConvertSexStringToSexNum(){
+        assertEquals(,)
+    }*/
 }
