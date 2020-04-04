@@ -551,13 +551,13 @@ class SearchPersonViewActivity : AppCompatActivity() {
     private fun addPersonToListView(person: Person){
         this.layoutInflater.inflate(R.layout.person_listview_item,personListLinearLayout)
         val item = personListLinearLayout.getChildAt(personListLinearLayout.childCount - 1) as ConstraintLayout
-        item.tag = person.getId().toString()
+        item.tag = person.id.toString()
         item.setOnClickListener(ItemOnClickListener())
         item.setOnLongClickListener(ItemOnLongClickListener())
 
         val nameTextView = item.findViewById<TextView>(R.id.nameTextView)
         val phoneticNameTextView = item.findViewById<TextView>(R.id.phoneticNameTextView)
-        var name = person.getName()
+        var name = person.name
         //名前 ( 漢字 )があれば通常通り表示し、なければemptyを表示
         if(!personNameIsBlank(name)){
             //名前 ( 漢字 )において、姓のみ、名のみの可能性を考慮している
@@ -568,18 +568,18 @@ class SearchPersonViewActivity : AppCompatActivity() {
                 name
             }
 
-            phoneticNameTextView?.text = person.getPhoneticName().replace(nameSplit,' ')
+            phoneticNameTextView?.text = person.phoneticName.replace(nameSplit,' ')
             phoneticNameTextView?.setTextColor(getColor(this,R.color.textColor))
         }else{
-            nameTextView?.text = person.getPhoneticName().replace(nameSplit,' ')
+            nameTextView?.text = person.phoneticName.replace(nameSplit,' ')
             phoneticNameTextView?.text = getString(R.string.empty)
             phoneticNameTextView?.setTextColor(getColor(this,R.color.emptyTextColor))
         }
 
         //組織名があれば通常通り表示し、なければemptyを表示
         val organizationNameTextView = item.findViewById<TextView>(R.id.organizationNameTextView)
-        if(person.getOrganizationName().isNotEmpty()){
-            organizationNameTextView?.text = person.getOrganizationName()
+        if(person.organizationName.isNotEmpty()){
+            organizationNameTextView?.text = person.organizationName
             organizationNameTextView?.setTextColor(getColor(this,R.color.textColor))
         }else{
             organizationNameTextView?.text = getString(R.string.empty)
@@ -587,8 +587,8 @@ class SearchPersonViewActivity : AppCompatActivity() {
         }
 
         val sexTextView = item.findViewById<TextView>(R.id.sexTextView)
-        sexTextView?.text = sexTypes[person.getSex()]
-        when(person.getSex()){
+        sexTextView?.text = sexTypes[person.sex]
+        when(person.sex){
             Sex.NOT_KNOWN -> { sexTextView?.setBackgroundResource(R.color.notKnownBackgroundColor) }
             Sex.MALE -> { sexTextView?.setBackgroundResource(R.color.maleBackgroundColor) }
             Sex.FEMALE -> { sexTextView?.setBackgroundResource(R.color.femaleBackgroundColor) }
@@ -713,7 +713,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
             if(limit <= i)
                 return@forEachIndexed
 
-            val phoneticNameFirstChar = person.getPhoneticName()[0].toString()
+            val phoneticNameFirstChar = person.phoneticName[0].toString()
 
             if(prevPhoneticNameFirstChar != phoneticNameFirstChar) {
                 japaneseSyllabaryRegex.forEachIndexed { j, regex ->

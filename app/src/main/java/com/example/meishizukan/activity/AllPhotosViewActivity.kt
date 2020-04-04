@@ -344,27 +344,27 @@ class AllPhotosViewActivity : AppCompatActivity() {
         //前回表示した写真の追加日付と異なる場合
         val separatorText = when(displayType){
             DISPLAY_TYPE_YEAR -> {
-                if(getYear(prevDisplayedPhotoDate) != getYear(photo.getCreatedOn())){
-                    prevDisplayedPhotoDate = photo.getCreatedOn()
+                if(getYear(prevDisplayedPhotoDate) != getYear(photo.createdOn)){
+                    prevDisplayedPhotoDate = photo.createdOn
 
-                    "${getYear(photo.getCreatedOn())}年"
+                    "${getYear(photo.createdOn)}年"
                 }
                 else null
             }
             DISPLAY_TYPE_MONTH -> {
-                if(getMonth(prevDisplayedPhotoDate) != getMonth(photo.getCreatedOn())){
-                    prevDisplayedPhotoDate = photo.getCreatedOn()
+                if(getMonth(prevDisplayedPhotoDate) != getMonth(photo.createdOn)){
+                    prevDisplayedPhotoDate = photo.createdOn
 
-                    "${getYear(photo.getCreatedOn())}年${getMonth(photo.getCreatedOn())}月"
+                    "${getYear(photo.createdOn)}年${getMonth(photo.createdOn)}月"
                 }
                 else null
             }
             DISPLAY_TYPE_DAY -> {
-                if(getDay(prevDisplayedPhotoDate) != getDay(photo.getCreatedOn())){
-                    prevDisplayedPhotoDate = photo.getCreatedOn()
+                if(getDay(prevDisplayedPhotoDate) != getDay(photo.createdOn)){
+                    prevDisplayedPhotoDate = photo.createdOn
 
-                    "${getYear(photo.getCreatedOn())}年${getMonth(photo.getCreatedOn())}月" +
-                            "${getDay(photo.getCreatedOn())}日"
+                    "${getYear(photo.createdOn)}年${getMonth(photo.createdOn)}月" +
+                            "${getDay(photo.createdOn)}日"
                 }
                 else null
             }
@@ -408,13 +408,13 @@ class AllPhotosViewActivity : AppCompatActivity() {
 
         photoImageView?:return
 
-        val bitmap = convertBinaryToBitmap(photo.getBinary())
+        val bitmap = convertBinaryToBitmap(photo.binary)
         photoImageView.setImageBitmap(bitmap)
         photoImageView.setOnClickListener(ItemOnClickListener())
 
         //選択、選択解除の処理で使う
         photoImageView.id = View.generateViewId()
-        photoImageView.tag = photo.getId().toString()
+        photoImageView.tag = photo.id.toString()
 
         displayedPhotoCount++
     }

@@ -506,12 +506,12 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * */
     private fun setPersonalInfoToInputFields(person:Person){
         //名前、フリガナは半角スペースで区切って姓、名を取得する
-        val phoneticName = person.getPhoneticName().split(nameSplit)
+        val phoneticName = person.phoneticName.split(nameSplit)
         firstPhoneticNameEditText.setText(phoneticName[0])
         lastPhoneticNameEditText.setText(phoneticName[1])
 
         //名前 ( 漢字 )はない可能性がある
-        val name = person.getName().split(nameSplit)
+        val name = person.name.split(nameSplit)
         if(0 < name.count()) {
             firstNameEditText.setText(name[0])
         }
@@ -519,9 +519,9 @@ class PersonalInfoViewActivity : AppCompatActivity() {
             lastNameEditText.setText(name[1])
         }
 
-        sexSpinner.setSelection(person.getSex())
-        organizationNameEditText.setText(person.getOrganizationName())
-        noteEditText.setText(person.getNote())
+        sexSpinner.setSelection(person.sex)
+        organizationNameEditText.setText(person.organizationName)
+        noteEditText.setText(person.note)
     }
 
     /*
@@ -583,11 +583,11 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * */
     private fun getContentValues(person:Person):ContentValues{
         return ContentValues().apply {
-            put(DbContracts.Persons.COLUMN_NAME, person.getName())
-            put(DbContracts.Persons.COLUMN_PHONETIC_NAME, person.getPhoneticName())
-            put(DbContracts.Persons.COLUMN_SEX,person.getSex())
-            put(DbContracts.Persons.COLUMN_ORGANIZATION_NAME,person.getOrganizationName())
-            put(DbContracts.Persons.COLUMN_NOTE,person.getNote())
+            put(DbContracts.Persons.COLUMN_NAME, person.name)
+            put(DbContracts.Persons.COLUMN_PHONETIC_NAME, person.phoneticName)
+            put(DbContracts.Persons.COLUMN_SEX,person.sex)
+            put(DbContracts.Persons.COLUMN_ORGANIZATION_NAME,person.organizationName)
+            put(DbContracts.Persons.COLUMN_NOTE,person.note)
         }
     }
 
@@ -599,9 +599,8 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     * */
     private fun insertPerson(person: Person):Int{
         val values = getContentValues(person)
-        val id = writableDb.insert(DbContracts.Persons.TABLE_NAME,null,values).toInt()
 
-        return id
+        return writableDb.insert(DbContracts.Persons.TABLE_NAME,null,values).toInt()
     }
 
     /*
@@ -613,7 +612,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
         val values = getContentValues(person)
         writableDb.update(DbContracts.Persons.TABLE_NAME,
             values,
-            "${BaseColumns._ID} = ${person.getId()}",
+            "${BaseColumns._ID} = ${person.id}",
             null)
     }
 

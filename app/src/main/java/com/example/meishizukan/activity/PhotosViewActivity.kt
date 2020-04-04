@@ -683,8 +683,8 @@ class PhotosViewActivity : AppCompatActivity() {
     * */
     private fun getContentValues(photo: Photo):ContentValues{
         return ContentValues().apply {
-            put(DbContracts.Photos.COLUMN_HASHED_BINARY,photo.getHashedBinary().contentToString())
-            put(DbContracts.Photos.COLUMN_BINARY,photo.getBinary())
+            put(DbContracts.Photos.COLUMN_HASHED_BINARY,photo.hashedBinary.contentToString())
+            put(DbContracts.Photos.COLUMN_BINARY,photo.binary)
         }
     }
 
@@ -696,8 +696,8 @@ class PhotosViewActivity : AppCompatActivity() {
     * */
     private fun getContentValues(photoLink: PhotoLink):ContentValues{
         return ContentValues().apply {
-            put(DbContracts.PhotosLinks.COLUMN_PHOTO_ID,photoLink.getPhotoId())
-            put(DbContracts.PhotosLinks.COLUMN_PERSON_ID,photoLink.getPersonId())
+            put(DbContracts.PhotosLinks.COLUMN_PHOTO_ID,photoLink.photoId)
+            put(DbContracts.PhotosLinks.COLUMN_PERSON_ID,photoLink.personId)
         }
     }
 
@@ -843,10 +843,10 @@ class PhotosViewActivity : AppCompatActivity() {
 
         photoImageView?:return
 
-        val bitmap = convertBinaryToBitmap(photo.getBinary())
+        val bitmap = convertBinaryToBitmap(photo.binary)
         photoImageView.setImageBitmap(bitmap)
         photoImageView.setOnClickListener(ItemOnClickListener())
-        photoImageView.tag = photo.getId().toString()
+        photoImageView.tag = photo.id.toString()
         photoImageView.id = View.generateViewId() //一意のIDを付与
         displayedPhotoImageViews.add(photoImageView.id)
         displayPhotoCount()
@@ -969,7 +969,7 @@ class PhotosViewActivity : AppCompatActivity() {
     * @param 人物
     * */
     private fun setPersonalInfoToTextView(person:Person){
-        var name = person.getName()
+        var name = person.name
         //名前 ( 漢字 )があれば通常通り表示し、なければemptyを表示
         if(!personNameIsBlank(name)){
             //名前 ( 漢字 )において、姓のみ、名のみの可能性を考慮している
@@ -980,10 +980,10 @@ class PhotosViewActivity : AppCompatActivity() {
                 name
             }
 
-            phoneticNameTextView.text = person.getPhoneticName().replace(nameSplit,' ')
+            phoneticNameTextView.text = person.phoneticName.replace(nameSplit,' ')
             phoneticNameTextView.setTextColor(getColor(this,R.color.textColor))
         }else{
-            nameTextView.text = person.getPhoneticName().replace(nameSplit,' ')
+            nameTextView.text = person.phoneticName.replace(nameSplit,' ')
             phoneticNameTextView.text = getString(R.string.empty)
             phoneticNameTextView.setTextColor(getColor(this,R.color.emptyTextColor))
         }
