@@ -715,6 +715,11 @@ class SearchPersonViewActivity : AppCompatActivity() {
     * */
     private fun addPersonsToListView(persons:MutableList<Person>):Int{
         if(persons.count() == 0){
+            //ローディング画面(view)を削除
+            if(0 < personListLinearLayout.childCount) {
+                personListLinearLayout.removeViewAt(personListLinearLayout.childCount - 1)
+            }
+
             if(0 < prevAdditionalSearchPersonsCount) {
                 //一番下に余白を作る
                 this.layoutInflater.inflate(
