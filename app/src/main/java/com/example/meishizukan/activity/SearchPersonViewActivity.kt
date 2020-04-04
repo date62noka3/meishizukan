@@ -56,6 +56,8 @@ class SearchPersonViewActivity : AppCompatActivity() {
 
     private val removePersons = mutableListOf<Int>() //削除対象人物リスト<人物ID>
 
+    private lateinit var personDb:PersonDb //人物のテストデータクラス
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(R.style.AppTheme) //スプラッシュ表示用テーマから戻す
@@ -276,11 +278,11 @@ class SearchPersonViewActivity : AppCompatActivity() {
                 .show()
         }
 
-        val personDb = PersonDb(this)
-        personDb.getPersons().forEachIndexed{
-            i,person ->
-            Log.d("TEST_DATA","${person.name}_${person.phoneticName}_${person.sex}_${person.organizationName}_${person.note} : $i")
-        }
+        // テスト用コード
+        writableDb.delete("photos_links","_id <> 1000",null)
+        writableDb.delete("persons","_id <> 1000",null)
+        personDb = PersonDb(this)
+        personDb.insert()
     }
 
     override fun onResume(){
@@ -292,11 +294,12 @@ class SearchPersonViewActivity : AppCompatActivity() {
     }
 
     override fun onDestroy(){
+        super.onDestroy()
+
         adView.destroy()
         readableDb.close()
         writableDb.close()
         dbHelper.close()
-        super.onDestroy()
     }
 
     private val researchDelay = 1000L //再検索の遅延時間
