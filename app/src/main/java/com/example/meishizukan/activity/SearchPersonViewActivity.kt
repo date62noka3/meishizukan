@@ -230,8 +230,13 @@ class SearchPersonViewActivity : AppCompatActivity() {
 
             //ローディング画面(view)までスクロールされたら一番下までスクロールし、ロック
             if(personListLinearLayout.bottom - loadingItem.height
-                <= personListScrollView.height + personListScrollView.scrollY){
+                <= personListScrollView.height + personListScrollView.scrollY
+                && !scrollViewIsLocked){
+
+                showLoadingItem()
+
                 personListScrollView.smoothScrollBy(0,loadingItem.height)
+
                 lockScrollView()
             }
 
@@ -390,6 +395,14 @@ class SearchPersonViewActivity : AppCompatActivity() {
         rootConstraintLayout.bringToFront()
         loadingDialogView.visibility = View.INVISIBLE
         window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) //タッチ無効化解除
+    }
+
+    /*
+    * 人物リストビューのローディングアイテムを表示
+    * */
+    private fun showLoadingItem(){
+        val loadingItem = personListLinearLayout.findViewById<LinearLayout>(R.id.rootLinearLayout)
+        loadingItem.visibility = View.VISIBLE
     }
 
     /*
