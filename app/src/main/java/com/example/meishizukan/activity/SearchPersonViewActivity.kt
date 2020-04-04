@@ -29,6 +29,7 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import kotlinx.android.synthetic.main.activity_search_person_view.*
 import androidx.core.content.ContextCompat.getColor
+import com.example.meishizukan.test.PersonDb
 import com.example.meishizukan.util.*
 import com.example.meishizukan.util.PhoneticName.hiraganaToKatakana
 import com.google.android.gms.ads.RequestConfiguration
@@ -273,6 +274,12 @@ class SearchPersonViewActivity : AppCompatActivity() {
                 .setNegativeButton(getString(R.string.negative_button_text)) { _, _ -> }
                 .setCancelable(false)
                 .show()
+        }
+
+        val personDb = PersonDb(this)
+        personDb.getPersons().forEachIndexed{
+            i,person ->
+            Log.d("TEST_DATA","${person.name},${person.phoneticName},${person.sex},${person.organizationName},${person.note} : $i")
         }
     }
 
