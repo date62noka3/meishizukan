@@ -1,30 +1,31 @@
 package com.example.meishizukan.test
 
 import android.content.Context
+import android.database.sqlite.SQLiteDatabase
 import com.example.meishizukan.dto.Person
+import com.example.meishizukan.util.DbHelper
+
+private const val SEPARATOR = "|"
 
 class PersonDb(private val context: Context) {
+    private val dbHelper = DbHelper(context)
+    private lateinit var writableDb:SQLiteDatabase
+
     private val persons = mutableListOf<Person>()
 
-    fun getPersons():MutableList<Person>{
-        return persons
-    }
-
     init{
-        val inputStreamReader = context.assets.open("person_list.csv").reader(Charsets.UTF_8)
+        val inputStreamReader = context.assets.open("person_list.txt").reader(Charsets.UTF_8)
         inputStreamReader.forEachLine {
-            val data = it.split(',')
-
-            if(data.size != 8)return@forEachLine
+            val data = it.split(SEPARATOR)
 
             persons.add(
                 Person(
                 id = data[0].toInt(),
-                name = data[1] + data[2],
-                phoneticName = data[3] + data[4],
-                sex = data[5].toInt(),
-                organizationName = data[6],
-                note = data[7]
+                name = data[1],
+                phoneticName = data[2],
+                sex = data[3].toInt(),
+                organizationName = data[4],
+                note = data[5]
                 )
             )
         }

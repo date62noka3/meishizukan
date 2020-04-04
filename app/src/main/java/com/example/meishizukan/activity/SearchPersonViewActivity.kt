@@ -279,7 +279,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
         val personDb = PersonDb(this)
         personDb.getPersons().forEachIndexed{
             i,person ->
-            Log.d("TEST_DATA","${person.name},${person.phoneticName},${person.sex},${person.organizationName},${person.note} : $i")
+            Log.d("TEST_DATA","${person.name}_${person.phoneticName}_${person.sex}_${person.organizationName}_${person.note} : $i")
         }
     }
 
