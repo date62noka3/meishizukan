@@ -243,7 +243,8 @@ class SearchPersonViewActivity : AppCompatActivity() {
 
                 //一番下までスクロールされたら追加検索し、ロックを解除
                 if(personListLinearLayout.bottom
-                    <= personListScrollView.height + personListScrollView.scrollY){
+                    <= personListScrollView.height + personListScrollView.scrollY
+                    && scrollViewIsLocked){
 
                     additionalSearch()
 
@@ -356,11 +357,13 @@ class SearchPersonViewActivity : AppCompatActivity() {
         }
     }
 
+    private var scrollViewIsLocked = false
     /*
     * スクロールビューをロック(スクロールさせない)
     * */
     private fun lockScrollView(){
         personListScrollView.setOnTouchListener{ _, _ -> true }
+        scrollViewIsLocked = true
     }
 
     /*
@@ -368,6 +371,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
     * */
     private fun unlockScrollView(){
         personListScrollView.setOnTouchListener(null)
+        scrollViewIsLocked = false
     }
 
     /*
