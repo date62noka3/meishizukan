@@ -296,6 +296,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
 
             footerOptionBar.visibility = View.INVISIBLE
             addPersonButton.visibility = View.VISIBLE
+            searchButton.setBackgroundResource(R.drawable.search_button_background)
 
             search()
         }
@@ -525,6 +526,11 @@ class SearchPersonViewActivity : AppCompatActivity() {
     * 人物を検索
     * */
     private fun search(){
+        //人物選択中は検索を返す
+        if(removePersons.isNotEmpty()){
+            return
+        }
+
         currentJapaneseSyllabaryRegex = "" //現在のア段正規表現をクリア
         prevPhoneticNameFirstChar = "" //前回のふりがな1文字目をクリア
         prevAdditionalSearchPersonsCount = -1 //前回の追加検索件数をクリア
@@ -694,9 +700,11 @@ class SearchPersonViewActivity : AppCompatActivity() {
             if(removePersons.isNotEmpty()){
                 footerOptionBar.visibility = View.VISIBLE
                 addPersonButton.visibility = View.INVISIBLE
+                searchButton.setBackgroundResource(R.drawable.disabled_search_button_background)
             }else{
                 footerOptionBar.visibility = View.INVISIBLE
                 addPersonButton.visibility = View.VISIBLE
+                searchButton.setBackgroundResource(R.drawable.search_button_background)
             }
 
             return true
