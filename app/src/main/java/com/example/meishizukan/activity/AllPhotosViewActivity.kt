@@ -279,7 +279,7 @@ class AllPhotosViewActivity : AppCompatActivity() {
     private fun createSearchSQL():String{
         return "SELECT ${BaseColumns._ID}," +
                     "${DbContracts.Photos.COLUMN_HASHED_BINARY}," +
-                    "${DbContracts.Photos.COLUMN_BINARY}," +
+                    "${DbContracts.Photos.COLUMN_BINARY_FILEPATH}," +
                     DbContracts.Photos.COLUMN_CREATED_ON +
                     " FROM ${DbContracts.Photos.TABLE_NAME}" +
                     " ORDER BY ${DbContracts.Photos.COLUMN_CREATED_ON}"

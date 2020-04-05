@@ -22,7 +22,7 @@ object DbContracts{
     object Photos:BaseColumns{
         const val TABLE_NAME = "photos"
         const val COLUMN_HASHED_BINARY = "hashed_binary"
-        const val COLUMN_BINARY = "binary"
+        const val COLUMN_BINARY_FILEPATH = "binary_filepath"
         const val COLUMN_CREATED_ON = "created_on"
     }
 
@@ -45,7 +45,7 @@ private const val SQL_DELETE_PERSONS = "DROP TABLE IF EXISTS ${DbContracts.Perso
 private const val SQL_CREATE_PHOTOS = "CREATE TABLE ${DbContracts.Photos.TABLE_NAME}" +
         "(${BaseColumns._ID} INTEGER PRIMARY KEY," +
         "${DbContracts.Photos.COLUMN_HASHED_BINARY} TEXT NOT NULL," +
-        "${DbContracts.Photos.COLUMN_BINARY} BLOB NOT NULL," +
+        "${DbContracts.Photos.COLUMN_BINARY_FILEPATH} TEXT NOT NULL," +
         "${DbContracts.Photos.COLUMN_CREATED_ON} TEXT NOT NULL DEFAULT CURRENT_DATE)"
 private const val SQL_DELETE_PHOTOS = "DROP TABLE IF EXISTS ${DbContracts.Photos.TABLE_NAME}"
 

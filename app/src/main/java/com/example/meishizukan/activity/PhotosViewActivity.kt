@@ -556,7 +556,7 @@ class PhotosViewActivity : AppCompatActivity() {
             //画面に表示するためにビットマップを取得する
             val getBinarySql = StringBuilder()
             getBinarySql.append("SELECT DISTINCT ${BaseColumns._ID}," +
-                    DbContracts.Photos.COLUMN_BINARY +
+                    DbContracts.Photos.COLUMN_BINARY_FILEPATH +
                     " FROM ${DbContracts.Photos.TABLE_NAME}" +
                     " WHERE ${BaseColumns._ID} IN (")
 
@@ -678,7 +678,7 @@ class PhotosViewActivity : AppCompatActivity() {
     private fun getContentValues(photo: Photo):ContentValues{
         return ContentValues().apply {
             put(DbContracts.Photos.COLUMN_HASHED_BINARY,photo.hashedBinary.contentToString())
-            put(DbContracts.Photos.COLUMN_BINARY,photo.binary)
+            put(DbContracts.Photos.COLUMN_BINARY_FILEPATH,photo.binary)
         }
     }
 
@@ -733,7 +733,7 @@ class PhotosViewActivity : AppCompatActivity() {
     * @return 検索結果カーソル
     * */
     private fun searchPhoto(photoId: Int):Cursor{
-        val sql = "SELECT ${DbContracts.Photos.COLUMN_BINARY}" +
+        val sql = "SELECT ${DbContracts.Photos.COLUMN_BINARY_FILEPATH}" +
                 " FROM ${DbContracts.Photos.TABLE_NAME}" +
                 " WHERE ${BaseColumns._ID} = $photoId"
         return readableDb.rawQuery(sql,null)
