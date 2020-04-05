@@ -59,15 +59,7 @@ private const val WRITE_PERMISSION_REQUEST_CODE_ON_DOWNLOAD_SELECTED_PHOTOS = 5 
 /*
 * 選択中写真のラッパークラス
 * */
-class SelectedPhotosWrapper(private val photoImageViewId: Int, private val photoId:Int){
-    fun getPhotoImageViewId():Int{
-        return photoImageViewId
-    }
-
-    fun getPhotoId():Int{
-        return photoId
-    }
-}
+data class SelectedPhotosWrapper(val photoImageViewId: Int,val photoId:Int)
 
 class PhotosViewActivity : AppCompatActivity() {
 
@@ -252,7 +244,7 @@ class PhotosViewActivity : AppCompatActivity() {
         selectButton.setOnClickListener{
             if(isSelecting){
                 //チェックボタンを非表示
-                selectedPhotos.map{it.getPhotoImageViewId()}.forEach{
+                selectedPhotos.map{it.photoImageViewId}.forEach{
                     val imageView = findViewById<ImageView>(it)
                     val parent = imageView.parent as ConstraintLayout
                     val checkedImageView = parent.findViewById<ImageView>(R.id.checkedImageView)
@@ -281,7 +273,7 @@ class PhotosViewActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            selectedPhotos.map{it.getPhotoImageViewId()}.forEach{
+            selectedPhotos.map{it.photoImageViewId}.forEach{
                 photoImageViewId ->
                 val selectedImageView = findViewById<ImageView>(photoImageViewId)
                 downloadPhoto(selectedImageView.drawable.toBitmap())
@@ -301,7 +293,7 @@ class PhotosViewActivity : AppCompatActivity() {
                 .setPositiveButton(positiveButtonText) { _, _ ->
                     selectedPhotos.forEach{
                         writableDb.delete(DbContracts.PhotosLinks.TABLE_NAME,
-                            "${DbContracts.PhotosLinks.COLUMN_PHOTO_ID} = ${it.getPhotoId()}",
+                            "${DbContracts.PhotosLinks.COLUMN_PHOTO_ID} = ${it.photoId}",
                             null)
                     }
 
@@ -377,7 +369,7 @@ class PhotosViewActivity : AppCompatActivity() {
         else if(requestCode == WRITE_PERMISSION_REQUEST_CODE_ON_DOWNLOAD_SELECTED_PHOTOS){
             //ストレージへの書き込み権限がある場合ダウンロード。なければ、書き込めない旨をトーストで表示
             if((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)){
-                selectedPhotos.map{it.getPhotoImageViewId()}.forEach{
+                selectedPhotos.map{it.photoImageViewId}.forEach{
                         photoImageViewId ->
                     val selectedImageView = findViewById<ImageView>(photoImageViewId)
                     downloadPhoto(selectedImageView.drawable.toBitmap())
@@ -893,7 +885,7 @@ class PhotosViewActivity : AppCompatActivity() {
 
                 val photoImageViewId = imageView.id
                 val photoId = imageView.tag.toString().toInt()
-                val i = selectedPhotos.map{it.getPhotoImageViewId()}.indexOf(photoImageViewId)
+                val i = selectedPhotos.map{it.photoImageViewId}.indexOf(photoImageViewId)
                 if(-1 < i){
                     selectedPhotos.removeAt(i)
                     checkedImageView.visibility = View.INVISIBLE
