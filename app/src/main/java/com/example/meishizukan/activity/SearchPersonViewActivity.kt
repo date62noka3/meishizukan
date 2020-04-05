@@ -34,6 +34,12 @@ import com.example.meishizukan.util.*
 import com.example.meishizukan.util.PhoneticName.hiraganaToKatakana
 import com.google.android.gms.ads.RequestConfiguration
 import junit.framework.TestCase.assertEquals
+import kotlinx.android.synthetic.main.activity_photos_view.*
+import kotlinx.android.synthetic.main.activity_search_person_view.adView
+import kotlinx.android.synthetic.main.activity_search_person_view.deleteButton
+import kotlinx.android.synthetic.main.activity_search_person_view.footerOptionBar
+import kotlinx.android.synthetic.main.activity_search_person_view.headerMenu
+import kotlinx.android.synthetic.main.activity_search_person_view.selectedItemCountTextView
 import org.junit.Test
 
 private object Sex{
@@ -282,6 +288,16 @@ class SearchPersonViewActivity : AppCompatActivity() {
                 .setNegativeButton(getString(R.string.negative_button_text)) { _, _ -> }
                 .setCancelable(false)
                 .show()
+        }
+
+        //人物の選択を解除する
+        cancelButton.setOnClickListener{
+            removePersons.clear()
+
+            footerOptionBar.visibility = View.INVISIBLE
+            addPersonButton.visibility = View.VISIBLE
+
+            search()
         }
 
         // テスト用コード
