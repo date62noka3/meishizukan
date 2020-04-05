@@ -3,7 +3,7 @@
     android:color="#21FFFFFF">
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="@color/searchButtonBackground"/>
+            <solid android:color="@color/disabledSearchButtonBackground"/>
             <corners
                 android:bottomRightRadius="30dp"
                 android:bottomLeftRadius="30dp"

@@ -34,6 +34,12 @@ import com.example.meishizukan.util.*
 import com.example.meishizukan.util.PhoneticName.hiraganaToKatakana
 import com.google.android.gms.ads.RequestConfiguration
 import junit.framework.TestCase.assertEquals
+import kotlinx.android.synthetic.main.activity_photos_view.*
+import kotlinx.android.synthetic.main.activity_search_person_view.adView
+import kotlinx.android.synthetic.main.activity_search_person_view.deleteButton
+import kotlinx.android.synthetic.main.activity_search_person_view.footerOptionBar
+import kotlinx.android.synthetic.main.activity_search_person_view.headerMenu
+import kotlinx.android.synthetic.main.activity_search_person_view.selectedItemCountTextView
 import org.junit.Test
 
 private object Sex{
@@ -284,6 +290,17 @@ class SearchPersonViewActivity : AppCompatActivity() {
                 .show()
         }
 
+        //人物の選択を解除する
+        cancelButton.setOnClickListener{
+            removePersons.clear()
+
+            footerOptionBar.visibility = View.INVISIBLE
+            addPersonButton.visibility = View.VISIBLE
+            searchButton.setBackgroundResource(R.drawable.search_button_background)
+
+            search()
+        }
+
         // テスト用コード
         writableDb.delete("photos_links","_id <> 1000",null)
         writableDb.delete("persons","_id <> 1000",null)
@@ -509,6 +526,11 @@ class SearchPersonViewActivity : AppCompatActivity() {
     * 人物を検索
     * */
     private fun search(){
+        //人物選択中は検索を返す
+        if(removePersons.isNotEmpty()){
+            return
+        }
+
         currentJapaneseSyllabaryRegex = "" //現在のア段正規表現をクリア
         prevPhoneticNameFirstChar = "" //前回のふりがな1文字目をクリア
         prevAdditionalSearchPersonsCount = -1 //前回の追加検索件数をクリア
@@ -678,9 +700,11 @@ class SearchPersonViewActivity : AppCompatActivity() {
             if(removePersons.isNotEmpty()){
                 footerOptionBar.visibility = View.VISIBLE
                 addPersonButton.visibility = View.INVISIBLE
+                searchButton.setBackgroundResource(R.drawable.disabled_search_button_background)
             }else{
                 footerOptionBar.visibility = View.INVISIBLE
                 addPersonButton.visibility = View.VISIBLE
+                searchButton.setBackgroundResource(R.drawable.search_button_background)
             }
 
             return true

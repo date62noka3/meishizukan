@@ -20,6 +20,10 @@
     <color name="maleBackgroundColor">#46A4F2</color>
     <color name="femaleBackgroundColor">#EF50DC</color>
 
+    <!-- 人物検索画面 -->
+    <color name="searchButtonBackground">#4B4AFF</color>
+    <color name="disabledSearchButtonBackground">#878787</color>
+
     <!-- 人物リストビュー -->
     <color name="personListViewSeparatorBackground">#C8E4FC</color>
 
