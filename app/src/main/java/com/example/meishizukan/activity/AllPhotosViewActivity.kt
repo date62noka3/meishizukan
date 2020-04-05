@@ -146,7 +146,7 @@ class AllPhotosViewActivity : AppCompatActivity() {
         selectButton.setOnClickListener{
             if(isSelecting){
                 //チェックボタンを非表示
-                selectedPhotos.map{it.getPhotoImageViewId()}.forEach{
+                selectedPhotos.map{it.photoImageViewId}.forEach{
                     val imageView = findViewById<ImageView>(it)
                     val parent = imageView.parent as ConstraintLayout
                     val checkedImageView = parent.findViewById<ImageView>(R.id.checkedImageView)
@@ -174,7 +174,7 @@ class AllPhotosViewActivity : AppCompatActivity() {
             }
 
             val intent = Intent()
-            intent.putExtra("SELECTED_PHOTOS_ID",selectedPhotos.map{it.getPhotoId()}.toIntArray())
+            intent.putExtra("SELECTED_PHOTOS_ID",selectedPhotos.map{it.photoId}.toIntArray())
             setResult(Activity.RESULT_OK,intent)
             finish()
         }
@@ -446,7 +446,7 @@ class AllPhotosViewActivity : AppCompatActivity() {
 
             val photoImageViewId = imageView.id
             val photoId = imageView.tag.toString().toInt()
-            val i = selectedPhotos.map{it.getPhotoImageViewId()}.indexOf(photoImageViewId)
+            val i = selectedPhotos.map{it.photoImageViewId}.indexOf(photoImageViewId)
             if(-1 < i){
                 selectedPhotos.removeAt(i)
                 checkedImageView.visibility = View.INVISIBLE
