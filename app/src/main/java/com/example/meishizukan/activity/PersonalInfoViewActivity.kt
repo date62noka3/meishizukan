@@ -4,6 +4,7 @@ import NoFilterArrayAdapter
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.database.sqlite.SQLiteDatabase
 import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
@@ -43,6 +44,7 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_personal_info_view)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         readableDb = dbHelper.readableDatabase
         writableDb = dbHelper.writableDatabase

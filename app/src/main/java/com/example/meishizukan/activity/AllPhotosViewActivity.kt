@@ -2,6 +2,7 @@ package com.example.meishizukan.activity
 
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.database.sqlite.SQLiteDatabase
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -48,6 +49,7 @@ class AllPhotosViewActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_all_photos_view)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         readableDb = dbHelper.readableDatabase
 
