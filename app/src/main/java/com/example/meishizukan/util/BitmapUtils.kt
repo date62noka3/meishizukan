@@ -9,10 +9,7 @@ import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
 import android.util.Base64
 import android.util.Log
-import java.io.ByteArrayOutputStream
-import java.io.FileDescriptor
-import java.io.FileNotFoundException
-import java.io.IOException
+import java.io.*
 import java.lang.Exception
 
 object BitmapUtils {
@@ -81,13 +78,13 @@ object BitmapUtils {
     }
 
     /*
-    * ビットマップをギャラリーに保存
+    * ビットマップを外部ストレージに保存
     *
     * @param コンテキスト
     * @param ビットマップ
     * @return 保存先URI
     * */
-    fun saveBitmapToGallery(context: Context, bitmap: Bitmap): Uri {
+    fun saveBitmapToExternalStorage(context: Context, bitmap: Bitmap): Uri {
         val savedBitmapUri = MediaStore.Images.Media.insertImage(
             context.contentResolver,
             bitmap,
@@ -96,5 +93,33 @@ object BitmapUtils {
         )
 
         return Uri.parse(savedBitmapUri)
+    }
+
+    /*
+    * ビットマップを内部ストレージにファイル出力
+    *
+    * @param コンテキスト
+    * @param ファイル名
+    * @param ビットマップ
+    * */
+    fun saveBitmapToInternalStorage(context: Context,filename:String,bitmap: Bitmap){
+        File(context.filesDir,filename).outputStream().use {
+            fileOutputStream ->
+            bitmap.compress(Bitmap.CompressFormat.PNG,0,fileOutputStream)
+        }
+    }
+
+    /*
+    * 内部ストレージからビットマップを取得する
+    *
+    * @param コンテキスト
+    * @param ファイル名
+    * @return ビットマップ
+    * */
+    fun getBitmapFromInternalStorage(context:Context,filename: String):Bitmap{
+        File(context.filesDir,filename).inputStream().use {
+            fileInputStream ->
+            return convertBinaryToBitmap(fileInputStream.readBytes())
+        }
     }
 }

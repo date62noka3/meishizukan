@@ -38,15 +38,18 @@ import com.example.meishizukan.util.*
 import com.example.meishizukan.util.BitmapUtils.convertBinaryToBitmap
 import com.example.meishizukan.util.BitmapUtils.convertBitmapToBinaryJPEG
 import com.example.meishizukan.util.BitmapUtils.convertBitmapToBinaryPNG
+import com.example.meishizukan.util.BitmapUtils.getBitmapFromInternalStorage
 import com.example.meishizukan.util.BitmapUtils.getBitmapFromUri
 import com.example.meishizukan.util.BitmapUtils.rotateBitmap
-import com.example.meishizukan.util.BitmapUtils.saveBitmapToGallery
+import com.example.meishizukan.util.BitmapUtils.saveBitmapToExternalStorage
+import com.example.meishizukan.util.BitmapUtils.saveBitmapToInternalStorage
 import com.google.android.gms.ads.RequestConfiguration
 import junit.framework.TestCase
 import kotlinx.android.synthetic.main.activity_photos_view.adView
 import kotlinx.android.synthetic.main.activity_photos_view.backButton
 import kotlinx.android.synthetic.main.activity_photos_view.photoListLinearLayout
 import org.junit.Test
+import java.io.File
 import java.lang.StringBuilder
 import java.security.MessageDigest
 
@@ -340,11 +343,11 @@ class PhotosViewActivity : AppCompatActivity() {
     }
 
     override fun onDestroy(){
+        super.onDestroy()
         adView.destroy()
         readableDb.close()
         writableDb.close()
         dbHelper.close()
-        super.onDestroy()
     }
 
     override fun onRequestPermissionsResult(
@@ -407,10 +410,11 @@ class PhotosViewActivity : AppCompatActivity() {
             val captureData = data.extras.get("data")
             captureData?:return
             val bitmap = captureData as Bitmap
-            val binary = convertBitmapToBinaryJPEG(bitmap)
-            val photoId = addPhoto(binary)
 
-            if(-1 == photoId){
+            val binary = convertBitmapToBinaryJPEG(bitmap)
+            val photo = addPhoto(binary)
+
+            if(null == photo){
                 Toaster.createToast(
                     context = this,
                     text = getString(R.string.message_on_failed_add_photos),
@@ -421,12 +425,6 @@ class PhotosViewActivity : AppCompatActivity() {
                 return
             }
 
-            val photo = Photo(
-                id = photoId,
-                hashedBinary = "".toByteArray(),
-                binary = binary,
-                createdOn = ""
-            )
             displayPhoto(photo)
 
             Toaster.createToast(
@@ -445,15 +443,10 @@ class PhotosViewActivity : AppCompatActivity() {
                 for (i in 0 until data.clipData.itemCount) {
                     val bitmap = getBitmapFromUri(this,data.clipData.getItemAt(i).uri)
                     bitmap?:return
+
                     val binary = convertBitmapToBinaryPNG(bitmap)
-                    val photoId = addPhoto(binary)
-                    if(-1 != photoId){
-                        val photo = Photo(
-                            id = photoId,
-                            hashedBinary = "".toByteArray(),
-                            binary = binary,
-                            createdOn = ""
-                        )
+                    val photo = addPhoto(binary)
+                    if(null != photo){
                         displayPhoto(photo)
                         addedPhotosCount++
                     }
@@ -482,9 +475,9 @@ class PhotosViewActivity : AppCompatActivity() {
                 bitmap?:return
 
                 val binary = convertBitmapToBinaryPNG(bitmap)
-                val photoId = addPhoto(binary)
+                val photo = addPhoto(binary)
 
-                if(-1 == photoId) {
+                if(null == photo) {
                     Toaster.createToast(
                         context = this,
                         text = getString(R.string.message_on_failed_add_photos),
@@ -495,12 +488,6 @@ class PhotosViewActivity : AppCompatActivity() {
                     return
                 }
 
-                val photo = Photo(
-                    id = photoId,
-                    hashedBinary = "".toByteArray(),
-                    binary = binary,
-                    createdOn = ""
-                )
                 displayPhoto(photo)
 
                 Toaster.createToast(
@@ -553,10 +540,11 @@ class PhotosViewActivity : AppCompatActivity() {
                 return
             }
 
-            //画面に表示するためにビットマップを取得する
-            val getBinarySql = StringBuilder()
-            getBinarySql.append("SELECT DISTINCT ${BaseColumns._ID}," +
-                    DbContracts.Photos.COLUMN_BINARY +
+            //画面に表示するためにビットマップを取得する必要がある。
+            //ビットマップを取得するためにハッシュ値を取得する
+            val getHashedBinarySql = StringBuilder()
+            getHashedBinarySql.append("SELECT DISTINCT ${BaseColumns._ID}," +
+                    DbContracts.Photos.COLUMN_HASHED_BINARY +
                     " FROM ${DbContracts.Photos.TABLE_NAME}" +
                     " WHERE ${BaseColumns._ID} IN (")
 
@@ -571,27 +559,25 @@ class PhotosViewActivity : AppCompatActivity() {
                 val values = getContentValues(photoLink)
                 writableDb.insert(DbContracts.PhotosLinks.TABLE_NAME,null,values)
 
-                getBinarySql.append("$photoId,")
+                getHashedBinarySql.append("$photoId,")
             }
 
-            getBinarySql.replace(getBinarySql.length - 1,getBinarySql.length,"") //末尾のカンマを削除する
-            getBinarySql.append(") ORDER BY ${BaseColumns._ID}")
+            getHashedBinarySql.replace(getHashedBinarySql.length - 1,getHashedBinarySql.length,"") //末尾のカンマを削除する
+            getHashedBinarySql.append(") ORDER BY ${BaseColumns._ID}")
 
-            val getBinaryCursor = readableDb.rawQuery(getBinarySql.toString(),null)
-            if(getBinaryCursor.count != 0){
-                while(getBinaryCursor.moveToNext()){
-                    val photoId = getBinaryCursor.getInt(0)
-                    val binary = getBinaryCursor.getBlob(1)
+            val getHashedBinaryCursor = readableDb.rawQuery(getHashedBinarySql.toString(),null)
+            if(getHashedBinaryCursor.count != 0){
+                while(getHashedBinaryCursor.moveToNext()){
+                    val photoId = getHashedBinaryCursor.getInt(0)
                     val photo = Photo(
                         id = photoId,
-                        hashedBinary = "".toByteArray(),
-                        binary = binary,
+                        hashedBinary = getHashedBinaryCursor.getString(1),
                         createdOn = ""
                     )
                     displayPhoto(photo)
                 }
             }
-            getBinaryCursor.close()
+            getHashedBinaryCursor.close()
 
             Toaster.createToast(
                 context = this,
@@ -611,33 +597,33 @@ class PhotosViewActivity : AppCompatActivity() {
     * 新規レコードとリンクさせる。
     * 既にリンクされている場合はリンクせずに返す。
     *
-    * @param バイナリ
-    * @return 追加件数(追加:写真ID,追加しなかった:-1)
+    * @param 追加写真のバイナリ
+    * @return 追加した写真
     * */
-    private fun addPhoto(binary:ByteArray):Int{
-        val hashedBinary = messageDigest.digest(binary)
+    private fun addPhoto(binary:ByteArray):Photo?{
+        var hashedBinary = messageDigest.digest(binary)!!.contentToString()
+        hashedBinary = hashedBinary.substring(1,hashedBinary.length-1) //先頭、末尾の[]を削除
+        hashedBinary = hashedBinary.replace(", ","_").replace("-","_") //ファイル名として
+        Log.d("HASHED_BINARY",hashedBinary)
 
         val cursor = searchPhoto(hashedBinary)
 
         val photoId = if(cursor.count == 0){
-            val photo = Photo(
-                id = newPhotoId,
-                hashedBinary = hashedBinary,
-                binary = binary,
-                createdOn = "" //DBの方でCURRENT_DATEが設定される
-            )
+            val bitmap = convertBinaryToBitmap(binary)
+            saveBitmapToInternalStorage(context = this,
+                filename = hashedBinary,
+                bitmap = bitmap)
 
-            insertPhoto(photo)
+            insertPhoto(hashedBinary)
         }else{
             cursor.moveToNext()
 
-            //既存写真のIDを取得
             cursor.getInt(0)
         }
         cursor.close()
 
         if(isPhotoLinked(photoId,personId)){
-            return -1
+            return null
         }
 
         val photoLink = PhotoLink(
@@ -648,7 +634,11 @@ class PhotosViewActivity : AppCompatActivity() {
 
         addPhotoLink(photoLink)
 
-        return photoId
+        return Photo(
+            id = photoId,
+            hashedBinary = hashedBinary,
+            createdOn = ""
+        )
     }
 
     /*
@@ -657,7 +647,7 @@ class PhotosViewActivity : AppCompatActivity() {
     * @param ビットマップ
     * */
     private fun downloadPhoto(bitmap: Bitmap){
-        val savedBitmapUri = saveBitmapToGallery(this, bitmap)
+        val savedBitmapUri = saveBitmapToExternalStorage(this, bitmap)
         Log.d("SAVED_BITMAP_URI",savedBitmapUri.toString())
 
         Toaster.createToast(
@@ -672,13 +662,12 @@ class PhotosViewActivity : AppCompatActivity() {
     /*
     * 写真の値セットを取得
     *
-    * @param 写真
+    * @param ハッシュ化したバイナリ文字列
     * @return 写真の値セット
     * */
-    private fun getContentValues(photo: Photo):ContentValues{
+    private fun getContentValues(hashedBinary: String):ContentValues{
         return ContentValues().apply {
-            put(DbContracts.Photos.COLUMN_HASHED_BINARY,photo.hashedBinary.contentToString())
-            put(DbContracts.Photos.COLUMN_BINARY,photo.binary)
+            put(DbContracts.Photos.COLUMN_HASHED_BINARY,hashedBinary)
         }
     }
 
@@ -699,12 +688,12 @@ class PhotosViewActivity : AppCompatActivity() {
     * 写真をDBで検索
     * (写真追加処理で既存するものかを確認している)
     *
-    * @param ハッシュ化したバイナリ
+    * @param ハッシュ化したバイナリ文字列
     * @return 検索結果カーソル
     * */
-    private fun searchPhoto(hashedBinary:ByteArray): Cursor {
-        val sql = "SELECT ${BaseColumns._ID} FROM ${DbContracts.Photos.TABLE_NAME}" +
-                " WHERE ${DbContracts.Photos.COLUMN_HASHED_BINARY} = '${hashedBinary.contentToString()}'"
+    private fun searchPhoto(hashedBinary:String): Cursor {
+        val sql = "SELECT ${BaseColumns._ID},${DbContracts.Photos.COLUMN_HASHED_BINARY} FROM ${DbContracts.Photos.TABLE_NAME}" +
+                " WHERE ${DbContracts.Photos.COLUMN_HASHED_BINARY} = '$hashedBinary'"
         return readableDb.rawQuery(sql,null)
     }
 
@@ -733,7 +722,7 @@ class PhotosViewActivity : AppCompatActivity() {
     * @return 検索結果カーソル
     * */
     private fun searchPhoto(photoId: Int):Cursor{
-        val sql = "SELECT ${DbContracts.Photos.COLUMN_BINARY}" +
+        val sql = "SELECT ${DbContracts.Photos.COLUMN_HASHED_BINARY}" +
                 " FROM ${DbContracts.Photos.TABLE_NAME}" +
                 " WHERE ${BaseColumns._ID} = $photoId"
         return readableDb.rawQuery(sql,null)
@@ -754,11 +743,11 @@ class PhotosViewActivity : AppCompatActivity() {
     /*
     * 写真をDBに追加
     *
-    * @param 写真
+    * @param ハッシュ化したバイナリ文字列
     * @return 写真ID
     * */
-    private fun insertPhoto(photo:Photo):Int{
-        val values = getContentValues(photo)
+    private fun insertPhoto(hashedBinary: String):Int{
+        val values = getContentValues(hashedBinary)
 
         return writableDb.insert(DbContracts.Photos.TABLE_NAME,null,values).toInt()
     }
@@ -837,7 +826,7 @@ class PhotosViewActivity : AppCompatActivity() {
 
         photoImageView?:return
 
-        val bitmap = convertBinaryToBitmap(photo.binary)
+        val bitmap = getBitmapFromInternalStorage(context = this,filename = photo.hashedBinary)
         photoImageView.setImageBitmap(bitmap)
         photoImageView.setOnClickListener(ItemOnClickListener())
         photoImageView.tag = photo.id.toString()
@@ -1113,21 +1102,20 @@ class PhotosViewActivity : AppCompatActivity() {
 
             val linkedPhotoCursor = searchPhoto(photoId)
             if(linkedPhotoCursor.count == 0){
-                return
+                continue
             }
 
             linkedPhotoCursor.moveToNext()
-            val binary = linkedPhotoCursor.getBlob(0)
+            val hashedBinary = linkedPhotoCursor.getString(0)
             val photo = Photo(
                 id = photoId,
-                hashedBinary = "".toByteArray(),
-                binary = binary,
+                hashedBinary = hashedBinary,
                 createdOn = ""
             )
             displayPhoto(photo)
         }
 
-        displaySelectedPhotoCount()
+        displayPhotoCount()
     }
 
     /*
