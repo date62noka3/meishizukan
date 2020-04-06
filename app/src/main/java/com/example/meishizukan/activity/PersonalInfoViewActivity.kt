@@ -44,7 +44,6 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_personal_info_view)
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         readableDb = dbHelper.readableDatabase
         writableDb = dbHelper.writableDatabase
@@ -299,11 +298,11 @@ class PersonalInfoViewActivity : AppCompatActivity() {
     }
 
     override fun onDestroy(){
+        super.onDestroy()
         adView.destroy()
         readableDb.close()
         writableDb.close()
         dbHelper.close()
-        super.onDestroy()
     }
 
     override fun onBackPressed() {

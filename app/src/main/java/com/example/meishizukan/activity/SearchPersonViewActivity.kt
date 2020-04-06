@@ -69,7 +69,6 @@ class SearchPersonViewActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setTheme(R.style.AppTheme) //スプラッシュ表示用テーマから戻す
         setContentView(R.layout.activity_search_person_view)
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         readableDb = dbHelper.readableDatabase
         writableDb = dbHelper.writableDatabase
