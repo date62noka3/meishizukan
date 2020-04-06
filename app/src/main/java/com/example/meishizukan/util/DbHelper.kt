@@ -22,7 +22,6 @@ object DbContracts{
     object Photos:BaseColumns{
         const val TABLE_NAME = "photos"
         const val COLUMN_HASHED_BINARY = "hashed_binary"
-        const val COLUMN_BINARY_FILEPATH = "binary_filepath"
         const val COLUMN_CREATED_ON = "created_on"
     }
 
@@ -42,14 +41,13 @@ private const val SQL_CREATE_PERSONS = "CREATE TABLE ${DbContracts.Persons.TABLE
         "${DbContracts.Persons.COLUMN_NOTE} TEXT NOT NULL DEFAULT '')"
 private const val SQL_DELETE_PERSONS = "DROP TABLE IF EXISTS ${DbContracts.Persons.TABLE_NAME}"
 
-private const val SQL_CREATE_PHOTOS = "CREATE TABLE ${DbContracts.Photos.TABLE_NAME}" +
+const val SQL_CREATE_PHOTOS = "CREATE TABLE ${DbContracts.Photos.TABLE_NAME}" +
         "(${BaseColumns._ID} INTEGER PRIMARY KEY," +
         "${DbContracts.Photos.COLUMN_HASHED_BINARY} TEXT NOT NULL," +
-        "${DbContracts.Photos.COLUMN_BINARY_FILEPATH} TEXT NOT NULL," +
         "${DbContracts.Photos.COLUMN_CREATED_ON} TEXT NOT NULL DEFAULT CURRENT_DATE)"
-private const val SQL_DELETE_PHOTOS = "DROP TABLE IF EXISTS ${DbContracts.Photos.TABLE_NAME}"
+const val SQL_DELETE_PHOTOS = "DROP TABLE IF EXISTS ${DbContracts.Photos.TABLE_NAME}"
 
-private const val SQL_CREATE_PHOTOS_LINKS = "CREATE TABLE ${DbContracts.PhotosLinks.TABLE_NAME}" +
+const val SQL_CREATE_PHOTOS_LINKS = "CREATE TABLE ${DbContracts.PhotosLinks.TABLE_NAME}" +
         "(${BaseColumns._ID} INTEGER PRIMARY KEY," +
         "${DbContracts.PhotosLinks.COLUMN_PHOTO_ID} INT NOT NULL," +
         "${DbContracts.PhotosLinks.COLUMN_PERSON_ID} INT NOT NULL," +
@@ -57,7 +55,7 @@ private const val SQL_CREATE_PHOTOS_LINKS = "CREATE TABLE ${DbContracts.PhotosLi
         "REFERENCES ${DbContracts.Photos.TABLE_NAME}(${BaseColumns._ID})," +
         "FOREIGN KEY(${DbContracts.PhotosLinks.COLUMN_PERSON_ID}) " +
         "REFERENCES ${DbContracts.Persons.TABLE_NAME}(${BaseColumns._ID}))"
-private const val SQL_DELETE_PHOTOS_LINKS = "DROP TABLE IF EXISTS ${DbContracts.PhotosLinks.TABLE_NAME}"
+const val SQL_DELETE_PHOTOS_LINKS = "DROP TABLE IF EXISTS ${DbContracts.PhotosLinks.TABLE_NAME}"
 
 class DbHelper(context: Context):SQLiteOpenHelper(context, DATABASE_NAME,null, DATABASE_VERSION) {
     companion object{

@@ -27,6 +27,7 @@ import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import kotlinx.android.synthetic.main.activity_all_photos_view.*
 import androidx.core.content.ContextCompat.getColor
+import com.example.meishizukan.util.BitmapUtils.getBitmapFromInternalStorage
 
 private const val GET_PHOTOS_IN_APP_REQUEST_CODE = 2
 
@@ -260,9 +261,8 @@ class AllPhotosViewActivity : AppCompatActivity() {
         while(cursor.moveToNext()){
             photos.add(Photo(
                 id = cursor.getInt(0),
-                hashedBinary = cursor.getString(1).toByteArray(),
-                binary = cursor.getBlob(2),
-                createdOn = cursor.getString(3)
+                hashedBinary = cursor.getString(1),
+                createdOn = cursor.getString(2)
             ))
         }
 
@@ -279,7 +279,6 @@ class AllPhotosViewActivity : AppCompatActivity() {
     private fun createSearchSQL():String{
         return "SELECT ${BaseColumns._ID}," +
                     "${DbContracts.Photos.COLUMN_HASHED_BINARY}," +
-                    "${DbContracts.Photos.COLUMN_BINARY_FILEPATH}," +
                     DbContracts.Photos.COLUMN_CREATED_ON +
                     " FROM ${DbContracts.Photos.TABLE_NAME}" +
                     " ORDER BY ${DbContracts.Photos.COLUMN_CREATED_ON}"
@@ -410,7 +409,7 @@ class AllPhotosViewActivity : AppCompatActivity() {
 
         photoImageView?:return
 
-        val bitmap = convertBinaryToBitmap(photo.binary)
+        val bitmap = getBitmapFromInternalStorage(context = this,filename = photo.hashedBinary)
         photoImageView.setImageBitmap(bitmap)
         photoImageView.setOnClickListener(ItemOnClickListener())
 

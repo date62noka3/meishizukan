@@ -303,9 +303,12 @@ class SearchPersonViewActivity : AppCompatActivity() {
             search()
         }
 
-        // テスト用コード
-        writableDb.delete("photos_links","_id <> 1000",null)
-        writableDb.delete("persons","_id <> 1000",null)
+        //すべての写真リンク、写真、人物を削除
+        writableDb.delete("photos_links","_id <> 10000",null)
+        writableDb.delete("photos","_id <> 10000",null)
+        writableDb.delete("persons","_id <> 10000",null)
+
+        //テスト用データの人物を追加
         personDb = PersonDb(this)
         personDb.insert()
     }
