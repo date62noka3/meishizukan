@@ -357,8 +357,8 @@ class PhotosViewActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        //写真追加処理が実行中の場合返却する
-        if(addPhotosJob.isActive){
+        //写真追加処理または写真表示処理が実行中の場合返却する
+        if(addPhotosJob.isActive || displayLinkedPhotosJob.isActive){
             Toaster.createToast(
                 context = this,
                 text = getString(R.string.message_on_click_back_button),
@@ -1205,6 +1205,7 @@ class PhotosViewActivity : AppCompatActivity() {
         selectedItemCountTextView.text = selectedPhotos.count().toString().plus(getString(R.string.selected_photo_count_text))
     }
 
+    private var displayLinkedPhotosJob = Job()
     /*
     * 人物にリンクしている写真をすべて表示
     * */
@@ -1218,25 +1219,39 @@ class PhotosViewActivity : AppCompatActivity() {
             return
         }
 
-        while(allLinkedPhotosCursor.moveToNext()){
-            val photoId = allLinkedPhotosCursor.getInt(0)
-
-            val linkedPhotoCursor = searchPhoto(photoId)
-            if(linkedPhotoCursor.count == 0){
-                continue
+        displayLinkedPhotosJob = GlobalScope.launch(Dispatchers.Default) {
+            handler.post {
+                showLoadingDialog()
             }
 
-            linkedPhotoCursor.moveToNext()
-            val hashedBinary = linkedPhotoCursor.getString(0)
-            val photo = Photo(
-                id = photoId,
-                hashedBinary = hashedBinary,
-                createdOn = ""
-            )
-            displayPhoto(photo)
-        }
+            launch(Dispatchers.Default) {
+                while (allLinkedPhotosCursor.moveToNext()) {
+                    val photoId = allLinkedPhotosCursor.getInt(0)
 
-        displayPhotoCount()
+                    val linkedPhotoCursor = searchPhoto(photoId)
+                    if (linkedPhotoCursor.count == 0) {
+                        continue
+                    }
+
+                    linkedPhotoCursor.moveToNext()
+                    val hashedBinary = linkedPhotoCursor.getString(0)
+                    val photo = Photo(
+                        id = photoId,
+                        hashedBinary = hashedBinary,
+                        createdOn = ""
+                    )
+                    handler.post {
+                        displayPhoto(photo)
+                    }
+                }
+            }.join()
+
+            handler.post {
+                displayPhotoCount()
+
+                hideLoadingDialog()
+            }
+        }
     }
 
     /*
