@@ -697,8 +697,9 @@ class PhotosViewActivity : AppCompatActivity() {
             }.join()
 
             handler.post {
-                if (requestCode == OPEN_CAMERA_REQUEST_CODE || requestCode == OPEN_GALLERY_REQUEST_CODE
-                    || requestCode == GET_PHOTOS_IN_APP_REQUEST_CODE
+                if ((requestCode == OPEN_CAMERA_REQUEST_CODE || requestCode == OPEN_GALLERY_REQUEST_CODE
+                    || requestCode == GET_PHOTOS_IN_APP_REQUEST_CODE)
+                    && resultCode == Activity.RESULT_OK
                 ) {
                     addPhotoButton.isClickable = true
                     hideAddPhotoButtons()
