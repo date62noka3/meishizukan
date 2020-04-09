@@ -2,7 +2,6 @@ package com.example.meishizukan.activity
 
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.database.sqlite.SQLiteDatabase
 import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
@@ -35,7 +34,6 @@ import com.example.meishizukan.util.*
 import com.example.meishizukan.util.PhoneticName.hiraganaToKatakana
 import com.google.android.gms.ads.RequestConfiguration
 import junit.framework.TestCase.assertEquals
-import kotlinx.android.synthetic.main.activity_photos_view.*
 import kotlinx.android.synthetic.main.activity_search_person_view.adView
 import kotlinx.android.synthetic.main.activity_search_person_view.deleteButton
 import kotlinx.android.synthetic.main.activity_search_person_view.footerOptionBar
@@ -302,6 +300,9 @@ class SearchPersonViewActivity : AppCompatActivity() {
             search()
         }
 
+        val progressTextView = loadingAnimationView.findViewById<TextView>(R.id.progressTextView)
+        progressTextView?.text = getString(R.string.progress_text_on_search)
+
         //すべての写真リンク、写真、人物を削除
         writableDb.delete("photos_links","_id <> 10000",null)
         writableDb.delete("photos","_id <> 10000",null)
@@ -405,8 +406,8 @@ class SearchPersonViewActivity : AppCompatActivity() {
     * */
     private fun showLoadingDialog(){
         window.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) //タッチ無効化
-        loadingDialogView.bringToFront()
-        loadingDialogView.visibility = View.VISIBLE
+        loadingAnimationView.bringToFront()
+        loadingAnimationView.visibility = View.VISIBLE
     }
 
     /*
@@ -414,7 +415,7 @@ class SearchPersonViewActivity : AppCompatActivity() {
     * */
     private fun hideLoadingDialog(){
         rootConstraintLayout.bringToFront()
-        loadingDialogView.visibility = View.INVISIBLE
+        loadingAnimationView.visibility = View.INVISIBLE
         window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) //タッチ無効化解除
     }
 

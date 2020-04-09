@@ -2,7 +2,6 @@ package com.example.meishizukan.activity
 
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.database.sqlite.SQLiteDatabase
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -15,7 +14,6 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.meishizukan.R
 import com.example.meishizukan.dto.Photo
-import com.example.meishizukan.util.BitmapUtils.convertBinaryToBitmap
 import com.example.meishizukan.util.DateUtils.getDay
 import com.example.meishizukan.util.DateUtils.getMonth
 import com.example.meishizukan.util.DateUtils.getYear
@@ -199,8 +197,8 @@ class AllPhotosViewActivity : AppCompatActivity() {
     * */
     private fun showLoadingDialog(){
         window.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) //タッチ無効化
-        loadingDialogView.bringToFront()
-        loadingDialogView.visibility = View.VISIBLE
+        loadingAnimationView.bringToFront()
+        loadingAnimationView.visibility = View.VISIBLE
     }
 
     /*
@@ -208,7 +206,7 @@ class AllPhotosViewActivity : AppCompatActivity() {
     * */
     private fun hideLoadingDialog(){
         rootConstraintLayout.bringToFront()
-        loadingDialogView.visibility = View.INVISIBLE
+        loadingAnimationView.visibility = View.INVISIBLE
         window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) //タッチ無効化解除
     }
 

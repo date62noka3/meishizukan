@@ -3,6 +3,7 @@
     <string name="empty">--  --  --  --</string>
 
     <!-- 人物検索画面 -->
+    <string name="progress_text_on_search">人物を読み込み中…</string>
     <string name="search_edittext_hint">人物を検索</string>
     <string name="no_persons_text">人物が登録されていません。</string>
     <string name="no_results_textview_text">該当する人物はいませんでした。</string>
@@ -11,7 +12,7 @@
     <string name="message_on_click_all_photos_view_button">実装予定です</string>
 
     <!-- ローディング画面 -->
-    <string name="loading_dialog_text">Loading</string>
+    <string name="default_progress_text">読み込み中…</string>
 
     <!-- NavigationDrawerメニュー -->
     <string name="search_person_view">人物を検索</string>
@@ -61,6 +62,8 @@
     <string name="message_on_failed_add_photos">同じ写真が既に追加されていました</string>
     <string name="message_on_failed_open_camera">権限がないのでカメラを起動できませんでした</string>
     <string name="message_on_no_camera_app">カメラアプリがありません</string>
+    <string name="progress_text_on_add_photos">写真を読み込み中…</string>
+    <string name="message_on_click_back_button">処理が正常に終了するまでもうしばらくお待ちください</string>
 
     <!-- 50音のア段 -->
     <string-array name="japanese_syllabary_regex">

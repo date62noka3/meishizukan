@@ -9,15 +9,16 @@
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:indeterminateDrawable="@drawable/circle" />
 
     <TextView
-        android:id="@+id/pbText"
+        android:id="@+id/progressTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:gravity="center"
-        android:text="@string/loading_dialog_text"
+        android:text="@string/default_progress_text"
         android:textColor="@color/loadingDialogTextColor"
         android:textStyle="bold" />
 
