@@ -338,8 +338,8 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <include
-        android:id="@+id/loadingDialogView"
-        layout="@layout/loading_dialog_fill_parent"
+        android:id="@+id/loadingAnimationView"
+        layout="@layout/full_screen_loading_item"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="invisible"/>

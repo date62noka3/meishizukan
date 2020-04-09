@@ -5,36 +5,33 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.ContentValues
 import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.provider.BaseColumns
 import android.provider.MediaStore
 import android.util.Log
 import android.view.GestureDetector
 import android.view.View
+import android.view.WindowManager
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
-import com.example.meishizukan.R
-import com.example.meishizukan.dto.Person
-import com.google.android.gms.ads.AdListener
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.MobileAds
-import kotlinx.android.synthetic.main.activity_photos_view.*
 import androidx.core.content.ContextCompat.getColor
 import androidx.core.graphics.drawable.toBitmap
+import com.example.meishizukan.R
+import com.example.meishizukan.dto.Person
 import com.example.meishizukan.dto.Photo
 import com.example.meishizukan.dto.PhotoLink
-import com.example.meishizukan.util.*
 import com.example.meishizukan.util.BitmapUtils.convertBinaryToBitmap
 import com.example.meishizukan.util.BitmapUtils.convertBitmapToBinaryJPEG
 import com.example.meishizukan.util.BitmapUtils.convertBitmapToBinaryPNG
@@ -43,15 +40,22 @@ import com.example.meishizukan.util.BitmapUtils.getBitmapFromUri
 import com.example.meishizukan.util.BitmapUtils.rotateBitmap
 import com.example.meishizukan.util.BitmapUtils.saveBitmapToExternalStorage
 import com.example.meishizukan.util.BitmapUtils.saveBitmapToInternalStorage
+import com.example.meishizukan.util.DbContracts
+import com.example.meishizukan.util.DbHelper
+import com.example.meishizukan.util.OnSwipeGestureListener
+import com.example.meishizukan.util.Toaster
+import com.google.android.gms.ads.AdListener
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import junit.framework.TestCase
-import kotlinx.android.synthetic.main.activity_photos_view.adView
-import kotlinx.android.synthetic.main.activity_photos_view.backButton
-import kotlinx.android.synthetic.main.activity_photos_view.photoListLinearLayout
+import kotlinx.android.synthetic.main.activity_photos_view.*
+import kotlinx.coroutines.*
 import org.junit.Test
-import java.io.File
-import java.lang.StringBuilder
+import java.lang.Exception
+import java.lang.IllegalStateException
 import java.security.MessageDigest
+import java.util.concurrent.ForkJoinPool
 
 private const val OPEN_CAMERA_REQUEST_CODE  = 0
 private const val OPEN_GALLERY_REQUEST_CODE = 1
@@ -278,7 +282,7 @@ class PhotosViewActivity : AppCompatActivity() {
             }
 
             selectedPhotos.map{it.photoImageViewId}.forEach{
-                photoImageViewId ->
+                    photoImageViewId ->
                 val selectedImageView = findViewById<ImageView>(photoImageViewId)
                 downloadPhoto(selectedImageView.drawable.toBitmap())
             }
@@ -318,6 +322,9 @@ class PhotosViewActivity : AppCompatActivity() {
                 .show()
         }
 
+        val progressTextView = loadingAnimationView.findViewById<TextView>(R.id.progressTextView)
+        progressTextView?.text = getString(R.string.progress_text_on_add_photos)
+
         personId = intent.getIntExtra("PERSON_ID",0)
 
         //人物情報画面に遷移する
@@ -347,6 +354,22 @@ class PhotosViewActivity : AppCompatActivity() {
         readableDb.close()
         writableDb.close()
         dbHelper.close()
+    }
+
+    override fun onBackPressed() {
+        //写真追加処理が実行中の場合返却する
+        if(addPhotosJob.isActive){
+            Toaster.createToast(
+                context = this,
+                text = getString(R.string.message_on_click_back_button),
+                textColor = getColor(this,R.color.toastTextColorOnFailed),
+                backgroundColor = getColor(this,R.color.toastBackgroundColorOnFailed),
+                displayTime = Toast.LENGTH_LONG
+            ).show()
+            return
+        }
+
+        super.onBackPressed()
     }
 
     override fun onRequestPermissionsResult(
@@ -393,198 +416,296 @@ class PhotosViewActivity : AppCompatActivity() {
         }
     }
 
+    private var addPhotosJob:Job = Job()
+    private val handler = Handler()
     private val messageDigest = MessageDigest.getInstance("SHA-256")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        //写真追加ボタンを非表示
-        if(requestCode == OPEN_CAMERA_REQUEST_CODE || requestCode == OPEN_GALLERY_REQUEST_CODE
-            || requestCode == GET_PHOTOS_IN_APP_REQUEST_CODE){
-            hideAddPhotoButtons()
-        }
-
-        if(requestCode == OPEN_CAMERA_REQUEST_CODE && resultCode == Activity.RESULT_OK
-            && data != null){
-            data.extras?:return
-            val captureData = data.extras.get("data")
-            captureData?:return
-            val bitmap = captureData as Bitmap
-
-            val binary = convertBitmapToBinaryJPEG(bitmap)
-            val photo = addPhoto(binary)
-
-            if(null == photo){
-                Toaster.createToast(
-                    context = this,
-                    text = getString(R.string.message_on_failed_add_photos),
-                    textColor = getColor(this, R.color.toastTextColorOnFailed),
-                    backgroundColor = getColor(this, R.color.toastBackgroundColorOnFailed),
-                    displayTime = Toast.LENGTH_LONG
-                ).show()
-                return
+        addPhotosJob = GlobalScope.launch(Dispatchers.Default) OuterLaunch@{
+            handler.post {
+                showLoadingDialog()
             }
 
-            displayPhoto(photo)
+            launch(Dispatchers.Default) {
+                if (requestCode == OPEN_CAMERA_REQUEST_CODE && resultCode == Activity.RESULT_OK
+                    && data != null
+                ) {
+                    data.extras ?: return@launch
+                    val captureData = data.extras.get("data")
+                    captureData ?: return@launch
+                    val bitmap = captureData as Bitmap
 
-            Toaster.createToast(
-                context = this,
-                text = getString(R.string.message_on_added_photos),
-                textColor = getColor(this, R.color.toastTextColorOnSuccess),
-                backgroundColor = getColor(this, R.color.toastBackgroundColorOnSuccess),
-                displayTime = Toast.LENGTH_LONG
-            ).show()
-        }
-
-        if(requestCode == OPEN_GALLERY_REQUEST_CODE && resultCode == Activity.RESULT_OK
-            && data != null){
-            if(data.clipData != null) { //複数選択の場合
-                var addedPhotosCount = 0
-                for (i in 0 until data.clipData.itemCount) {
-                    val bitmap = getBitmapFromUri(this,data.clipData.getItemAt(i).uri)
-                    bitmap?:return
-
-                    val binary = convertBitmapToBinaryPNG(bitmap)
+                    val binary = convertBitmapToBinaryJPEG(bitmap)
                     val photo = addPhoto(binary)
-                    if(null != photo){
+
+                    handler.post {
+                        if (null == photo) {
+                            Toaster.createToast(
+                                context = this@PhotosViewActivity,
+                                text = getString(R.string.message_on_failed_add_photos),
+                                textColor = getColor(
+                                    this@PhotosViewActivity,
+                                    R.color.toastTextColorOnFailed
+                                ),
+                                backgroundColor = getColor(
+                                    this@PhotosViewActivity,
+                                    R.color.toastBackgroundColorOnFailed
+                                ),
+                                displayTime = Toast.LENGTH_LONG
+                            ).show()
+                            return@post
+                        }
+
                         displayPhoto(photo)
-                        addedPhotosCount++
+
+                        Toaster.createToast(
+                            context = this@PhotosViewActivity,
+                            text = getString(R.string.message_on_added_photos),
+                            textColor = getColor(
+                                this@PhotosViewActivity,
+                                R.color.toastTextColorOnSuccess
+                            ),
+                            backgroundColor = getColor(
+                                this@PhotosViewActivity,
+                                R.color.toastBackgroundColorOnSuccess
+                            ),
+                            displayTime = Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
 
-                if(0 == addedPhotosCount){
-                    Toaster.createToast(
-                        context = this,
-                        text = getString(R.string.message_on_failed_add_photos),
-                        textColor = getColor(this, R.color.toastTextColorOnFailed),
-                        backgroundColor = getColor(this, R.color.toastBackgroundColorOnFailed),
-                        displayTime = Toast.LENGTH_LONG
-                    ).show()
-                    return
+                if (requestCode == OPEN_GALLERY_REQUEST_CODE && resultCode == Activity.RESULT_OK
+                    && data != null
+                ) {
+
+                    if (data.clipData != null) { //複数選択の場合
+                        var addedPhotosCount = 0
+                        for (i in 0 until data.clipData.itemCount) {
+                            val bitmap = getBitmapFromUri(
+                                this@PhotosViewActivity,
+                                data.clipData.getItemAt(i).uri
+                            )
+                            bitmap ?: continue
+
+                            val binary = convertBitmapToBinaryPNG(bitmap)
+                            val photo = addPhoto(binary)
+                            if (null != photo) {
+                                handler.post {
+                                    displayPhoto(photo)
+                                }
+                                addedPhotosCount++
+                            }
+                        }
+
+                        handler.post {
+                            if (0 == addedPhotosCount) {
+                                Toaster.createToast(
+                                    context = this@PhotosViewActivity,
+                                    text = getString(R.string.message_on_failed_add_photos),
+                                    textColor = getColor(
+                                        this@PhotosViewActivity,
+                                        R.color.toastTextColorOnFailed
+                                    ),
+                                    backgroundColor = getColor(
+                                        this@PhotosViewActivity,
+                                        R.color.toastBackgroundColorOnFailed
+                                    ),
+                                    displayTime = Toast.LENGTH_LONG
+                                ).show()
+                                return@post
+                            }
+
+                            Toaster.createToast(
+                                context = this@PhotosViewActivity,
+                                text = getString(R.string.message_on_added_photos),
+                                textColor = getColor(
+                                    this@PhotosViewActivity,
+                                    R.color.toastTextColorOnSuccess
+                                ),
+                                backgroundColor = getColor(
+                                    this@PhotosViewActivity,
+                                    R.color.toastBackgroundColorOnSuccess
+                                ),
+                                displayTime = Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    } else if (data.data != null) { //1枚のみ選択の場合
+                        val bitmap =
+                            getBitmapFromUri(
+                                this@PhotosViewActivity,
+                                Uri.parse(data.data.toString())
+                            )
+                        bitmap ?: return@launch
+
+                        val binary = convertBitmapToBinaryPNG(bitmap)
+                        val photo = addPhoto(binary)
+
+                        handler.post {
+                            if (null == photo) {
+                                Toaster.createToast(
+                                    context = this@PhotosViewActivity,
+                                    text = getString(R.string.message_on_failed_add_photos),
+                                    textColor = getColor(
+                                        this@PhotosViewActivity,
+                                        R.color.toastTextColorOnFailed
+                                    ),
+                                    backgroundColor = getColor(
+                                        this@PhotosViewActivity,
+                                        R.color.toastBackgroundColorOnFailed
+                                    ),
+                                    displayTime = Toast.LENGTH_LONG
+                                ).show()
+                                return@post
+                            }
+
+                            displayPhoto(photo)
+
+                            Toaster.createToast(
+                                context = this@PhotosViewActivity,
+                                text = getString(R.string.message_on_added_photos),
+                                textColor = getColor(
+                                    this@PhotosViewActivity,
+                                    R.color.toastTextColorOnSuccess
+                                ),
+                                backgroundColor = getColor(
+                                    this@PhotosViewActivity,
+                                    R.color.toastBackgroundColorOnSuccess
+                                ),
+                                displayTime = Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
                 }
 
-                Toaster.createToast(
-                    context = this,
-                    text = getString(R.string.message_on_added_photos),
-                    textColor = getColor(this, R.color.toastTextColorOnSuccess),
-                    backgroundColor = getColor(this, R.color.toastBackgroundColorOnSuccess),
-                    displayTime = Toast.LENGTH_LONG
-                ).show()
-            }else if(data.data != null){ //1枚のみ選択の場合
-                val bitmap = getBitmapFromUri(this, Uri.parse(data.data.toString()))
-                bitmap?:return
+                if (requestCode == GET_PHOTOS_IN_APP_REQUEST_CODE && resultCode == Activity.RESULT_OK
+                    && data != null
+                ) {
+                    val selectedPhotos = data.getIntArrayExtra("SELECTED_PHOTOS_ID").toMutableList()
 
-                val binary = convertBitmapToBinaryPNG(bitmap)
-                val photo = addPhoto(binary)
-
-                if(null == photo) {
-                    Toaster.createToast(
-                        context = this,
-                        text = getString(R.string.message_on_failed_add_photos),
-                        textColor = getColor(this, R.color.toastTextColorOnFailed),
-                        backgroundColor = getColor(this, R.color.toastBackgroundColorOnFailed),
-                        displayTime = Toast.LENGTH_LONG
-                    ).show()
-                    return
-                }
-
-                displayPhoto(photo)
-
-                Toaster.createToast(
-                    context = this,
-                    text = getString(R.string.message_on_added_photos),
-                    textColor = getColor(this, R.color.toastTextColorOnSuccess),
-                    backgroundColor = getColor(this, R.color.toastBackgroundColorOnSuccess),
-                    displayTime = Toast.LENGTH_LONG
-                ).show()
-            }
-        }
-
-        if(requestCode == GET_PHOTOS_IN_APP_REQUEST_CODE && resultCode == Activity.RESULT_OK
-            && data != null){
-            val selectedPhotos = data.getIntArrayExtra("SELECTED_PHOTOS_ID").toMutableList()
-
-            //選択された写真の中で未リンクのものを取得
-            val getLinkedPhotosSql = StringBuilder()
-            getLinkedPhotosSql.append("SELECT DISTINCT ${DbContracts.PhotosLinks.COLUMN_PHOTO_ID} FROM ${DbContracts.PhotosLinks.TABLE_NAME}" +
-                    " WHERE ${DbContracts.PhotosLinks.COLUMN_PERSON_ID} = $personId" +
-                    " AND ${DbContracts.PhotosLinks.COLUMN_PHOTO_ID} IN (")
-            selectedPhotos.forEach {
-                photoId ->
-                getLinkedPhotosSql.append("$photoId,")
-            }
-            getLinkedPhotosSql.replace(getLinkedPhotosSql.length - 1,getLinkedPhotosSql.length,"") //末尾のカンマを削除
-            getLinkedPhotosSql.append(")")
-
-            val getLinkedPhotosCursor = readableDb.rawQuery(getLinkedPhotosSql.toString(),null)
-
-            if(getLinkedPhotosCursor.count != 0) {
-                //既にリンクしている写真をリストから除外する
-                while (getLinkedPhotosCursor.moveToNext()) {
-                    val photoId = getLinkedPhotosCursor.getInt(0)
-                    selectedPhotos.remove(photoId)
-                }
-            }
-            getLinkedPhotosCursor.close()
-
-            if(selectedPhotos.count() == 0){
-                //全て既に追加されている
-                Toaster.createToast(
-                    context = this,
-                    text = getString(R.string.message_on_failed_add_photos),
-                    textColor = getColor(this, R.color.toastTextColorOnFailed),
-                    backgroundColor = getColor(this, R.color.toastBackgroundColorOnFailed),
-                    displayTime = Toast.LENGTH_LONG
-                ).show()
-                getLinkedPhotosCursor.close()
-                return
-            }
-
-            //画面に表示するためにビットマップを取得する必要がある。
-            //ビットマップを取得するためにハッシュ値を取得する
-            val getHashedBinarySql = StringBuilder()
-            getHashedBinarySql.append("SELECT DISTINCT ${BaseColumns._ID}," +
-                    DbContracts.Photos.COLUMN_HASHED_BINARY +
-                    " FROM ${DbContracts.Photos.TABLE_NAME}" +
-                    " WHERE ${BaseColumns._ID} IN (")
-
-            //選択された写真と人物を紐づける
-            selectedPhotos.forEach{
-                photoId ->
-                val photoLink = PhotoLink(
-                    id = newPhotoLinkId,
-                    photoId = photoId,
-                    personId = personId
-                )
-                val values = getContentValues(photoLink)
-                writableDb.insert(DbContracts.PhotosLinks.TABLE_NAME,null,values)
-
-                getHashedBinarySql.append("$photoId,")
-            }
-
-            getHashedBinarySql.replace(getHashedBinarySql.length - 1,getHashedBinarySql.length,"") //末尾のカンマを削除する
-            getHashedBinarySql.append(") ORDER BY ${BaseColumns._ID}")
-
-            val getHashedBinaryCursor = readableDb.rawQuery(getHashedBinarySql.toString(),null)
-            if(getHashedBinaryCursor.count != 0){
-                while(getHashedBinaryCursor.moveToNext()){
-                    val photoId = getHashedBinaryCursor.getInt(0)
-                    val photo = Photo(
-                        id = photoId,
-                        hashedBinary = getHashedBinaryCursor.getString(1),
-                        createdOn = ""
+                    //選択された写真の中で未リンクのものを取得
+                    val getLinkedPhotosSql = StringBuilder()
+                    getLinkedPhotosSql.append(
+                        "SELECT DISTINCT ${DbContracts.PhotosLinks.COLUMN_PHOTO_ID} FROM ${DbContracts.PhotosLinks.TABLE_NAME}" +
+                                " WHERE ${DbContracts.PhotosLinks.COLUMN_PERSON_ID} = $personId" +
+                                " AND ${DbContracts.PhotosLinks.COLUMN_PHOTO_ID} IN ("
                     )
-                    displayPhoto(photo)
-                }
-            }
-            getHashedBinaryCursor.close()
+                    selectedPhotos.forEach { photoId ->
+                        getLinkedPhotosSql.append("$photoId,")
+                    }
+                    getLinkedPhotosSql.replace(
+                        getLinkedPhotosSql.length - 1,
+                        getLinkedPhotosSql.length,
+                        ""
+                    ) //末尾のカンマを削除
+                    getLinkedPhotosSql.append(")")
 
-            Toaster.createToast(
-                context = this,
-                text = getString(R.string.message_on_added_photos),
-                textColor = getColor(this, R.color.toastTextColorOnSuccess),
-                backgroundColor = getColor(this, R.color.toastBackgroundColorOnSuccess),
-                displayTime = Toast.LENGTH_LONG
-            ).show()
+                    val getLinkedPhotosCursor = readableDb.rawQuery(getLinkedPhotosSql.toString(), null)
+
+                    if (getLinkedPhotosCursor.count != 0) {
+                        //既にリンクしている写真をリストから除外する
+                        while (getLinkedPhotosCursor.moveToNext()) {
+                            val photoId = getLinkedPhotosCursor.getInt(0)
+                            selectedPhotos.remove(photoId)
+                        }
+                    }
+                    getLinkedPhotosCursor.close()
+
+                    if (selectedPhotos.count() == 0) {
+                        handler.post {
+                            //全て既に追加されている
+                            Toaster.createToast(
+                                context = this@PhotosViewActivity,
+                                text = getString(R.string.message_on_failed_add_photos),
+                                textColor = getColor(
+                                    this@PhotosViewActivity,
+                                    R.color.toastTextColorOnFailed
+                                ),
+                                backgroundColor = getColor(
+                                    this@PhotosViewActivity,
+                                    R.color.toastBackgroundColorOnFailed
+                                ),
+                                displayTime = Toast.LENGTH_LONG
+                            ).show()
+                        }
+                        getLinkedPhotosCursor.close()
+                        return@launch
+                    }
+
+                    //画面に表示するためにビットマップを取得する必要がある。
+                    //ビットマップを取得するためにハッシュ値を取得する
+                    val getHashedBinarySql = StringBuilder()
+                    getHashedBinarySql.append(
+                        "SELECT DISTINCT ${BaseColumns._ID}," +
+                                DbContracts.Photos.COLUMN_HASHED_BINARY +
+                                " FROM ${DbContracts.Photos.TABLE_NAME}" +
+                                " WHERE ${BaseColumns._ID} IN ("
+                    )
+
+                    //選択された写真と人物を紐づける
+                    selectedPhotos.forEach { photoId ->
+                        val photoLink = PhotoLink(
+                            id = newPhotoLinkId,
+                            photoId = photoId,
+                            personId = personId
+                        )
+                        val values = getContentValues(photoLink)
+                        writableDb.insert(DbContracts.PhotosLinks.TABLE_NAME, null, values)
+
+                        getHashedBinarySql.append("$photoId,")
+                    }
+
+                    getHashedBinarySql.replace(
+                        getHashedBinarySql.length - 1,
+                        getHashedBinarySql.length,
+                        ""
+                    ) //末尾のカンマを削除する
+                    getHashedBinarySql.append(") ORDER BY ${BaseColumns._ID}")
+
+                    val getHashedBinaryCursor = readableDb.rawQuery(getHashedBinarySql.toString(), null)
+                    if (getHashedBinaryCursor.count != 0) {
+                        while (getHashedBinaryCursor.moveToNext()) {
+                            val photoId = getHashedBinaryCursor.getInt(0)
+                            val photo = Photo(
+                                id = photoId,
+                                hashedBinary = getHashedBinaryCursor.getString(1),
+                                createdOn = ""
+                            )
+                            handler.post {
+                                displayPhoto(photo)
+                            }
+                        }
+                    }
+                    getHashedBinaryCursor.close()
+
+                    handler.post {
+                        Toaster.createToast(
+                            context = this@PhotosViewActivity,
+                            text = getString(R.string.message_on_added_photos),
+                            textColor = getColor(
+                                this@PhotosViewActivity,
+                                R.color.toastTextColorOnSuccess
+                            ),
+                            backgroundColor = getColor(
+                                this@PhotosViewActivity,
+                                R.color.toastBackgroundColorOnSuccess
+                            ),
+                            displayTime = Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+            }.join()
+
+            handler.post {
+                if (requestCode == OPEN_CAMERA_REQUEST_CODE || requestCode == OPEN_GALLERY_REQUEST_CODE
+                    || requestCode == GET_PHOTOS_IN_APP_REQUEST_CODE
+                ) {
+                    addPhotoButton.isClickable = true
+                    hideAddPhotoButtons()
+                }
+
+                hideLoadingDialog()
+            }
         }
     }
 
@@ -1115,6 +1236,24 @@ class PhotosViewActivity : AppCompatActivity() {
         }
 
         displayPhotoCount()
+    }
+
+    /*
+    * ローディング画面を表示
+    * */
+    private fun showLoadingDialog(){
+        window.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) //タッチ無効化
+        loadingAnimationView.bringToFront()
+        loadingAnimationView.visibility = View.VISIBLE
+    }
+
+    /*
+    * ローディング画面を非表示
+    * */
+    private fun hideLoadingDialog(){
+        rootConstraintLayout.bringToFront()
+        loadingAnimationView.visibility = View.INVISIBLE
+        window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) //タッチ無効化解除
     }
 
     /*
