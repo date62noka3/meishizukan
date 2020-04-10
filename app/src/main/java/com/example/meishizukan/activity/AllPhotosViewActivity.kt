@@ -7,10 +7,12 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.provider.BaseColumns
+import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.meishizukan.R
 import com.example.meishizukan.dto.Photo
@@ -26,10 +28,8 @@ import com.google.android.gms.ads.RequestConfiguration
 import kotlinx.android.synthetic.main.activity_all_photos_view.*
 import androidx.core.content.ContextCompat.getColor
 import com.example.meishizukan.util.BitmapUtils.getBitmapFromInternalStorage
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.example.meishizukan.util.Toaster
+import kotlinx.coroutines.*
 
 private const val GET_PHOTOS_IN_APP_REQUEST_CODE = 2
 
@@ -133,7 +133,7 @@ class AllPhotosViewActivity : AppCompatActivity() {
 
         //前の画面(写真一覧画面)に戻る
         backButton.setOnClickListener{
-            super.onBackPressed()
+            onBackPressed()
         }
 
         //写真を選択・選択解除する
@@ -184,6 +184,21 @@ class AllPhotosViewActivity : AppCompatActivity() {
         adView.destroy()
         readableDb.close()
         dbHelper.close()
+    }
+
+    override fun onBackPressed() {
+        if(searchJob.isActive){
+            Toaster.createToast(
+                context = this,
+                text = getString(R.string.message_on_click_back_button),
+                textColor = getColor(this,R.color.toastTextColorOnFailed),
+                backgroundColor = getColor(this,R.color.toastBackgroundColorOnFailed),
+                displayTime = Toast.LENGTH_LONG
+            ).show()
+            return
+        }
+
+        super.onBackPressed()
     }
 
     /*
@@ -269,12 +284,13 @@ class AllPhotosViewActivity : AppCompatActivity() {
     * */
     private fun createSearchSQL():String{
         return "SELECT ${BaseColumns._ID}," +
-                    "${DbContracts.Photos.COLUMN_HASHED_BINARY}," +
-                    DbContracts.Photos.COLUMN_CREATED_ON +
-                    " FROM ${DbContracts.Photos.TABLE_NAME}" +
-                    " ORDER BY ${DbContracts.Photos.COLUMN_CREATED_ON}"
+                "${DbContracts.Photos.COLUMN_HASHED_BINARY}," +
+                DbContracts.Photos.COLUMN_CREATED_ON +
+                " FROM ${DbContracts.Photos.TABLE_NAME}" +
+                " ORDER BY ${DbContracts.Photos.COLUMN_CREATED_ON}"
     }
 
+    private var searchJob = Job()
     private val handler = Handler()
     private var prevDisplayedPhotoDate = "0000-00-00" //前回表示した写真の追加日付
     /*
@@ -293,16 +309,14 @@ class AllPhotosViewActivity : AppCompatActivity() {
 
         val photos = readPhotos(sql)
 
-        GlobalScope.launch(Dispatchers.Default) {
+        searchJob = GlobalScope.launch(Dispatchers.Default) {
             delay(100) //遷移の負荷軽減
 
-            launch(Dispatchers.Default) {
-                photos.forEach {
-                    handler.post {
-                        displayPhoto(it)
-                    }
+            photos.forEach {
+                handler.post {
+                    displayPhoto(it)
                 }
-            }.join()
+            }
 
             handler.post {
                 displayPhotoCount()
