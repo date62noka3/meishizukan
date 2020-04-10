@@ -63,7 +63,7 @@
     <string name="message_on_failed_open_camera">権限がないのでカメラを起動できませんでした</string>
     <string name="message_on_no_camera_app">カメラアプリがありません</string>
     <string name="progress_text_on_add_photos">写真を読み込み中…</string>
-    <string name="message_on_click_back_button">処理が正常に終了するまでもうしばらくお待ちください</string>
+    <string name="message_on_click_back_button">写真を読み込み中です。もうしばらくお待ちください</string>
 
     <!-- 50音のア段 -->
     <string-array name="japanese_syllabary_regex">

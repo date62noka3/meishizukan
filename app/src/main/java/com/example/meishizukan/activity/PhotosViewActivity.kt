@@ -52,10 +52,7 @@ import junit.framework.TestCase
 import kotlinx.android.synthetic.main.activity_photos_view.*
 import kotlinx.coroutines.*
 import org.junit.Test
-import java.lang.Exception
-import java.lang.IllegalStateException
 import java.security.MessageDigest
-import java.util.concurrent.ForkJoinPool
 
 private const val OPEN_CAMERA_REQUEST_CODE  = 0
 private const val OPEN_GALLERY_REQUEST_CODE = 1
@@ -80,6 +77,7 @@ class PhotosViewActivity : AppCompatActivity() {
     private val rotateRightAngle = 90F //全画面表示で画像を回転させるときの回転角度(右回転)
 
     private var isSelecting = false //選択中かいなか
+    private var capturedPhotoUri:Uri? = null //カメラで撮影した写真のURI
 
     private val dbHelper = DbHelper(this)
     private lateinit var readableDb: SQLiteDatabase
@@ -132,7 +130,15 @@ class PhotosViewActivity : AppCompatActivity() {
 
         //カメラを起動
         cameraButton.setOnClickListener{
-            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            //高画質保存するための設定をしている
+            val values = ContentValues().apply {
+                put(MediaStore.Images.Media.TITLE,"new_picture")
+                put(MediaStore.Images.Media.DESCRIPTION,"captured_with_camera")
+            }
+            capturedPhotoUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,values)
+            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply{
+                putExtra(MediaStore.EXTRA_OUTPUT,capturedPhotoUri)
+            }
 
             //カメラアプリがない場合トーストを表示
             if(intent.resolveActivity(packageManager) == null){
@@ -357,8 +363,8 @@ class PhotosViewActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        //写真追加処理が実行中の場合返却する
-        if(addPhotosJob.isActive){
+        //写真追加処理または写真表示処理が実行中の場合返却する
+        if(addPhotosJob.isActive || displayLinkedPhotosJob.isActive){
             Toaster.createToast(
                 context = this,
                 text = getString(R.string.message_on_click_back_button),
@@ -431,12 +437,12 @@ class PhotosViewActivity : AppCompatActivity() {
                 if (requestCode == OPEN_CAMERA_REQUEST_CODE && resultCode == Activity.RESULT_OK
                     && data != null
                 ) {
-                    data.extras ?: return@launch
-                    val captureData = data.extras.get("data")
-                    captureData ?: return@launch
-                    val bitmap = captureData as Bitmap
+                    capturedPhotoUri?:return@launch
 
-                    val binary = convertBitmapToBinaryJPEG(bitmap)
+                    @Suppress("BlockingMethodInNonBlockingContext")
+                    val capturedPhoto = MediaStore.Images.Media.getBitmap(contentResolver, capturedPhotoUri)
+
+                    val binary = convertBitmapToBinaryJPEG(capturedPhoto)
                     val photo = addPhoto(binary)
 
                     handler.post {
@@ -697,8 +703,9 @@ class PhotosViewActivity : AppCompatActivity() {
             }.join()
 
             handler.post {
-                if (requestCode == OPEN_CAMERA_REQUEST_CODE || requestCode == OPEN_GALLERY_REQUEST_CODE
-                    || requestCode == GET_PHOTOS_IN_APP_REQUEST_CODE
+                if ((requestCode == OPEN_CAMERA_REQUEST_CODE || requestCode == OPEN_GALLERY_REQUEST_CODE
+                            || requestCode == GET_PHOTOS_IN_APP_REQUEST_CODE)
+                    && resultCode == Activity.RESULT_OK
                 ) {
                     addPhotoButton.isClickable = true
                     hideAddPhotoButtons()
@@ -1204,6 +1211,7 @@ class PhotosViewActivity : AppCompatActivity() {
         selectedItemCountTextView.text = selectedPhotos.count().toString().plus(getString(R.string.selected_photo_count_text))
     }
 
+    private var displayLinkedPhotosJob = Job()
     /*
     * 人物にリンクしている写真をすべて表示
     * */
@@ -1217,25 +1225,39 @@ class PhotosViewActivity : AppCompatActivity() {
             return
         }
 
-        while(allLinkedPhotosCursor.moveToNext()){
-            val photoId = allLinkedPhotosCursor.getInt(0)
-
-            val linkedPhotoCursor = searchPhoto(photoId)
-            if(linkedPhotoCursor.count == 0){
-                continue
+        displayLinkedPhotosJob = GlobalScope.launch(Dispatchers.Default) {
+            handler.post {
+                showLoadingDialog()
             }
 
-            linkedPhotoCursor.moveToNext()
-            val hashedBinary = linkedPhotoCursor.getString(0)
-            val photo = Photo(
-                id = photoId,
-                hashedBinary = hashedBinary,
-                createdOn = ""
-            )
-            displayPhoto(photo)
-        }
+            launch(Dispatchers.Default) {
+                while (allLinkedPhotosCursor.moveToNext()) {
+                    val photoId = allLinkedPhotosCursor.getInt(0)
 
-        displayPhotoCount()
+                    val linkedPhotoCursor = searchPhoto(photoId)
+                    if (linkedPhotoCursor.count == 0) {
+                        continue
+                    }
+
+                    linkedPhotoCursor.moveToNext()
+                    val hashedBinary = linkedPhotoCursor.getString(0)
+                    val photo = Photo(
+                        id = photoId,
+                        hashedBinary = hashedBinary,
+                        createdOn = ""
+                    )
+                    handler.post {
+                        displayPhoto(photo)
+                    }
+                }
+            }.join()
+
+            handler.post {
+                displayPhotoCount()
+
+                hideLoadingDialog()
+            }
+        }
     }
 
     /*
