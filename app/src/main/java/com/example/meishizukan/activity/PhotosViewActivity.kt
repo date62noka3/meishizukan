@@ -363,7 +363,6 @@ class PhotosViewActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        //写真追加処理または写真表示処理が実行中の場合返却する
         if(addPhotosJob.isActive || displayLinkedPhotosJob.isActive){
             Toaster.createToast(
                 context = this,
