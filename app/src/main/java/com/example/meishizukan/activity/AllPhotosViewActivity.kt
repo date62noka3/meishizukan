@@ -26,6 +26,10 @@ import com.google.android.gms.ads.RequestConfiguration
 import kotlinx.android.synthetic.main.activity_all_photos_view.*
 import androidx.core.content.ContextCompat.getColor
 import com.example.meishizukan.util.BitmapUtils.getBitmapFromInternalStorage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 private const val GET_PHOTOS_IN_APP_REQUEST_CODE = 2
 
@@ -74,10 +78,8 @@ class AllPhotosViewActivity : AppCompatActivity() {
 
         //すべて表示する
         if(requestCode == GET_PHOTOS_IN_APP_REQUEST_CODE){ //のちにトップの写真一覧画面が実装されるため分岐がある
-            searchHandler.post{
-                changeActiveDisplayTypeButton()
-                search()
-            }
+            changeActiveDisplayTypeButton()
+            search()
         }
 
         //すべて表示する
@@ -86,11 +88,9 @@ class AllPhotosViewActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            searchHandler.post{
-                displayType = DISPLAY_TYPE_ALL
-                changeActiveDisplayTypeButton()
-                search()
-            }
+            displayType = DISPLAY_TYPE_ALL
+            changeActiveDisplayTypeButton()
+            search()
         }
 
         //年別表示する
@@ -99,11 +99,9 @@ class AllPhotosViewActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            searchHandler.post{
-                displayType = DISPLAY_TYPE_YEAR
-                changeActiveDisplayTypeButton()
-                search()
-            }
+            displayType = DISPLAY_TYPE_YEAR
+            changeActiveDisplayTypeButton()
+            search()
         }
 
         //月別表示する
@@ -112,11 +110,9 @@ class AllPhotosViewActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            searchHandler.post{
-                displayType = DISPLAY_TYPE_MONTH
-                changeActiveDisplayTypeButton()
-                search()
-            }
+            displayType = DISPLAY_TYPE_MONTH
+            changeActiveDisplayTypeButton()
+            search()
         }
 
         //日別表示する
@@ -125,11 +121,9 @@ class AllPhotosViewActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            searchHandler.post{
-                displayType = DISPLAY_TYPE_DAY
-                changeActiveDisplayTypeButton()
-                search()
-            }
+            displayType = DISPLAY_TYPE_DAY
+            changeActiveDisplayTypeButton()
+            search()
         }
 
         //スクロールビューを先頭にスクロールする
@@ -281,8 +275,7 @@ class AllPhotosViewActivity : AppCompatActivity() {
                     " ORDER BY ${DbContracts.Photos.COLUMN_CREATED_ON}"
     }
 
-    private val searchHandler = Handler()
-    private val searchDelay = 500L
+    private val handler = Handler()
     private var prevDisplayedPhotoDate = "0000-00-00" //前回表示した写真の追加日付
     /*
     * 写真を検索
@@ -290,25 +283,33 @@ class AllPhotosViewActivity : AppCompatActivity() {
     private fun search(){
         showLoadingDialog()
 
-        searchHandler.postDelayed({
-            prevDisplayedPhotoDate = "0000-00-00"
-            displayedPhotoCount = 0
-            prevDisplayedPlace = DISPLAYED_PLACE_RIGHT
+        prevDisplayedPhotoDate = "0000-00-00"
+        displayedPhotoCount = 0
+        prevDisplayedPlace = DISPLAYED_PLACE_RIGHT
 
-            photoListLinearLayout.removeAllViews() //写真アイテムを全てクリア
+        photoListLinearLayout.removeAllViews() //写真アイテムを全てクリア
 
-            val sql = createSearchSQL()
+        val sql = createSearchSQL()
 
-            val photos = readPhotos(sql)
-            photos.forEach {
-                displayPhoto(it)
+        val photos = readPhotos(sql)
+
+        GlobalScope.launch(Dispatchers.Default) {
+            delay(100) //遷移の負荷軽減
+
+            launch(Dispatchers.Default) {
+                photos.forEach {
+                    handler.post {
+                        displayPhoto(it)
+                    }
+                }
+            }.join()
+
+            handler.post {
+                displayPhotoCount()
+
+                scrollToBottom(false)
             }
-
-            displayPhotoCount()
-
-            scrollToBottom(false)
-
-        },searchDelay)
+        }
     }
 
     /*
