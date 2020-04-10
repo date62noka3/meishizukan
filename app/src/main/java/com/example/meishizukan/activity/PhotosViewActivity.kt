@@ -52,10 +52,7 @@ import junit.framework.TestCase
 import kotlinx.android.synthetic.main.activity_photos_view.*
 import kotlinx.coroutines.*
 import org.junit.Test
-import java.lang.Exception
-import java.lang.IllegalStateException
 import java.security.MessageDigest
-import java.util.concurrent.ForkJoinPool
 
 private const val OPEN_CAMERA_REQUEST_CODE  = 0
 private const val OPEN_GALLERY_REQUEST_CODE = 1
@@ -80,6 +77,7 @@ class PhotosViewActivity : AppCompatActivity() {
     private val rotateRightAngle = 90F //全画面表示で画像を回転させるときの回転角度(右回転)
 
     private var isSelecting = false //選択中かいなか
+    private var capturedPhotoUri:Uri? = null //カメラで撮影した写真のURI
 
     private val dbHelper = DbHelper(this)
     private lateinit var readableDb: SQLiteDatabase
@@ -132,7 +130,15 @@ class PhotosViewActivity : AppCompatActivity() {
 
         //カメラを起動
         cameraButton.setOnClickListener{
-            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            //高画質保存するための設定をしている
+            val values = ContentValues().apply {
+                put(MediaStore.Images.Media.TITLE,"new_picture")
+                put(MediaStore.Images.Media.DESCRIPTION,"captured_with_camera")
+            }
+            capturedPhotoUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,values)
+            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply{
+                putExtra(MediaStore.EXTRA_OUTPUT,capturedPhotoUri)
+            }
 
             //カメラアプリがない場合トーストを表示
             if(intent.resolveActivity(packageManager) == null){
@@ -431,12 +437,12 @@ class PhotosViewActivity : AppCompatActivity() {
                 if (requestCode == OPEN_CAMERA_REQUEST_CODE && resultCode == Activity.RESULT_OK
                     && data != null
                 ) {
-                    data.extras ?: return@launch
-                    val captureData = data.extras.get("data")
-                    captureData ?: return@launch
-                    val bitmap = captureData as Bitmap
+                    capturedPhotoUri?:return@launch
 
-                    val binary = convertBitmapToBinaryJPEG(bitmap)
+                    @Suppress("BlockingMethodInNonBlockingContext")
+                    val capturedPhoto = MediaStore.Images.Media.getBitmap(contentResolver, capturedPhotoUri)
+
+                    val binary = convertBitmapToBinaryJPEG(capturedPhoto)
                     val photo = addPhoto(binary)
 
                     handler.post {
@@ -698,7 +704,7 @@ class PhotosViewActivity : AppCompatActivity() {
 
             handler.post {
                 if ((requestCode == OPEN_CAMERA_REQUEST_CODE || requestCode == OPEN_GALLERY_REQUEST_CODE
-                    || requestCode == GET_PHOTOS_IN_APP_REQUEST_CODE)
+                            || requestCode == GET_PHOTOS_IN_APP_REQUEST_CODE)
                     && resultCode == Activity.RESULT_OK
                 ) {
                     addPhotoButton.isClickable = true
