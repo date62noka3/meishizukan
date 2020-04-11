@@ -6,7 +6,7 @@
 
 # DEMO(プロモーション)
 動画を是非ご視聴ください。  
-https://www.youtube.com/watch?v=Rs2QKftt0go&feature=youtu.be
+https://youtu.be/Wfu3Pb-ho6Q
  
 # Features
 新社会人の不安を払しょくすることもできると考えています。  
