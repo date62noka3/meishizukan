@@ -6,7 +6,7 @@
 
 # DEMO(プロモーション)
 動画を是非ご視聴ください。  
-[link](https://www.youtube.com/watch?v=Rs2QKftt0go&feature=youtu.be){:target="_blank"}
+https://www.youtube.com/watch?v=Rs2QKftt0go&feature=youtu.be
  
 # Features
 新社会人の不安を払しょくすることもできると考えています。  
@@ -44,4 +44,4 @@ Non-Bundled Plugins: net.seesharpsoft.intellij.plugins.csv
 Copyright (c) 2020 小菅俊明
 
 This software is released under the MIT License.  
-[link](http://opensource.org/licenses/mit-license.php){:target="_blank"}
+http://opensource.org/licenses/mit-license.php
